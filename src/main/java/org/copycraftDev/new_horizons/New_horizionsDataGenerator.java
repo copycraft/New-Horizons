@@ -13,8 +13,7 @@ public class New_horizionsDataGenerator implements DataGeneratorEntrypoint {
 
     }
 
-    @Override
-    public static void buildRegistry(RegistryBuilder registryBuilder) {
+    public void buildRegistry(RegistryBuilder registryBuilder) {
         registryBuilder.addRegistry(RegistryKeys.DIMENSION_TYPE, ModDimensions::bootstrapType);
     }
 }

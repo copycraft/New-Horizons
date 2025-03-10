@@ -1,5 +1,5 @@
 {
-  "type": "new_horizons:space",
+  "type": "new_horizons:space_type",
   "generator": {
     "type": "minecraft:flat",
     "settings": {
