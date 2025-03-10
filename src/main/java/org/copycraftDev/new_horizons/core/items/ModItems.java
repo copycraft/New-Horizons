@@ -14,7 +14,7 @@ public class ModItems {
     private ModItems() {}
 
     // an instance of our new item
-    public static final Item CUSTOM_ITEM = register("flashlight", new Item(new Item.Settings()));
+    public static final Item CUSTOM_ITEM = register("flashlight", new FlashlightItem(new Item.Settings()));
 
     public static <T extends Item> T register(String path, T item) {
         // For versions below 1.21, please replace ''Identifier.of'' with ''new Identifier''

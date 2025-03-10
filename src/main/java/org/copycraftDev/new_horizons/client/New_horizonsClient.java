@@ -6,7 +6,6 @@ import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.KeyBinding;
-import org.copycraftDev.new_horizons.core.items.FlashlightManager;
 import org.lwjgl.glfw.GLFW;
 
 public class New_horizonsClient implements ClientModInitializer {
@@ -22,7 +21,5 @@ public class New_horizonsClient implements ClientModInitializer {
         );
         KeyBindingHelper.registerKeyBinding(flashlightKeyBinding);
 
-
-        FlashlightManager.initialize(MinecraftClient.getInstance(), flashlightKeyBinding);
     }
 }
