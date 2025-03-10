@@ -27,10 +27,10 @@ public class FlashlightRenderer extends AreaLight {
     public void toggle() {
         isOn = !isOn;
         if (isOn) {
-            this.setDistance(20.0f);
-            this.setSize(1.5, 1.5);
+            this.setDistance(13.0f);
+            this.setSize(0.8, 0.8);
             this.setColor(1.0f, 0.9f, 0.6f);
-            this.setBrightness(6.0f);
+            this.setBrightness(4.0f);
             this.setAngle((float) Math.toRadians(40));
             VeilRenderSystem.renderer().getLightRenderer().addLight(this);
         } else {

@@ -13,5 +13,6 @@
         }
       ]
     }
-  }
+  },
+  "effects": "minecraft:the_end"
 }

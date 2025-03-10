@@ -20,6 +20,9 @@ repositories {
         name = "DaPorkchop_"
         url = "https://maven.daporkchop.net/"
     }
+    maven {
+        url "https://cursemaven.com"
+    }
 }
 
 dependencies {
@@ -27,8 +30,8 @@ dependencies {
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
     mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
     modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
-    modImplementation "org.valkyrienskies:api:1.0.0.10"
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+    modImplementation "curse.maven:fabricskyboxes-408209:5424365"
     modImplementation("foundry.veil:veil-fabric-1.21.1:1.0.0.192") {
         exclude group: "maven.modrinth"
     }
