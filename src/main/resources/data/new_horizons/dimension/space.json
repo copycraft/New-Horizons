@@ -12,5 +12,6 @@
         }],
       "structure_overrides": []
     }
-  }
+  },
+  "effects": "minecraft:the_end"
 }

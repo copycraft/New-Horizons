@@ -1,37 +1,14 @@
 {
-  "schemaVersion": 2,
-  "type": "square-textured",
-  "textures": {
-    "top": "new_horizons:sky/skybox_top.png",
-    "bottom": "new_horizons:sky/skybox_bottom.png",
-    "east": "new_horizons:sky/skybox_east.png",
-    "west": "new_horizons:sky/skybox_west.png",
-    "north": "new_horizons:sky/skybox_north.png",
-    "south": "new_horizons:sky/skybox_south.png"
-  },
-  "fps": 1,
-  "blend": {"type" : "alpha"},
   "properties": {
-    "priority": 1,
-    "fade": {
-      "startFadeIn": 1000,
-      "endFadeIn": 2000,
-      "startFadeOut": 3000,
-      "endFadeOut": 4000,
-      "alwaysOn": true
-    },
-    "rotation": {
-      "rotationSpeedY": 0.866,
-      "static": [0.0, 0.0, 0.0],
-      "axis": [0.0, -180.0, 0.0]
-    },
-    "transitionInDuration": 10,
-    "transitionOutDuration": 15,
-    "changeFog": false,
-    "fogColors": {"red": 0.84, "green": 0.91, "blue": 0.97, "alpha": 1.0},
-    "sunSkyTint": false,
-    "inThickFog": true,
-    "minAlpha": 0.0,
-    "maxAlpha": 1.0
+    "priority": 10,
+    "dimension": "new_horizons:space"
+  },
+  "textures": {
+    "north": "new_horizons:textures/environment/custom_sky_front.png",
+    "south": "new_horizons:textures/environment/custom_sky_back.png",
+    "east": "new_horizons:textures/environment/custom_sky_right.png",
+    "west": "new_horizons:textures/environment/custom_sky_left.png",
+    "up": "new_horizons:textures/environment/custom_sky_top.png",
+    "down": "new_horizons:textures/environment/custom_sky_bottom.png"
   }
 }
