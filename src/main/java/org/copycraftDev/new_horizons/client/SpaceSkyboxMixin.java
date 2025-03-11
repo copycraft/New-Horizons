@@ -17,7 +17,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(WorldRenderer.class)
 public class SpaceSkyboxMixin {
     @Unique
-    private static final Identifier SKYBOX_TEXTURE = Identifier.of( "textures/environment/custom_sky.png");
+    private static final Identifier SKYBOX_TEXTURE = Identifier.of( "textures/environment/space_sky.png");
 
     @Inject(method = "renderSky", at = @At("HEAD"), cancellable = true)
     public void renderCustomSky(Matrix4f matrix4f, Matrix4f projectionMatrix, float tickDelta, Camera camera, boolean thickFog, Runnable fogCallback, CallbackInfo ci) {

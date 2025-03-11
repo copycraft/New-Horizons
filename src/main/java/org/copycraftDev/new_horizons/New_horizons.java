@@ -1,6 +1,8 @@
 package org.copycraftDev.new_horizons;
 
 import foundry.veil.Veil;
+import foundry.veil.api.client.render.shader.program.ShaderProgram;
+import foundry.veil.platform.VeilEventPlatform;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.minecraft.client.option.KeyBinding;
