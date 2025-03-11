@@ -1,0 +1,44 @@
+{
+
+  "vertex": "new_horizons:blackhole",
+
+  "tesselation_control": "new_horizons:blackhole",
+
+  "tesselation_evaluation": "new_horizons:blackhole",
+
+  "geometry": "new_horizons:blackhole",
+
+  "fragment": "new_horizons:blackhole",
+
+  "compute": "new_horizons:blackhole",
+
+  "definitions": [
+    "foo",
+    "bar",
+    {
+      "defaultValue": 4
+    }
+  ],
+
+  "textures": {
+    "LocationTexture": "veil:textures/gui/item_shadow.png",
+    "AlternateLocationTexture": {
+      "type": "location",
+      "location": "minecraft:textures/atlas/particles.png"
+    },
+    "ExampleFramebuffer": {
+      "type": "framebuffer",
+      "name": "veil:deferred",
+
+      "sampler": 4
+    },
+    "ExampleFramebufferColor": {
+      "type": "framebuffer",
+      "name": "veil:deferred"
+    },
+    "ExampleFramebufferDepth": {
+      "type": "framebuffer",
+      "name": "veil:deferred:depth"
+    }
+  }
+}

@@ -1,14 +1,14 @@
 {
   "properties": {
-    "priority": 1,
+    "priority": 4,
     "dimension": "new_horizons:space"
   },
   "textures": {
-    "north": "new_horizons:textures/environment/custom_sky_front.png",
-    "south": "new_horizons:textures/environment/custom_sky_back.png",
-    "east": "new_horizons:textures/environment/custom_sky_right.png",
-    "west": "new_horizons:textures/environment/custom_sky_left.png",
-    "up": "new_horizons:textures/environment/custom_sky_top.png",
-    "down": "new_horizons:textures/environment/custom_sky_bottom.png"
+    "top": "new_horizons:textures/environment/space_sky_top.png",
+    "bottom": "new_horizons:textures/environment/space_sky_bottom.png",
+    "east": "new_horizons:textures/environment/space_sky_right.png",
+    "west": "new_horizons:textures/environment/space_sky_left.png",
+    "north": "new_horizons:textures/environment/space_sky_front.png",
+    "south": "new_horizons:textures/environment/space_sky_back.png"
   }
 }

@@ -1,7 +1,7 @@
 {
 	"schemaVersion": 2,
 	"type": "square-textured",
-	"dimension": "minecraft:end",
+	"dimension": "new_horizons:space",
 	"textures": {
 		"top": "fabricskyboxes:sky/space_sky_top.png",
 		"bottom": "fabricskyboxes:sky/space_sky_bottom.png",
@@ -13,7 +13,7 @@
 	"fps": 1,
 	"blend": {"type" : "alpha"},
 	"properties": {
-		"priority": 10,
+		"priority": 4,
 		"fade": {
 			"startFadeIn": 1000,
 			"endFadeIn": 2000,
