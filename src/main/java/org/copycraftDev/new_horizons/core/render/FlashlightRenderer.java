@@ -21,7 +21,7 @@ public class FlashlightRenderer extends AreaLight {
         this.setDistance(20);
         this.setSize(1.5, 1.5);
         this.setColor(1.0f, 0.9f, 0.6f);
-        this.setBrightness(12.0f);
+        this.setBrightness(4.0f);
     }
 
     public void toggle() {

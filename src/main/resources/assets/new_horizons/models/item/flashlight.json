@@ -1,8 +1,7 @@
 {
-	"credit": "Made with Blockbench",
 	"texture_size": [32, 32],
 	"textures": {
-		"1": "new_horizons:textures/flashlight"
+		"1": "new_horizons:item/flashlight"
 	},
 	"elements": [
 		{
@@ -108,9 +107,21 @@
 			"translation": [-0.75, -5.25, -3.75],
 			"scale": [0.66, 0.66, 0.66]
 		},
+		"firstperson_righthand": {
+			"translation": [3.75, 5, 0]
+		},
+		"firstperson_lefthand": {
+			"translation": [3.75, 5, 0]
+		},
+		"ground": {
+			"translation": [0, 5.5, 0]
+		},
 		"gui": {
 			"rotation": [135, -45, 90],
 			"translation": [-4, 1.75, 0]
+		},
+		"head": {
+			"translation": [0, 10.25, 0]
 		},
 		"fixed": {
 			"rotation": [89.51, 45, 90],
