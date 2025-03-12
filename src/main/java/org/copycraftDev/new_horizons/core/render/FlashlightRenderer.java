@@ -4,13 +4,24 @@ import foundry.veil.api.client.render.VeilRenderSystem;
 import foundry.veil.api.client.render.light.AreaLight;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.Camera;
+import net.minecraft.server.command.PlaySoundCommand;
+import net.minecraft.sound.SoundEvent;
+import net.minecraft.util.ActionResult;
+import net.minecraft.util.TypedActionResult;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.world.World;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.sound.SoundCategory;
+import net.minecraft.sound.SoundEvents;
+import net.minecraft.util.math.Vec3d;
 
 public class FlashlightRenderer extends AreaLight {
 
+    PlayerEntity player = MinecraftClient.getInstance().player;
     private boolean isOn = false;
     private Vec3d lastPosition = new Vec3d(0, 0, 0);
     private Quaternionf lastRotation = new Quaternionf();
@@ -34,6 +45,18 @@ public class FlashlightRenderer extends AreaLight {
 
     public void toggle() {
         isOn = !isOn;
+
+        if (isOn) {
+            player.getWorld().playSound(
+                    null,                      // No specific source entity
+                    player.getBlockPos(),      // Position at the player's location
+                    SoundEvents.BLOCK_LEVER_CLICK, // The sound
+                    SoundCategory.PLAYERS,      // Category
+                    1f,                      // Volume
+                    1f                       // Pitch
+            );
+        }
+
         if (isOn) {
             this.setDistance(50.0f);
             this.setSize(1.0, 1.0);
@@ -43,6 +66,7 @@ public class FlashlightRenderer extends AreaLight {
 
             VeilRenderSystem.renderer().getLightRenderer().addLight(this);
             VeilRenderSystem.renderer().getLightRenderer().addLight(areaLight2);
+
         } else {
             VeilRenderSystem.renderer().getLightRenderer().removeLight(this);
             VeilRenderSystem.renderer().getLightRenderer().removeLight(areaLight2);
@@ -80,7 +104,7 @@ public class FlashlightRenderer extends AreaLight {
         this.setPosition(lastPosition.x, lastPosition.y + 0.75, lastPosition.z);
         this.setOrientation(orientation);
 
-        areaLight2.setPosition(lastPosition.x, lastPosition.y, lastPosition.z);
+        areaLight2.setPosition(lastPosition.x, lastPosition.y + 0.75, lastPosition.z);
         areaLight2.setOrientation(orientation);
     }
 }
