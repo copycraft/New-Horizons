@@ -32,7 +32,7 @@ public class FlashlightRenderer extends AreaLight {
         super();
         this.setDistance(50.0f);
         this.setSize(1.0, 1.0);
-        this.setColor(1.0f, 1.0f, 0.6470588235f);
+        this.setColor(1.0f, 0.9f, 0.6470588235f);
         this.setBrightness(1.5f);
 
         // Configure secondary area light
@@ -40,33 +40,32 @@ public class FlashlightRenderer extends AreaLight {
         areaLight2.setSize(0.15, 0.15);
         areaLight2.setBrightness(2.0f);
         areaLight2.setAngle(0.25f);
-        areaLight2.setColor(1.0f, 1.0f, 0.9411764706f);
+        areaLight2.setColor(1.0f, 0.9f, 0.6411764706f);
     }
 
     public void toggle() {
         isOn = !isOn;
 
-        if (isOn) {
-            player.getWorld().playSound(
-                    null,                      // No specific source entity
-                    player.getBlockPos(),      // Position at the player's location
-                    SoundEvents.BLOCK_LEVER_CLICK, // The sound
-                    SoundCategory.PLAYERS,      // Category
-                    1f,                      // Volume
-                    1f                       // Pitch
-            );
-        }
 
         if (isOn) {
             this.setDistance(50.0f);
             this.setSize(1.0, 1.0);
-            this.setColor(1.0f, 1.0f, 0.6470588235f);
+            this.setColor(1.0f, 0.9f, 0.6470588235f);
             this.setBrightness(1.5f);
             this.setAngle((float) Math.toRadians(35));
 
             VeilRenderSystem.renderer().getLightRenderer().addLight(this);
             VeilRenderSystem.renderer().getLightRenderer().addLight(areaLight2);
-
+            if (player != null) {
+                player.getWorld().playSound(
+                        null,                      // No specific source entity
+                        player.getBlockPos(),      // Position at the player's location
+                        SoundEvents.BLOCK_LEVER_CLICK, // The sound
+                        SoundCategory.PLAYERS,      // Category
+                        1f,                      // Volume
+                        1f                       // Pitch
+                );
+            }
         } else {
             VeilRenderSystem.renderer().getLightRenderer().removeLight(this);
             VeilRenderSystem.renderer().getLightRenderer().removeLight(areaLight2);
