@@ -15,8 +15,8 @@ public class New_horizonsClient implements ClientModInitializer {
         Veil.init();
 
         KeyBinding flashlightKeyBinding = new KeyBinding(
-                "key.new_horizons.flashlight",   // Translation key
-                GLFW.GLFW_KEY_F,                // Default key
+                "key.new_horizons.override_my_ass",   // Translation key
+                GLFW.GLFW_KEY_F5,                // Default key
                 "category.new_horizons"         // Keybinding category
         );
         KeyBindingHelper.registerKeyBinding(flashlightKeyBinding);

@@ -3,6 +3,8 @@ package org.copycraftDev.new_horizons;
 import foundry.veil.Veil;
 import foundry.veil.api.client.render.shader.program.ShaderProgram;
 import foundry.veil.platform.VeilEventPlatform;
+import nazario.liby.registry.auto.LibyAutoRegister;
+import nazario.liby.registry.auto.LibyRegistryLoader;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
@@ -28,8 +30,9 @@ public class New_horizons implements ModInitializer {
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
     @Override
     public void onInitialize() {
-        ModItems.initialize();
         Veil.init();
+        ModItems.initialize();
+        LibyRegistryLoader.load("org.copycraftDev.new_horizons.core.items");
         WorldRenderEvents.AFTER_ENTITIES.register((context) -> {
             MatrixStack matrices = context.matrixStack();
             VertexConsumerProvider vertexConsumers = context.consumers();

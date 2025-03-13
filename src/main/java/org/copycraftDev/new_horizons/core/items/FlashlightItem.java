@@ -39,9 +39,18 @@ public class FlashlightItem extends Item {
      */
     @Override
     public void inventoryTick(ItemStack stack, World world, Entity entity, int slot, boolean selected) {
-        if (world.isClient && selected && flashlightRenderer.isOn()) {
-            flashlightRenderer.updateFromCamera(MinecraftClient.getInstance());
+        if (world.isClient) {
+            if (selected) {
+                if (flashlightRenderer.isOn()) {
+                    flashlightRenderer.updateFromCamera(MinecraftClient.getInstance());
+                }
+            } else {
+                if (flashlightRenderer.isOn()) {
+                    flashlightRenderer.toggle();
+                }
+            }
         }
         super.inventoryTick(stack, world, entity, slot, selected);
     }
+
 }
