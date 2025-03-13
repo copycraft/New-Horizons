@@ -1,8 +1,8 @@
-#version 450 core
+#version 330 core
 out vec4 FragColor;
-in vec3 fragNormal;
 
-void main() {
-    vec3 color = vec3(1.0); // White color
-    FragColor = vec4(color, 1.0);
+void main()
+{
+    // Set the sphere's color (for example, an orange hue)
+    FragColor = vec4(1.0, 0.5, 0.2, 1.0);
 }
