@@ -1,7 +1,6 @@
 {
-  "vertex": "new_horizons:planet",
   "fragment": "new_horizons:planet",
-  "geometry": "new_horizons:planet",
+  "vertex": "new_horizons:planet",
   "definitions": [
     "example_definition"
   ]

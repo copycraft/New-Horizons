@@ -26,7 +26,7 @@ public class RenderClass {
         shader.bind();
 
         // Submit a single vertex at (0, 0, 0)
-        source.vertex(stack.peek().getPositionMatrix(), 0.0f, 0.0f, 0.0f)
+        source.vertex(stack.peek().getPositionMatrix(), 100.0f, 100.0f, 100.0f)
                 .color(255, 255, 255, 255)  // Full white color (RGBA)
                 .texture(0.0f, 0.0f)  // Default texture coordinates
                 .overlay(OverlayTexture.DEFAULT_UV)  // Default overlay texture
