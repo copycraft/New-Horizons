@@ -6,20 +6,53 @@ precision mediump float;
 #endif
 
 uniform vec2 u_resolution;
-uniform vec2 u_mouse;
 uniform float u_time;
 
-float circle(in vec2 _st, in float _radius){
-    vec2 dist = _st-vec2(0.5);
-	return 1.-smoothstep(_radius-(_radius*0.01),
-                         _radius+(_radius*0.01),
-                         dot(dist,dist)*4.0);
+// Signed Distance Function for a sphere at (0,0,0) with radius 1.0
+float sphereSDF(vec3 p, float r) {
+    return length(p) - r;
 }
 
-void main(){
-	vec2 st = gl_FragCoord.xy/u_resolution.xy;
-
-	vec3 color = vec3(circle(st,0.9));
-
-	gl_FragColor = vec4( color, 1.0 );
+// Computes the direction of a ray from the camera through a pixel
+vec3 getRayDirection(vec2 fragCoord, vec2 resolution, float fov) {
+    // Convert pixel coordinate to screen space centered at (0,0)
+    vec2 xy = fragCoord - resolution * 0.5;
+    float z = resolution.y / tan(radians(fov) * 0.5);
+    return normalize(vec3(xy, -z));
 }
+
+// Raymarching function: marches along the ray until it hits the sphere
+vec3 raymarch(vec3 ro, vec3 rd) {
+    float t = 0.0;
+    const float tMax = 100.0;
+    const int maxSteps = 100;
+    for (int i = 0; i < maxSteps; i++) {
+        vec3 pos = ro + rd * t;
+        float d = sphereSDF(pos, 1.0);
+        if (d < 0.001) {
+            // Basic shading: approximate normal and use it for color
+            vec3 normal = normalize(pos);
+            return 0.5 + 0.5 * normal;
+        }
+        t += d;
+        if (t > tMax) break;
+    }
+    // Background color
+    return vec3(0.0);
+}
+
+void main() {
+    vec2 fragCoord = gl_FragCoord.xy;
+    
+    // Set the camera position; placing it along the positive Z-axis looking towards the origin.
+    vec3 cameraPos = vec3(0.0, 0.0, 5.0);
+    
+    // Compute the ray direction for the current fragment
+    vec3 rd = getRayDirection(fragCoord, u_resolution, 45.0);
+    
+    // Obtain the color by raymarching from the camera along the ray
+    vec3 color = raymarch(cameraPos, rd);
+    
+    FragColor = vec4(color, 1.0);
+}
+

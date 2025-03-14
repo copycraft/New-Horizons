@@ -15,11 +15,14 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.registry.RegistryKeys;
 import org.copycraftDev.new_horizons.core.items.ModItems;
 import org.copycraftDev.new_horizons.core.render.RenderClass;
+import org.copycraftDev.new_horizons.core.world.dimension.DimensionJsonGenerator;
 import org.copycraftDev.new_horizons.core.world.dimension.ModDimensions;
 import org.copycraftDev.new_horizons.datagen.ModWorldGenerator;
 import org.lwjgl.glfw.GLFW;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.List;
 
 import static org.copycraftDev.new_horizons.core.render.RenderClass.CUSTOM_SHADER;
 
@@ -33,6 +36,8 @@ public class New_horizons implements ModInitializer {
         Veil.init();
         ModItems.initialize();
         LibyRegistryLoader.load("org.copycraftDev.new_horizons.core.items");
+        List.of("space", "deep_void", "nebula", "lunar").forEach(dimName ->
+                DimensionJsonGenerator.createDimensionJson(MOD_ID, dimName));
         WorldRenderEvents.AFTER_ENTITIES.register((context) -> {
             MatrixStack matrices = context.matrixStack();
             VertexConsumerProvider vertexConsumers = context.consumers();
