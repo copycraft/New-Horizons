@@ -3,7 +3,7 @@ package org.copycraftDev.new_horizons.core.world.dimension;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import net.fabricmc.loader.api.FabricLoader;
-import org.copycraftDev.new_horizons.New_horizons;
+import org.copycraftDev.new_horizons.NewHorizonsMain;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -51,9 +51,9 @@ public class DimensionJsonGenerator {
     private static void writeJsonToFile(File file, Map<String, Object> jsonMap) {
         try (FileWriter writer = new FileWriter(file)) {
             GSON.toJson(jsonMap, writer);
-            New_horizons.LOGGER.info("Generated JSON: " + file.getPath());
+            NewHorizonsMain.LOGGER.info("Generated JSON: " + file.getPath());
         } catch (IOException e) {
-            New_horizons.LOGGER.error("Failed to write JSON file: " + file.getPath(), e);
+            NewHorizonsMain.LOGGER.error("Failed to write JSON file: " + file.getPath(), e);
         }
     }
 

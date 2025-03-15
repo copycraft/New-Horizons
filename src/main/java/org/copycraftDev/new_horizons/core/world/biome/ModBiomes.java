@@ -1,29 +1,23 @@
 package org.copycraftDev.new_horizons.core.world.biome;
 
-
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.SpawnGroup;
 import net.minecraft.registry.Registerable;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.sound.BiomeMoodSound;
 import net.minecraft.sound.MusicType;
-import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.Identifier;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.BiomeEffects;
 import net.minecraft.world.biome.GenerationSettings;
 import net.minecraft.world.biome.SpawnSettings;
-import net.minecraft.world.gen.GenerationStep;
 import net.minecraft.world.gen.feature.DefaultBiomeFeatures;
-import net.minecraft.world.gen.feature.VegetationPlacedFeatures;
-import org.copycraftDev.new_horizons.New_horizons;
+import org.copycraftDev.new_horizons.NewHorizonsMain;
 
 public class ModBiomes {
     public static final RegistryKey<Biome> VENUS = RegistryKey.of(RegistryKeys.BIOME,
-            Identifier.of(New_horizons.MOD_ID, "venus"));
+            Identifier.of(NewHorizonsMain.MOD_ID, "venus"));
 
     public static void boostrap(Registerable<Biome> context) {
         context.register(VENUS, venusBiome(context));

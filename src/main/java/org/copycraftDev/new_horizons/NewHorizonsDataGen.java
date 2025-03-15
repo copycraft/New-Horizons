@@ -16,6 +16,6 @@ public class NewHorizonsDataGen implements DataGeneratorEntrypoint {
     @Override
     public void buildRegistry(RegistryBuilder registryBuilder) {
         // This registers all dynamic dimension types so JSON is generated.
-        registryBuilder.addRegistry(RegistryKeys.DIMENSION_TYPE, ModDimensions::bootstrapTypes);
+        registryBuilder.addRegistry(RegistryKeys.DIMENSION_TYPE, ModDimensions::bootstrapType);
     }
 }
