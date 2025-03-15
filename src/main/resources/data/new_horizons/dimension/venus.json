@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:the_nether",
+  "generator": {
+    "type": "minecraft:flat",
+    "settings": {
+      "biome": "new_horizons:venus",
+      "lakes": false,
+      "features": true,
+      "layers": [{
+          "height": 1,
+          "block": "minecraft:air"
+        }],
+      "structure_overrides": []
+    }
+  },
+  "effects": "new_horizons:venus"
+}

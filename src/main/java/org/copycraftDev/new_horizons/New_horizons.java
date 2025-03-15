@@ -16,6 +16,7 @@ import net.minecraft.registry.RegistryKeys;
 import org.copycraftDev.new_horizons.core.blocks.ModBlocks;
 import org.copycraftDev.new_horizons.core.entity.ModEntities;
 import org.copycraftDev.new_horizons.core.items.ModItems;
+import org.copycraftDev.new_horizons.core.world.biome.ModBiomes;
 import org.copycraftDev.new_horizons.core.world.dimension.DimensionJsonGenerator;
 import org.copycraftDev.new_horizons.core.world.dimension.ModDimensions;
 import org.copycraftDev.new_horizons.datagen.ModWorldGenerator;
