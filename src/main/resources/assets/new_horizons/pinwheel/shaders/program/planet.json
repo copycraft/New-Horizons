@@ -1,5 +1,23 @@
 {
   "fragment": "new_horizons:planet",
+  "samplers": {
+    "CustomTexture": {
+      "file": "new_horizons:textures/planet.png"
+    }
+  },
+  "attributes": [
+    "Position"
+  ],
+  "uniforms": [
+    "ProjectionMatrix",
+    "ViewMatrix",
+    "ModelMatrix",
+    "NormalMatrix",
+    "LightPosition",
+    "CameraPosition",
+    "SphereCenter",
+    "SphereRadius"
+  ],
   "definitions": [
     "example_definition"
   ]

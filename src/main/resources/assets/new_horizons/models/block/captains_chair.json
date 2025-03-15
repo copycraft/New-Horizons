@@ -1,7 +1,7 @@
 {
 	"texture_size": [128, 128],
 	"textures": {
-		"0": "block/Chair"
+		"0": "new_horizons:block/captains_chair"
 	},
 	"elements": [
 		{

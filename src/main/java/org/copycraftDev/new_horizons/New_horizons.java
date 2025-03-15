@@ -13,8 +13,9 @@ import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.registry.RegistryKeys;
+import org.copycraftDev.new_horizons.core.blocks.ModBlocks;
+import org.copycraftDev.new_horizons.core.entity.ModEntities;
 import org.copycraftDev.new_horizons.core.items.ModItems;
-import org.copycraftDev.new_horizons.core.render.RenderClass;
 import org.copycraftDev.new_horizons.core.world.dimension.DimensionJsonGenerator;
 import org.copycraftDev.new_horizons.core.world.dimension.ModDimensions;
 import org.copycraftDev.new_horizons.datagen.ModWorldGenerator;
@@ -24,7 +25,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
-import static org.copycraftDev.new_horizons.core.render.RenderClass.CUSTOM_SHADER;
 
 
 public class New_horizons implements ModInitializer {
@@ -35,15 +35,12 @@ public class New_horizons implements ModInitializer {
     public void onInitialize() {
         Veil.init();
         ModItems.initialize();
-        LibyRegistryLoader.load("org.copycraftDev.new_horizons.core.items");
+        ModBlocks.initialize();
+        ModEntities.initialize();
+        LibyRegistryLoader.load("copycraftDev.new_horizons");
         List.of("space", "deep_void", "nebula", "lunar").forEach(dimName ->
                 DimensionJsonGenerator.createDimensionJson(MOD_ID, dimName));
-        WorldRenderEvents.AFTER_ENTITIES.register((context) -> {
-            MatrixStack matrices = context.matrixStack();
-            VertexConsumerProvider vertexConsumers = context.consumers();
-            float tickDelta = 0.0f;
-            RenderClass.render(matrices, vertexConsumers.getBuffer(RenderLayer.getEntityTranslucent(CUSTOM_SHADER)), tickDelta);
-        });
+
     }
 }
 
