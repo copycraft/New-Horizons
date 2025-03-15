@@ -1,4 +1,4 @@
-package org.copycraftDev.new_horizons.core.items;
+package org.copycraftDev.new_horizons.core.items.custom;
 
 import org.copycraftDev.new_horizons.core.render.FlashlightRenderer;
 import net.minecraft.client.MinecraftClient;

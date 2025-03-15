@@ -11,10 +11,13 @@
   "environment": "*",
   "entrypoints": {
     "client": [
-      "org.copycraftDev.new_horizons.client.New_horizonsClient"
+      "org.copycraftDev.new_horizons.client.NewHorizonsClient"
     ],
     "main": [
-      "org.copycraftDev.new_horizons.New_horizons"
+      "org.copycraftDev.new_horizons.NewHorizonsMain"
+    ],
+    "fabric-datagen": [
+      "org.copycraftDev.new_horizons.NewHorizonsDataGen"
     ]
   },
   "mixins": [

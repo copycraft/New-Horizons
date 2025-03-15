@@ -1,17 +1,15 @@
 package org.copycraftDev.new_horizons.client;
 
 import foundry.veil.Veil;
-import foundry.veil.fabric.event.FabricFreeNativeResourcesEvent;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.scoreboard.ScoreboardCriterion;
 import org.joml.Matrix4f;
 import org.lwjgl.glfw.GLFW;
 
-public class New_horizonsClient implements ClientModInitializer {
+public class NewHorizonsClient implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {

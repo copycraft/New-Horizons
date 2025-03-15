@@ -1,27 +1,21 @@
 package org.copycraftDev.new_horizons.core.items;
 
 
-import net.minecraft.item.BlockItem;
+import nazario.liby.api.registry.auto.LibyAutoRegister;
+import nazario.liby.api.registry.helper.LibyItemRegister;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemGroup;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.Registry;
-import net.minecraft.util.Identifier;
+import org.copycraftDev.new_horizons.core.items.custom.FlashlightItem;
 
-import static org.copycraftDev.new_horizons.New_horizons.MOD_ID;
+import static org.copycraftDev.new_horizons.NewHorizonsMain.MOD_ID;
 
 
+@LibyAutoRegister(method = "initialize")
 public class ModItems {
-    private ModItems() {}
+    private static final LibyItemRegister REGISTER = new LibyItemRegister(MOD_ID);
 
-    // an instance of our new item
-    public static final Item CUSTOM_ITEM = register("flashlight", new FlashlightItem(new Item.Settings()));
-
-    public static <T extends Item> T register(String path, T item) {
-        // For versions below 1.21, please replace ''Identifier.of'' with ''new Identifier''
-        return Registry.register(Registries.ITEM, Identifier.of(MOD_ID, path), item);
-    }
+    public static final Item CUSTOM_ITEM = REGISTER.registerItem("flashlight", new FlashlightItem(new Item.Settings()));
 
     public static void initialize() {
+
     }
 }

@@ -1,11 +1,9 @@
-package org.copycraftDev.new_horizons.client;
+package org.copycraftDev.new_horizons.mixin.client;
 
 import net.minecraft.client.render.Camera;
 import net.minecraft.client.render.WorldRenderer;
 import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Identifier;
-import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.MinecraftClient;
 import org.joml.Matrix4f;
 import org.spongepowered.asm.mixin.Mixin;
