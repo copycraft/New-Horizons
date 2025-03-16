@@ -85,9 +85,9 @@ public class FlashlightRenderer extends AreaLight {
 
         Quaternionf orientation = new Quaternionf().lookAlong(forward, up);
 
-        this.setPosition(lastPosition.x, lastPosition.y + 0.75, lastPosition.z);
+        this.setPosition(lastPosition.x, lastPosition.y + 0.35, lastPosition.z);
         this.setOrientation(orientation);
-        areaLight2.setPosition(lastPosition.x, lastPosition.y + 0.75, lastPosition.z);
+        areaLight2.setPosition(lastPosition.x, lastPosition.y + 0.35, lastPosition.z);
         areaLight2.setOrientation(orientation);
     }
 }

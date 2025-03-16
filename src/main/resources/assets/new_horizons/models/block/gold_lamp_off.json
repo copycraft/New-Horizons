@@ -1,6 +1,6 @@
 {
   "parent": "block/cube_all",
   "textures": {
-    "all": "new_horizons:block/light_lamp"
+    "all": "new_horizons:block/gold_lamp_off"
   }
 }

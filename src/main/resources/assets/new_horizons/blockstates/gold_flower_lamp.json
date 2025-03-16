@@ -1,0 +1,6 @@
+{
+  "variants": {
+    "lit=false": { "model": "new_horizons:block/gold_flower_lamp_off" },
+    "lit=true":  { "model": "new_horizons:block/gold_flower_lamp_on" }
+  }
+}

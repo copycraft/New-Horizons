@@ -16,7 +16,9 @@ public class ModBlocks {
 
     // Instances of our new blocks
     public static final Block CAPTAINS_CHAIR = register("captains_chair", new CaptainsChairBlock(AbstractBlock.Settings.create()));
-    public static final Block LIGHT_LAMP = register("light_lamp", new LightLampBlock(AbstractBlock.Settings.create()));
+    public static final Block GOLD_LAMP = register("gold_lamp", new GoldLampBlock());
+    public static final Block GOLD_TILE_LAMP = register("gold_tile_lamp", new GoldTileLampBlock());
+    public static final Block GOLD_FLOWER_LAMP = register("gold_flower_lamp", new GoldFlowerLampBlock());
 
     private static Block register(String path, Block block) {
         Identifier id = Identifier.of(NewHorizonsMain.MOD_ID, path);

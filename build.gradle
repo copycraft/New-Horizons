@@ -23,6 +23,9 @@ repositories {
     maven {
         url "https://cursemaven.com"
     }
+    maven {
+        url "https://api.modrinth.com/maven"
+    }
 }
 
 dependencies {
@@ -32,11 +35,14 @@ dependencies {
     modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
     modImplementation "curse.maven:fabricskyboxes-408209:5424365"
-    modImplementation("foundry.veil:veil-fabric-1.21.1:1.0.0.192") {
+    modImplementation("foundry.veil:veil-fabric-1.21.1:1.0.0.206") {
         exclude group: "maven.modrinth"
     }
+    modImplementation "maven.modrinth:sodium:mc1.21.1-0.6.9-fabric"
+    modImplementation "maven.modrinth:liby:1.21.1-build-2.1"
+    modImplementation "maven.modrinth:lithium:mc1.21.1-0.15.0-fabric"
 
-    modImplementation (files("./libs/liby-${liby_version}.jar"))
+    //modImplementation (files("./libs/liby-${liby_version}.jar"))
     implementation "org.reflections:reflections:0.10.2"
 }
 
