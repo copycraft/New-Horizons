@@ -21,10 +21,36 @@ repositories {
         url = "https://maven.daporkchop.net/"
     }
     maven {
+        name = "CurseMaven"
         url "https://cursemaven.com"
     }
     maven {
+        name = "Modrinth Maven"
         url "https://api.modrinth.com/maven"
+    }
+    maven {
+        name = "Jitpack"
+        url 'https://jitpack.io'
+    }
+    maven {
+        name = "Shedaniel Maven"
+        url 'https://maven.shedaniel.me'
+    }
+    maven {
+        name = "TheIllusivec4"
+        url = "https://maven.theillusivec4.top/"
+    }
+    maven {
+        name = "JamiesWhiteShirt"
+        url = "https://maven.jamieswhiteshirt.com/libs-release"
+    }
+    maven {
+        name = "TerraformersMC"
+        url = "https://maven.terraformersmc.com/"
+    }
+    maven {
+        name = 'Ladysnake Mods'
+        url = 'https://maven.ladysnake.org/releases'
     }
 }
 
@@ -35,15 +61,14 @@ dependencies {
     modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
     modImplementation "curse.maven:fabricskyboxes-408209:5424365"
-    modImplementation("foundry.veil:veil-fabric-1.21.1:1.0.0.206") {
-        exclude group: "maven.modrinth"
-    }
-    modImplementation "maven.modrinth:sodium:mc1.21.1-0.6.9-fabric"
-    modImplementation "maven.modrinth:liby:1.21.1-build-2.1"
     modImplementation "maven.modrinth:lithium:mc1.21.1-0.15.0-fabric"
-
-    //modImplementation (files("./libs/liby-${liby_version}.jar"))
+    modImplementation "maven.modrinth:liby:1.21.1-build-2.1"
     implementation "org.reflections:reflections:0.10.2"
+    modImplementation "com.github.iPortalTeam:ImmersivePortalsMod:v6.0.6-mc1.21.1"
+    modImplementation "maven.modrinth:cardinal-components-api:6.1.2"
+    modImplementation("foundry.veil:veil-fabric-1.21.1:1.0.0.206") {
+       exclude group: "maven.modrinth"
+   }
 }
 
 processResources {

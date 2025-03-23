@@ -16,7 +16,5 @@ public class ModEntities {
                     .dimensions(EntityDimensions.fixed(0.1f, 0.1f))
                     .build()
     );
-
-
     public static void initialize() {}
 }

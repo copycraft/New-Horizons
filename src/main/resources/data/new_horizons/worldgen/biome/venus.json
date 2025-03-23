@@ -1,0 +1,29 @@
+{
+  "precipitation": "none",
+  "temperature": 0.7,
+  "downfall": 0.0,
+  "effects": {
+    "water_color": 15231835,
+    "water_fog_color": 12521126,
+    "sky_color": 3195928,
+    "foliage_color": 13762556,
+    "grass_color": 8323324,
+    "fog_color": 2285566
+  },
+  "has_precipitation": false,
+  "spawn_costs": {},
+  "spawners": {
+    "creature": [],
+    "ambient": [],
+    "water_creature": [],
+    "monster": []
+  },
+  "carvers": {
+    "air": [
+      "minecraft:cave"
+    ],
+    "liquid": []
+  },
+  "features": [],
+  "starts": []
+}

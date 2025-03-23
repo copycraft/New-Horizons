@@ -1,5 +1,6 @@
 package org.copycraftDev.new_horizons.core.world.biome;
 
+import nazario.liby.api.registry.auto.LibyAutoRegister;
 import net.minecraft.registry.Registerable;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
