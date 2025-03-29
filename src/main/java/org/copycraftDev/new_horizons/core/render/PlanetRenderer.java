@@ -8,7 +8,7 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
-import org.copycraftDev.new_horizons.core.BufferAllocatorAccessor;
+import org.copycraftDev.new_horizons.core.redoingminecraftshit.BufferAllocatorAccessor;
 import org.joml.Matrix4f;
 import org.joml.Vector3d;
 import org.joml.Vector3f;
@@ -24,17 +24,17 @@ public class PlanetRenderer {
     public static final List<Planet> planets = new ArrayList<>();
 
     static {
-        planets.add(new Planet(0.0f, 0.0f, 50.0f, Identifier.of("spacetrav:textures/planet/sun.png"),
-                0.0f, 4.0f, null, new float[]{0.0f, 100.0f, 0.0f}, "spacetrav:sun_dimension", 10.0f, PlanetShape.SPHERE));
+        planets.add(new Planet(0.0f, 0.0f, 5.0f, Identifier.of("new_horizons:textures/space/sun.jpg"),
+                0.0f, 4.0f, null, new float[]{0.0f, 100.0f, 0.0f}, "new_horizons:venus", 10.0f, PlanetShape.SPHERE));
 
-        planets.add(new Planet(300.0f, 0.01f, 20.0f, Identifier.of("spacetrav:textures/planet/earth_day.png"),
-                25.0f, 5.0f, planets.get(0), null, "spacetrav:earth_dimension", 0.0f, PlanetShape.DONUT));
+        planets.add(new Planet(300.0f, 0.01f, 3.0f, Identifier.of("new_horizons:textures/space/earth.jpg"),
+                25.0f, 5.0f, planets.get(0), null, "minecraft:overworld", 0.0f, PlanetShape.SPHERE));
 
-        planets.add(new Planet(50.0f, 0.5f, 5.0f, Identifier.of("spacetrav:textures/planet/moon.png"),
+        planets.add(new Planet(50.0f, 0.5f, 1.0f, Identifier.of("new_horizons:textures/space/moon.jpg"),
                 0.0f, 0.5f, planets.get(1), null, "minecraft:the_nether", 0.0f, PlanetShape.SPHERE));
 
-        planets.add(new Planet(500.0f, 0.005f, 40.0f, Identifier.of("spacetrav:textures/planet/jupiter.png"),
-                0.0f, 1.0f, planets.get(0), null, "spacetrav:jupiter_dimension", 0.0f, PlanetShape.CUBE));
+        planets.add(new Planet(500.0f, 0.005f, 7.0f, Identifier.of("new_horizons:textures/space/jupiter.jpg"),
+                0.0f, 1.0f, planets.get(0), null, "new_horizons:venus", 0.0f, PlanetShape.CUBE));
     }
 
     public static void tick(Level level) {
@@ -42,6 +42,7 @@ public class PlanetRenderer {
         checkCollisions(level);
 
     }
+
 
     public static void renderPlanets(MatrixStack poseStack, float partialTicks) {
         RenderSystem.enableDepthTest();
@@ -66,7 +67,8 @@ public class PlanetRenderer {
             Matrix4f rotationMatrix = new Matrix4f();
             rotationMatrix.rotationY((float) Math.toRadians(planet.getRotationAngle()));
             // Instead of poseStack.mulPoseMatrix, in 1.21.1 we multiply the current matrix:
-            poseStack.peek();
+            poseStack.multiplyPositionMatrix(rotationMatrix);
+
 
 
             RenderSystem.setShaderTexture(0, planet.getTexture());
@@ -81,9 +83,8 @@ public class PlanetRenderer {
     }
     private static void renderPlanetGeometry(MatrixStack poseStack, Planet planet) {
         Tessellator tesselator = Tessellator.getInstance();
-        BufferAllocator allocator = BufferAllocatorAccessor.getBufferAllocator();// Or however you obtain it
+        BufferAllocator allocator = BufferAllocatorAccessor.getInstance();// Or however you obtain it
         BufferBuilder buffer = new BufferBuilder(allocator, VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
-
 
         poseStack.push();
         Matrix4f matrix = poseStack.peek().getPositionMatrix(); // Fixed method call

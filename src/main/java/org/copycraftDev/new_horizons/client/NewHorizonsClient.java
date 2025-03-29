@@ -8,6 +8,7 @@ import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.particle.v1.ParticleFactoryRegistry;
+import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.KeyBinding;
@@ -19,6 +20,8 @@ import net.minecraft.util.Formatting;
 import org.copycraftDev.new_horizons.client.particle.ModParticlesClient;
 import org.copycraftDev.new_horizons.core.particle.FogParticle;
 import org.copycraftDev.new_horizons.core.particle.ModParticles;
+import org.copycraftDev.new_horizons.core.redoingminecraftshit.TickHandler;
+import org.copycraftDev.new_horizons.core.render.PlanetRenderer;
 import org.copycraftDev.new_horizons.core.render.ShaderClass;
 import org.lwjgl.glfw.GLFW;
 
@@ -92,5 +95,13 @@ public class NewHorizonsClient implements ClientModInitializer {
             // Call your shader method using the updated tick delta
             ShaderClass.applyShader(matrixStack, vertexConsumers, currentTickDelta);
         });
+        WorldRenderEvents.LAST.register((WorldRenderContext context) -> {
+            MatrixStack matrixStack = context.matrixStack();
+            if (matrixStack == null) {
+                return;
+            }
+            PlanetRenderer.renderPlanets(matrixStack, TickHandler.partialTicks);
+        });
+
     }
 }
