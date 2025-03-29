@@ -18,6 +18,8 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import org.copycraftDev.new_horizons.client.particle.ModParticlesClient;
+import org.copycraftDev.new_horizons.client.rendering.LazuliHudRenderStep;
+import org.copycraftDev.new_horizons.client.rendering.ModShaders;
 import org.copycraftDev.new_horizons.core.particle.FogParticle;
 import org.copycraftDev.new_horizons.core.particle.ModParticles;
 import org.copycraftDev.new_horizons.core.redoingminecraftshit.TickHandler;
@@ -36,6 +38,8 @@ public class NewHorizonsClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         Veil.init();
+        ModShaders.registerShaders();
+        LazuliHudRenderStep.register();
 
         ParticleFactoryRegistry.getInstance().register(ModParticles.FOG_PARTICLE, spriteProvider ->
                 new ModParticlesClient.FogParticle.Factory(spriteProvider)

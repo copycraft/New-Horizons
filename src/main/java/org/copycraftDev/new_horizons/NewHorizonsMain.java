@@ -27,6 +27,9 @@ public class NewHorizonsMain implements ModInitializer {
         LibyRegistryLoader.load("org.copycraftDev.new_horizons", LOGGER, LibyEntrypoints.MAIN);
         Veil.init();
     }
+    public static Identifier id(String name){
+        return Identifier.of(MOD_ID, name);
+    }
 }
 
 
