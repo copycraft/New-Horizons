@@ -4,10 +4,11 @@
   "package": "org.copycraftDev.new_horizons.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
+
+    "client.SpaceSkyboxMixin"
   ],
   "client": [
-    "client.GameRendererMixin",
-    "client.SpaceSkyboxMixin"
+    "client.GameRendererMixin"
   ],
   "injectors": {
     "defaultRequire": 1

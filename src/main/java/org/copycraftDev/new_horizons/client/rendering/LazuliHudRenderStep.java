@@ -20,6 +20,7 @@ public class LazuliHudRenderStep {
 
     private static final Identifier ALBEDO = Identifier.of("new_horizons", "textures/test_textures/planet_albedo.png");
     private static final Identifier HEIGHT = Identifier.of("new_horizons", "textures/test_textures/planet_albedo.png");
+    private static final Identifier NORMAL = Identifier.of("new_horizons", "textures/test_textures/planet_normal.png");
 
     public static void register() {
         WorldRenderEvents.LAST.register((context) -> {
@@ -40,8 +41,7 @@ public class LazuliHudRenderStep {
             // Set the shader
             Supplier<ShaderProgram> shaderSupplier = () -> TEST_SHADER;
             RenderSystem.setShader(shaderSupplier);
-            RenderSystem.setShaderTexture(0, ALBEDO);
-            RenderSystem.setShaderTexture(1, HEIGHT);
+
             RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
             RenderSystem.enableBlend();
             RenderSystem.disableCull();
@@ -49,7 +49,7 @@ public class LazuliHudRenderStep {
             RenderSystem.depthMask(true);
             RenderSystem.assertOnRenderThread();
 
-            //==================================[Matrix black magic]=========================================================
+            //==================================[Matrix transformations]=========================================================
             MatrixStack matrixStack = new MatrixStack();
             matrixStack.multiplyPositionMatrix(matrix4f);
             matrixStack.push();
@@ -57,8 +57,19 @@ public class LazuliHudRenderStep {
 
             Matrix4f matrix4f2 = matrixStack.peek().getPositionMatrix();
 
+
+            RenderSystem.setShaderTexture(0, ALBEDO);
+            RenderSystem.setShaderTexture(1, HEIGHT);
+            RenderSystem.setShaderTexture(2, NORMAL);
             BufferBuilder bufferBuilder = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR_NORMAL);
             LazuliGeometryBuilder.buildTexturedSphere(50, 2, new Vec3d(0,0,0), camera, matrix4f2, bufferBuilder);
+            BufferRenderer.drawWithGlobalProgram(bufferBuilder.end());
+
+            RenderSystem.setShaderTexture(0, HEIGHT);
+            RenderSystem.setShaderTexture(1, HEIGHT);
+            RenderSystem.setShaderTexture(2, NORMAL);
+            bufferBuilder = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR_NORMAL);
+            LazuliGeometryBuilder.buildTexturedSphere(100, 300, new Vec3d(0,-600,0), camera, matrix4f2, bufferBuilder);
             BufferRenderer.drawWithGlobalProgram(bufferBuilder.end());
 
             bufferBuilder = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR_NORMAL);
@@ -85,6 +96,13 @@ public class LazuliHudRenderStep {
 
             // Cleanup
             RenderSystem.disableBlend();
+            RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1F);
+            RenderSystem.depthMask(true);
+            RenderSystem.setShaderFogColor(0,0,0);
+            RenderSystem.setShader(GameRenderer::getPositionColorProgram);
+            RenderSystem.enableDepthTest();
+
+
         });
     }
 
