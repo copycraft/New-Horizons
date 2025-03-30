@@ -31,6 +31,8 @@ public class PlanetRenderer {
         AtomicReference<Float> time = new AtomicReference<>((float) 0);
 
         WorldRenderEvents.LAST.register((context) -> {
+            camera = context.camera();
+            matrix4f = context.positionMatrix();
             // Validate camera & matrix before rendering
             if (camera == null || matrix4f == null) {
                 return; // Skip rendering if data isn't set yet
@@ -102,11 +104,7 @@ public class PlanetRenderer {
 
         });
     }
-
-    public static void setThings(Camera cam, Matrix4f matrix) {
-        camera = cam;
-        matrix4f = matrix;
-    }
+    
 
     private static void RenderSystemSetup(Supplier<ShaderProgram> shaderSupplier){
         RenderSystem.setShader(shaderSupplier);
