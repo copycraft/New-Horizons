@@ -8,9 +8,9 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.RotationAxis;
-import org.copycraftDev.new_horizons.client.rendering.LazuliHudRenderStep;
-import org.copycraftDev.new_horizons.client.rendering.LazuliShaderRegistry;
+import org.copycraftDev.new_horizons.client.rendering.PlanetRenderer;
 import org.copycraftDev.new_horizons.client.rendering.ModShaders;
+import org.copycraftDev.new_horizons.lazuli_snnipets.LazuliShaderRegistry;
 import org.joml.Matrix4f;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL20;
@@ -54,7 +54,7 @@ public class SpaceSkyboxMixin {
 
 
         //==================================[Matrix black magic]=========================================================
-        LazuliHudRenderStep.setThings(camera, matrix4f, new MatrixStack());
+        PlanetRenderer.setThings(camera, matrix4f);
 
         MatrixStack matrixStack = new MatrixStack();
         matrixStack.multiplyPositionMatrix(matrix4f);

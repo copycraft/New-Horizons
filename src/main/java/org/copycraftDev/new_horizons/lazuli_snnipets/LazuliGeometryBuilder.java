@@ -1,4 +1,4 @@
-package org.copycraftDev.new_horizons.client.rendering;
+package org.copycraftDev.new_horizons.lazuli_snnipets;
 
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.Camera;
@@ -17,7 +17,7 @@ public class LazuliGeometryBuilder {
      * @param matrix4f2     The transformation matrix
      * @param bufferBuilder The buffer to store vertices
      */
-    public static void buildTexturedSphere(int res, float radius, Vec3d center, Camera camera, Matrix4f matrix4f2, BufferBuilder bufferBuilder) {
+    public static void buildTexturedSphere(int res, float radius, Vec3d center, Vec3d axle, float roll,  Camera camera, Matrix4f matrix4f2, BufferBuilder bufferBuilder) {
         Vec3d displacement = camera.getPos().add(center); // Get displacement relative to camera
         float x = (float) -displacement.x;
         float y = (float) -displacement.y;
@@ -28,6 +28,10 @@ public class LazuliGeometryBuilder {
         float thisRingRadius;
         float nextRingRadius;
 
+        Vec3d yAxle = axle;
+        Vec3d xAxle = (yAxle.x == 0 && yAxle.z == 0) ? new Vec3d(1, 0, 0) : new Vec3d(yAxle.x, 0, yAxle.z).normalize().rotateY(90);
+        Vec3d zAxle = LazuliMathUtils.rotateAroundAxis(xAxle,yAxle,90);
+
         for (int p = 0; p < res; p++) {
             angle2 += (float) (Math.PI / res);
             nextAngle2 = angle2 - (float) (Math.PI / res);
@@ -36,7 +40,7 @@ public class LazuliGeometryBuilder {
             double thisRingY = Math.cos(angle2) * radius;
             double nextRingY = Math.cos(nextAngle2) * radius;
 
-            float angle = 0;
+            float angle = roll;
             for (int i = 0; i < res * 2; i++) {
 
                 //Vertex 1
@@ -67,10 +71,15 @@ public class LazuliGeometryBuilder {
                         Math.cos(angle) * thisRingRadius
                 );
 
+                v1 = yAxle.multiply(v1.y).add(xAxle.multiply(v1.x)).add(zAxle.multiply(v1.z));
+                v2 = yAxle.multiply(v2.y).add(xAxle.multiply(v2.x)).add(zAxle.multiply(v2.z));
+                v3 = yAxle.multiply(v3.y).add(xAxle.multiply(v3.x)).add(zAxle.multiply(v3.z));
+                v4 = yAxle.multiply(v4.y).add(xAxle.multiply(v4.x)).add(zAxle.multiply(v4.z));
+
 
                 //Equatorial texture coordinates
-                double U1 = (angle / Math.PI) / 2;
-                double U2 = (angle / Math.PI) / 2 + (0.5 / res);
+                double U1 = ((angle - roll) / Math.PI) / 2;
+                double U2 = ((angle - roll) / Math.PI) / 2 + (0.5 / res);
                 //Longitudinal texture coordinates
                 double V1 = angle2 / Math.PI;
                 double V2 = nextAngle2 / Math.PI;

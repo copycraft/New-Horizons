@@ -1,4 +1,4 @@
-package org.copycraftDev.new_horizons.client.rendering;
+package org.copycraftDev.new_horizons.lazuli_snnipets;
 
 import net.fabricmc.fabric.api.client.rendering.v1.CoreShaderRegistrationCallback;
 import net.minecraft.client.gl.ShaderProgram;

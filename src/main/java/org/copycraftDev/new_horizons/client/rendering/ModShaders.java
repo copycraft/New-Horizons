@@ -2,6 +2,7 @@ package org.copycraftDev.new_horizons.client.rendering;
 
 import nazario.liby.api.registry.auto.LibyAutoRegister;
 import net.minecraft.client.render.VertexFormats;
+import org.copycraftDev.new_horizons.lazuli_snnipets.LazuliShaderRegistry;
 
 @LibyAutoRegister(method = "registerShaders")
 public class ModShaders {

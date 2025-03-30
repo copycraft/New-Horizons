@@ -15,20 +15,15 @@ out vec3 normal;
 #define HEIGHTMAP_MULTIPLIER 0.05
 void main() {
 
-    vec2 tUV0 = UV0;
-
-    tUV0. x += GameTime * 20.0;
-
-    tUV0. x = fract(tUV0.x);
-
-    float height = texture(Sampler1, tUV0).r * HEIGHTMAP_MULTIPLIER +10.0;
+    float height = texture(Sampler1, UV0).r * HEIGHTMAP_MULTIPLIER +10.0;
 
     vec3 displacedPosition = Position + (Normal * height);
 
     gl_Position = ProjMat * ModelViewMat * vec4(displacedPosition, 1.0);
     normal = Normal;
-    texCoord0 = tUV0;
+    texCoord0 = UV0;
 }
+
 
 
 
