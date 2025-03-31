@@ -12,10 +12,10 @@ uniform float GameTime;
 out vec2 texCoord0;
 out vec3 normal;
 
-#define HEIGHTMAP_MULTIPLIER 0.05
+#define HEIGHTMAP_MULTIPLIER 2
 void main() {
 
-    float height = texture(Sampler1, UV0).r * HEIGHTMAP_MULTIPLIER +10.0;
+    float height = texture(Sampler1, UV0).r * HEIGHTMAP_MULTIPLIER;
 
     vec3 displacedPosition = Position + (Normal * height);
 
@@ -23,6 +23,11 @@ void main() {
     normal = Normal;
     texCoord0 = UV0;
 }
+
+
+
+
+
 
 
 

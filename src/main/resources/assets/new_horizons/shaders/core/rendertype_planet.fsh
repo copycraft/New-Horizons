@@ -28,7 +28,7 @@ void main() {
 
     vec3 tNormal = normalize(normal + normalMap);
 
-    float shadow = max(dot(tNormal, light), 0.05) * lightInstensity;
+    float shadow = max(dot(tNormal, light), 0.02) * lightInstensity;
 
 
     color.rgb *= shadow;

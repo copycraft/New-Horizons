@@ -1,21 +1,21 @@
 {
   "name": "earth",
-  "center": [0, -100, 6],
-  "radius": 3,
-  "rotationSpeed": 0.02,
+  "center": [0, 100, 50],
+  "radius": 150,
+  "rotationSpeed": 0.001,
 
-  "surfaceTexturePath": "textures/test_textures/planet_albedo.png",
+  "surfaceTexturePath": "textures/test_textures/earth_albedo.png",
   "cloudsTexturePath": null,
   "atmosphereTexturePath": null,
-  "darkAlbedoMapPath": null,
-  "heightMapPath": "textures/test_textures/planet_height.png",
-  "normalMapPath": "textures/test_textures/planet_normal.png",
+  "darkAlbedoMapPath": "textures/test_textures/earth_night.png",
+  "heightMapPath": "textures/test_textures/earth_height.png",
+  "normalMapPath": "textures/test_textures/earth_normal.png",
 
 
-  "hasAtmosphere": false,
+  "hasAtmosphere": true,
   "atmosphereColor1": null,
   "atmosphereColor2": null,
-  "atmosphereRadius": null,
+  "atmosphereRadius": 160,
 
-  "hasDarkAlbedoMap": false
+  "hasDarkAlbedoMap": true
 }

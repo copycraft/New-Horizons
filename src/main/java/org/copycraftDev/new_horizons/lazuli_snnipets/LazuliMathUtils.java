@@ -1,9 +1,11 @@
 package org.copycraftDev.new_horizons.lazuli_snnipets;
 
+import net.minecraft.util.math.Vec2f;
 import net.minecraft.util.math.Vec3d;
 import org.joml.Matrix4f;
 import org.joml.Quaterniond;
 import org.joml.Quaternionfc;
+import qouteall.q_misc_util.my_util.Vec2d;
 
 import java.util.Random;
 
@@ -12,7 +14,9 @@ import java.util.Random;
  */
 public class LazuliMathUtils {
 
-
+    public static Vec3d PerpendicularVec3d(Vec3d vec){
+        return rotateAroundAxis(vec, new Vec3d(vec.x,0,vec.z).rotateY(90),90);
+    }
 
 
 

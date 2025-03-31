@@ -20,12 +20,9 @@ public class PlanetRenderer {
 
     private static Camera camera;
     private static Matrix4f matrix4f;
-    private static ShaderProgram BASE_PLANET_SHADER;
-
-
-    private static final Identifier ALBEDO = Identifier.of("new_horizons", "textures/test_textures/planet_albedo.png");
-    private static final Identifier HEIGHT = Identifier.of("new_horizons", "textures/test_textures/planet_albedo.png");
-    private static final Identifier NORMAL = Identifier.of("new_horizons", "textures/test_textures/planet_normal.png");
+    private static ShaderProgram RENDER_TYPE_PLANET;
+    private static ShaderProgram RENDER_TYPE_PLANET_WITH_NIGHT;
+    private static ShaderProgram RENDER_TYPE_ATMOSPHERE;
 
     public static void register() {
         AtomicReference<Float> time = new AtomicReference<>((float) 0);
@@ -44,8 +41,10 @@ public class PlanetRenderer {
 
 
             // Load shader
-            BASE_PLANET_SHADER = LazuliShaderRegistry.getShader(ModShaders.RENDER_TYPE_PLANET);
-            if (BASE_PLANET_SHADER == null) {
+            RENDER_TYPE_PLANET = LazuliShaderRegistry.getShader(ModShaders.RENDER_TYPE_PLANET);
+            RENDER_TYPE_PLANET_WITH_NIGHT = LazuliShaderRegistry.getShader(ModShaders.RENDER_TYPE_PLANET_WITH_NIGHT);
+            RENDER_TYPE_ATMOSPHERE = LazuliShaderRegistry.getShader(ModShaders.RENDER_TYPE_ATMOSPHERE);
+            if (RENDER_TYPE_PLANET == null) {
                 return; // Shader not loaded yet, skip rendering
             }
 
@@ -72,20 +71,29 @@ public class PlanetRenderer {
                 float angle = (float) planet.rotationSpeed * time.get();
                 BufferBuilder bufferBuilder = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR_NORMAL);
 
-                System.out.println(planet.center);
-
                 if (planet.hasDarkAlbedoMap) {
                     RenderSystem.setShaderTexture(3, planet.darkAlbedoMap);
-                    Supplier<ShaderProgram> shaderSupplier = () -> BASE_PLANET_SHADER;
+                    Supplier<ShaderProgram> shaderSupplier = () -> RENDER_TYPE_PLANET_WITH_NIGHT;
+                    RenderSystem.setShaderTexture(3, planet.darkAlbedoMap);
                     RenderSystemSetup(shaderSupplier);
-                    LazuliGeometryBuilder.buildTexturedSphere(50, (float) planet.radius, planet.center, new Vec3d(0,1, 0), angle, camera, matrix4f2, bufferBuilder);
+                    LazuliGeometryBuilder.buildTexturedSphere(100, (float) planet.radius, planet.center, new Vec3d(0,1, 0), angle,false,  camera, matrix4f2, bufferBuilder);
                     BufferRenderer.drawWithGlobalProgram(bufferBuilder.end());
                 } else {
-                    Supplier<ShaderProgram> shaderSupplier = () -> BASE_PLANET_SHADER;
+                    Supplier<ShaderProgram> shaderSupplier = () -> RENDER_TYPE_PLANET;
                     RenderSystemSetup(shaderSupplier);
-                    LazuliGeometryBuilder.buildTexturedSphere(50, (float) planet.radius, planet.center, new Vec3d(0,1, 0), angle, camera, matrix4f2, bufferBuilder);
+                    LazuliGeometryBuilder.buildTexturedSphere(100, (float) planet.radius, planet.center, new Vec3d(0,1, 0), angle, false, camera, matrix4f2, bufferBuilder);
                     BufferRenderer.drawWithGlobalProgram(bufferBuilder.end());
 
+                }
+
+                if (planet.hasAtmosphere){
+                    bufferBuilder = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR_NORMAL);
+                    RenderSystem.setShaderTexture(0, planet.darkAlbedoMap);
+                    Supplier<ShaderProgram> shaderSupplier = () -> RENDER_TYPE_ATMOSPHERE;
+                    RenderSystemSetup(shaderSupplier);
+                    RenderSystem.enableCull();
+                    LazuliGeometryBuilder.buildTexturedSphereWithCameraRelativeNormals(40, (float) planet.atmosphereRadius, planet.center, 0, true, camera, matrix4f2, bufferBuilder);
+                    BufferRenderer.drawWithGlobalProgram(bufferBuilder.end());
                 }
             }
 
@@ -104,7 +112,7 @@ public class PlanetRenderer {
 
         });
     }
-    
+
 
     private static void RenderSystemSetup(Supplier<ShaderProgram> shaderSupplier){
         RenderSystem.setShader(shaderSupplier);

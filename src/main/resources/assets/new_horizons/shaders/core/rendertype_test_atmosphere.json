@@ -1,6 +1,6 @@
 {
   "vertex": "new_horizons:rendertype_test_atmosphere",
-  "fragment": "new_horizons:rendertype_test_planet",
+  "fragment": "new_horizons:rendertype_test_atmosphere",
   "samplers": [
     { "name": "Sampler0" },
     { "name": "Sampler1" }
@@ -11,3 +11,4 @@
     { "name": "ColorModulator", "type": "float", "count": 4, "values": [ 1.0, 1.0, 1.0, 1.0 ] }
   ]
 }
+
