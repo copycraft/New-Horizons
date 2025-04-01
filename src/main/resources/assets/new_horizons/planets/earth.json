@@ -1,10 +1,10 @@
 {
   "name": "earth",
-  "center": [0, 100, 350],
-  "radius": 50,
+  "center": [0, 100, 50],
+  "radius": 150,
   "rotationSpeed": 0.001,
 
-  "surfaceTexturePath": "textures/test_textures/earth_texture.png",
+  "surfaceTexturePath": "textures/test_textures/earth_albedo.png",
   "cloudsTexturePath": null,
   "atmosphereTexturePath": null,
   "darkAlbedoMapPath": "textures/test_textures/earth_night.png",

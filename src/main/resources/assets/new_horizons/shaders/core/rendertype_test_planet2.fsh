@@ -8,7 +8,7 @@ uniform sampler2D Sampler1;
 uniform float GameTime;
 uniform int EndPortalLayers;
 uniform mat4 ModelViewMat;
-uniform mat4 ProjMat;
+uniform mat4 ProjMat;       // Projection matrix
 uniform vec3 cameraPos;
 
 in vec4 texProj0;
@@ -24,7 +24,7 @@ float sphereSDF(vec3 p, float radius) {
     return length(p) - radius;
 }
 
-// Normal calculation using central differences
+// Normal calculation
 vec3 getNormal(vec3 p) {
     float d = 0.001;
     return normalize(vec3(
@@ -40,35 +40,40 @@ float rayMarch(vec3 ro, vec3 rd) {
     for (int i = 0; i < MAX_STEPS; i++) {
         vec3 pos = ro + depth * rd;
         float dist = sphereSDF(pos, 1.0);
+
         if (dist < SURF_DIST) return depth;
         if (depth > MAX_DIST) break;
+
         depth += dist;
     }
     return -1.0;
 }
 
+
+
+
+
 void main() {
-    vec2 coord = (texProj0.xy / texProj0.w) * 2.0 - 1.0;
+    vec2 coord = (texProj0.xy / texProj0.w) * 2.0 - 1.0; // Screen-space coords
+
     vec3 camPos = -Cam;
-    vec3 rayDir = normalize(vec3(coord, 1.0));
+
+
+
+    vec3 rayDir = normalize(vec3(coord, 1));
 
     float dist = rayMarch(camPos, rayDir);
 
     if (dist > 0.0) {
         vec3 hitPos = camPos + rayDir * dist;
-        vec3 normalAtHit = getNormal(hitPos);
-        vec3 lightDir = normalize(vec3(1.0, 1.0, -1.0));
+        vec3 normal = getNormal(hitPos);
+        vec3 lightDir = normalize(vec3(1, 1, -1));
 
-        float diff = max(dot(normalAtHit, lightDir), 0.0);
-        vec3 viewDir = normalize(cameraPos - hitPos);
-        vec3 reflectDir = reflect(-lightDir, normalAtHit);
-        float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32.0);
+        float diff = max(dot(normal, lightDir), 0.0);
+        vec3 color = vec3(1, 0, 0) * diff;
 
-        // Rim lighting to emphasize the edge
-        float rim = pow(1.0 - dot(normalAtHit, lightDir), 3.0);
-        vec3 finalColor = vec3(1.0, 0.0, 0.0) * diff + vec3(1.0) * spec + vec3(0.1, 0.1, 0.2) * rim;
-        fragColor = vec4(finalColor, 1.0);
+        fragColor = vec4(color, 1.0);
     } else {
-        fragColor = textureProj(Sampler0, texProj0);
+        fragColor = textureProj(Sampler0, texProj0); // Default texture
     }
 }
