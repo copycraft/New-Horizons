@@ -1,11 +1,18 @@
 package org.copycraftDev.new_horizons.lazuli_snnipets;
 
+import net.fabricmc.loader.impl.lib.sat4j.core.Vec;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.Camera;
 import net.minecraft.util.math.Vec3d;
 import org.joml.Matrix4f;
+import org.joml.Quaterniond;
 
 public class LazuliGeometryBuilder {
+
+    static Vec3d mainDisplacement = new Vec3d(0,0,0);
+    static double pitch  = 0;
+    static double yaw  = 0;
+    static double roll = 0;
 
     /**
      * Builds a textured sphere using triangle strips.
@@ -205,15 +212,28 @@ public class LazuliGeometryBuilder {
     private static void addVertexTextureNormal(Vec3d pos, double u, double v, Vec3d normal, Matrix4f matrix4f2, BufferBuilder bufferBuilder) {
         normal = normal.normalize();
 
-        bufferBuilder.vertex(matrix4f2, (float) pos.x, (float) pos.y, (float) pos.z)
+        Vec3d pos2 = pos.add(mainDisplacement).rotateX((float) yaw).rotateZ((float) roll).rotateY((float) pitch);
+        Vec3d normal2 = normal.rotateX((float) yaw).rotateZ((float) roll).rotateY((float) pitch);
+
+        bufferBuilder.vertex(matrix4f2, (float) pos2.x, (float) pos2.y, (float) pos2.z)
                 .texture((float) u, (float) v)
                 .color(0, 0, 0, 1)
-                .normal((float) normal.x, (float) normal.y, (float) normal.z);
+                .normal((float) normal2.x, (float) normal2.y, (float) normal2.z);
     }
 
     private static void addVertexTexture(Vec3d pos, double u, double v, Matrix4f matrix4f2, BufferBuilder bufferBuilder) {
         bufferBuilder.vertex(matrix4f2, (float) pos.x, (float) pos.y, (float) pos.z)
                 .texture((float) u, (float) v)
                 .color(0, 0, 0, 1);
+    }
+
+    public static void displaceRenderingSpace(Vec3d dis){
+        mainDisplacement = mainDisplacement.add(dis);
+    }
+
+    public static void rotateRenderingSpace(double pitchDis, double yawDis, double rollDis){
+        pitch += pitchDis;
+        yaw += yawDis;
+        roll += rollDis;
     }
 }
