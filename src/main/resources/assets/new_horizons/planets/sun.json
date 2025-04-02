@@ -1,0 +1,20 @@
+{
+  "name": "sun",
+  "center": [0, 100, 500],
+  "radius": 200,
+  "rotationSpeed": 0.001,
+
+  "surfaceTexturePath": "textures/test_textures/sun.jpg",
+  "cloudsTexturePath": null,
+  "atmosphereTexturePath": null,
+  "darkAlbedoMapPath": null,
+  "heightMapPath": "textures/test_textures/sun.jpg",
+  "normalMapPath": "textures/test_textures/sun.jpg",
+
+  "hasAtmosphere": false,
+  "atmosphereColor1": null,
+  "atmosphereColor2": null,
+  "atmosphereRadius": null,
+
+  "hasDarkAlbedoMap": false
+}

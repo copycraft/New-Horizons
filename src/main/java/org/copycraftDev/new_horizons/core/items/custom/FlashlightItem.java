@@ -1,5 +1,6 @@
 package org.copycraftDev.new_horizons.core.items.custom;
 
+import net.minecraft.util.math.Vec3d;
 import org.copycraftDev.new_horizons.core.render.FlashlightRenderer;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
@@ -9,6 +10,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.Hand;
 import net.minecraft.util.TypedActionResult;
 import net.minecraft.world.World;
+import org.copycraftDev.new_horizons.lazuli_snnipets.LazuliGeometryBuilder;
 
 public class FlashlightItem extends Item {
 

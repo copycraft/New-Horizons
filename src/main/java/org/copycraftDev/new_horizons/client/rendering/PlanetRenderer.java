@@ -92,7 +92,7 @@ public class PlanetRenderer {
                     Supplier<ShaderProgram> shaderSupplier = () -> RENDER_TYPE_ATMOSPHERE;
                     RenderSystemSetup(shaderSupplier);
                     RenderSystem.enableCull();
-                    LazuliGeometryBuilder.buildTexturedSphereWithCameraRelativeNormals(40, (float) planet.atmosphereRadius, planet.center, 0, true, camera, matrix4f2, bufferBuilder);
+                    LazuliGeometryBuilder.buildTexturedSphere(40, (float) planet.atmosphereRadius, planet.center,new Vec3d(0,1,0), 0, true, camera, matrix4f2, bufferBuilder);
                     BufferRenderer.drawWithGlobalProgram(bufferBuilder.end());
                 }
             }
