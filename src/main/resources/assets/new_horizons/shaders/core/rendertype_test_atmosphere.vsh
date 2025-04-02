@@ -8,6 +8,7 @@ in vec3 Normal;
 in vec2 UV0;
 
 out vec2 screenCoord;
+out vec2 UV;
 out float dist;
 out vec3 that;
 out vec3 normal;
@@ -21,12 +22,13 @@ void main() {
     lightDirection = normalize(Position);
     
     that = normal - normalize(Position);
-    
+    UV = UV0;
     float d = length(that);
 
     dist = 2 * cos( 3.1415 - (2.0 * acos(d/2)));
 
 }
+
 
 
 

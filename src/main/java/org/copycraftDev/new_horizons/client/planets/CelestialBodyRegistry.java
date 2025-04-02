@@ -6,7 +6,6 @@ import com.google.gson.reflect.TypeToken;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Vec3d;
 import org.copycraftDev.new_horizons.NewHorizonsMain;
-import org.copycraftDev.new_horizons.client.rendering.PlanetRenderer;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -25,7 +24,7 @@ import static com.google.common.io.Resources.getResource;
 /**
  * Handles planet registration and JSON loading.
  */
-public class PlanetRegistry {
+public class CelestialBodyRegistry {
     private static final Gson GSON = new GsonBuilder()
             .registerTypeAdapter(Vec3d.class, (com.google.gson.JsonDeserializer<Vec3d>)
                     (json, type, context) -> {
@@ -33,7 +32,7 @@ public class PlanetRegistry {
                         return new Vec3d(coords[0], coords[1], coords[2]);
                     }).create();
 
-    private static final Map<Identifier, PlanetData> REGISTERED_PLANETS = new HashMap<>();
+    private static final Map<Identifier, CelestialBodyData> REGISTERED_PLANETS = new HashMap<>();
 
     /**
      * Registers a planet from a JSON file.
@@ -50,7 +49,7 @@ public class PlanetRegistry {
             String namespace = parts[0];
             String path = "assets/" + parts[1];
 
-            InputStream inputStream = PlanetRegistry.class.getClassLoader().getResourceAsStream(path);
+            InputStream inputStream = CelestialBodyRegistry.class.getClassLoader().getResourceAsStream(path);
 
             if (inputStream == null) {
                 System.err.println("Planet JSON file not found: " + path);
@@ -58,8 +57,8 @@ public class PlanetRegistry {
             }
 
             try (InputStreamReader reader = new InputStreamReader(inputStream)) {
-                Type type = new TypeToken<PlanetData>() {}.getType();
-                PlanetData planet = GSON.fromJson(reader, type);
+                Type type = new TypeToken<CelestialBodyData>() {}.getType();
+                CelestialBodyData planet = GSON.fromJson(reader, type);
 
                 // Convert texture paths to Identifiers
                 planet.surfaceTexture = planet.surfaceTexturePath != null ? NewHorizonsMain.id(planet.surfaceTexturePath) : null;
@@ -70,8 +69,11 @@ public class PlanetRegistry {
                 planet.normalMap = planet.normalMapPath != null ? NewHorizonsMain.id(planet.normalMapPath) : null;
 
                 Identifier planetId = NewHorizonsMain.id(planet.name.toLowerCase());
-                REGISTERED_PLANETS.put(planetId, planet);
-
+                if(REGISTERED_PLANETS.containsKey(planetId)) {
+                    REGISTERED_PLANETS.replace(planetId, planet);
+                }else{
+                    REGISTERED_PLANETS.put(planetId, planet);
+                }
                 System.out.println("Registered planet: " + planet.name);
             }
         } catch (Exception e) {
@@ -83,9 +85,9 @@ public class PlanetRegistry {
     /**
      * Retrieves a registered planet by its identifier.
      * @param id The planet identifier.
-     * @return The corresponding PlanetData or null if not found.
+     * @return The corresponding CelestialBodyData or null if not found.
      */
-    public static PlanetData getPlanet(Identifier id) {
+    public static CelestialBodyData getPlanet(Identifier id) {
         return REGISTERED_PLANETS.get(id);
     }
 
@@ -93,12 +95,12 @@ public class PlanetRegistry {
      * Retrieves all registered planets.
      * @return A map of all registered planets.
      */
-    public static Map<Identifier, PlanetData> getAllPlanets() {
+    public static Map<Identifier, CelestialBodyData> getAllPlanets() {
         return REGISTERED_PLANETS;
     }
 
     // 🔹 Planet Data Class (JSON Fields)
-    public static class PlanetData {
+    public static class CelestialBodyData {
         public String name;
         public Vec3d center;
         public double radius;
@@ -122,6 +124,7 @@ public class PlanetRegistry {
 
         // Atmosphere Properties
         public boolean hasAtmosphere;
+        public boolean isStar;
         public int[] atmosphereColor1;
         public int[] atmosphereColor2;
         public double atmosphereRadius;
@@ -146,7 +149,7 @@ public class PlanetRegistry {
                             String jsonPath = namespace + ":" + folderPath + "/" + fileName;
 
                             // Register the planet
-                            PlanetRegistry.registerPlanet(jsonPath);
+                            CelestialBodyRegistry.registerPlanet(jsonPath);
                             System.out.println("✅ Registered planet: " + jsonPath);
                         });
             }

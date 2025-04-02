@@ -1,6 +1,6 @@
 {
-  "vertex": "new_horizons:rendertype_planet",
-  "fragment": "new_horizons:rendertype_planet",
+  "vertex": "position_tex",
+  "fragment": "new_horizons:rendertype_star",
   "samplers": [
     { "name": "Sampler0" },
     { "name": "Sampler1" },

@@ -7,7 +7,7 @@ import net.minecraft.client.render.*;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Vec3d;
-import org.copycraftDev.new_horizons.client.planets.PlanetRegistry;
+import org.copycraftDev.new_horizons.client.planets.CelestialBodyRegistry;
 import org.copycraftDev.new_horizons.lazuli_snnipets.LazuliGeometryBuilder;
 import org.copycraftDev.new_horizons.lazuli_snnipets.LazuliShaderRegistry;
 import org.joml.Matrix4f;
@@ -16,11 +16,13 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
-public class PlanetRenderer {
+public class CelestialBodyRenderer {
 
     private static Camera camera;
     private static Matrix4f matrix4f;
     private static ShaderProgram RENDER_TYPE_PLANET;
+    private static ShaderProgram RENDER_TYPE_STAR;
+    private static ShaderProgram RENDER_TYPE_STAR_AURA;
     private static ShaderProgram RENDER_TYPE_PLANET_WITH_NIGHT;
     private static ShaderProgram RENDER_TYPE_ATMOSPHERE;
 
@@ -44,6 +46,11 @@ public class PlanetRenderer {
             RENDER_TYPE_PLANET = LazuliShaderRegistry.getShader(ModShaders.RENDER_TYPE_PLANET);
             RENDER_TYPE_PLANET_WITH_NIGHT = LazuliShaderRegistry.getShader(ModShaders.RENDER_TYPE_PLANET_WITH_NIGHT);
             RENDER_TYPE_ATMOSPHERE = LazuliShaderRegistry.getShader(ModShaders.RENDER_TYPE_ATMOSPHERE);
+            RENDER_TYPE_STAR = LazuliShaderRegistry.getShader(ModShaders.RENDER_TYPE_STAR);
+            RENDER_TYPE_STAR_AURA = LazuliShaderRegistry.getShader(ModShaders.RENDER_TYPE_STAR_AURA);
+
+
+
             if (RENDER_TYPE_PLANET == null) {
                 return; // Shader not loaded yet, skip rendering
             }
@@ -56,13 +63,13 @@ public class PlanetRenderer {
             matrixStack.multiply(camera.getRotation());
             Matrix4f matrix4f2 = matrixStack.peek().getPositionMatrix();
 
-            Map<Identifier, PlanetRegistry.PlanetData> Planets = PlanetRegistry.getAllPlanets();
+            Map<Identifier, CelestialBodyRegistry.CelestialBodyData> Planets = CelestialBodyRegistry.getAllPlanets();
 
-            Map<Identifier, PlanetRegistry.PlanetData> planets = PlanetRegistry.getAllPlanets();
+            Map<Identifier, CelestialBodyRegistry.CelestialBodyData> planets = CelestialBodyRegistry.getAllPlanets();
 
-            for (Map.Entry<Identifier, PlanetRegistry.PlanetData> entry : planets.entrySet()) {
+            for (Map.Entry<Identifier, CelestialBodyRegistry.CelestialBodyData> entry : planets.entrySet()) {
                 Identifier id = entry.getKey();
-                PlanetRegistry.PlanetData planet = entry.getValue();
+                CelestialBodyRegistry.CelestialBodyData planet = entry.getValue();
 
                 RenderSystem.setShaderTexture(0, planet.surfaceTexture);
                 RenderSystem.setShaderTexture(1, planet.heightMap);
@@ -71,30 +78,47 @@ public class PlanetRenderer {
                 float angle = (float) planet.rotationSpeed * time.get();
                 BufferBuilder bufferBuilder = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR_NORMAL);
 
-                if (planet.hasDarkAlbedoMap) {
-                    RenderSystem.setShaderTexture(3, planet.darkAlbedoMap);
-                    Supplier<ShaderProgram> shaderSupplier = () -> RENDER_TYPE_PLANET_WITH_NIGHT;
-                    RenderSystem.setShaderTexture(3, planet.darkAlbedoMap);
+
+                if(planet.isStar) {
+                    Supplier<ShaderProgram> shaderSupplier = () -> RENDER_TYPE_STAR;
                     RenderSystemSetup(shaderSupplier);
-                    LazuliGeometryBuilder.buildTexturedSphere(100, (float) planet.radius, planet.center, new Vec3d(0,1, 0), angle,false,  camera, matrix4f2, bufferBuilder);
-                    BufferRenderer.drawWithGlobalProgram(bufferBuilder.end());
-                } else {
-                    Supplier<ShaderProgram> shaderSupplier = () -> RENDER_TYPE_PLANET;
-                    RenderSystemSetup(shaderSupplier);
-                    LazuliGeometryBuilder.buildTexturedSphere(100, (float) planet.radius, planet.center, new Vec3d(0,1, 0), angle, false, camera, matrix4f2, bufferBuilder);
+                    LazuliGeometryBuilder.buildTexturedSphere(100, (float) planet.radius, planet.center, new Vec3d(0, 1, 0), angle, false, camera, matrix4f2, bufferBuilder);
                     BufferRenderer.drawWithGlobalProgram(bufferBuilder.end());
 
-                }
-
-                if (planet.hasAtmosphere){
                     bufferBuilder = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR_NORMAL);
-                    RenderSystem.setShaderTexture(0, planet.darkAlbedoMap);
-                    Supplier<ShaderProgram> shaderSupplier = () -> RENDER_TYPE_ATMOSPHERE;
+                    RenderSystem.setShaderTexture(0, planet.surfaceTexture);
+                    shaderSupplier = () -> RENDER_TYPE_STAR_AURA;
                     RenderSystemSetup(shaderSupplier);
                     RenderSystem.enableCull();
                     LazuliGeometryBuilder.buildTexturedSphere(40, (float) planet.atmosphereRadius, planet.center,new Vec3d(0,1,0), 0, true, camera, matrix4f2, bufferBuilder);
                     BufferRenderer.drawWithGlobalProgram(bufferBuilder.end());
+                }else{
+                    if (planet.hasDarkAlbedoMap) {
+                        RenderSystem.setShaderTexture(3, planet.darkAlbedoMap);
+                        Supplier<ShaderProgram> shaderSupplier = () -> RENDER_TYPE_PLANET_WITH_NIGHT;
+                        RenderSystem.setShaderTexture(3, planet.darkAlbedoMap);
+                        RenderSystemSetup(shaderSupplier);
+                        LazuliGeometryBuilder.buildTexturedSphere(100, (float) planet.radius, planet.center, new Vec3d(0, 1, 0), angle, false, camera, matrix4f2, bufferBuilder);
+                        BufferRenderer.drawWithGlobalProgram(bufferBuilder.end());
+                    } else {
+                        Supplier<ShaderProgram> shaderSupplier = () -> RENDER_TYPE_PLANET;
+                        RenderSystemSetup(shaderSupplier);
+                        LazuliGeometryBuilder.buildTexturedSphere(100, (float) planet.radius, planet.center, new Vec3d(0, 1, 0), angle, false, camera, matrix4f2, bufferBuilder);
+                        BufferRenderer.drawWithGlobalProgram(bufferBuilder.end());
+                    }
+
+                    if (planet.hasAtmosphere){
+                        bufferBuilder = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR_NORMAL);
+                        RenderSystem.setShaderTexture(0, planet.darkAlbedoMap);
+                        Supplier<ShaderProgram> shaderSupplier = () -> RENDER_TYPE_ATMOSPHERE;
+                        RenderSystemSetup(shaderSupplier);
+                        RenderSystem.enableCull();
+                        LazuliGeometryBuilder.buildTexturedSphere(40, (float) planet.atmosphereRadius, planet.center,new Vec3d(0,1,0), 0, true, camera, matrix4f2, bufferBuilder);
+                        BufferRenderer.drawWithGlobalProgram(bufferBuilder.end());
+                    }
                 }
+
+
             }
 
 

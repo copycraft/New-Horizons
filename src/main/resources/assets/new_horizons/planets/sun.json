@@ -12,9 +12,11 @@
   "normalMapPath": "textures/test_textures/sun.jpg",
 
   "hasAtmosphere": false,
+  "isStar": true,
   "atmosphereColor1": null,
   "atmosphereColor2": null,
-  "atmosphereRadius": null,
+  "atmosphereRadius": 260
 
   "hasDarkAlbedoMap": false
 }
+

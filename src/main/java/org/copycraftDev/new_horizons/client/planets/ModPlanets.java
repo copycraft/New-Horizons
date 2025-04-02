@@ -7,6 +7,6 @@ import org.copycraftDev.new_horizons.NewHorizonsMain;
 public class ModPlanets {
     public static void registerPlanets(){
         NewHorizonsMain.LOGGER.info("Meoww~~ Azura hopes u have funn UwU");
-        PlanetRegistry.registerAllPlanets("new_horizons/planets", NewHorizonsMain.MOD_ID);
+        CelestialBodyRegistry.registerAllPlanets("new_horizons/planets", NewHorizonsMain.MOD_ID);
     }
 }

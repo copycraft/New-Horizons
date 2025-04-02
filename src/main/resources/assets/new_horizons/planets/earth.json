@@ -12,10 +12,14 @@
   "normalMapPath": "textures/test_textures/earth_normal.png",
 
 
-  "hasAtmosphere": false,
+  "hasAtmosphere": true,
+  "isStar": false,
   "atmosphereColor1": null,
   "atmosphereColor2": null,
-  "atmosphereRadius": 1000,
+  "atmosphereRadius": 160,
 
   "hasDarkAlbedoMap": true
 }
+
+
+
