@@ -1,6 +1,6 @@
 {
   "name": "sun",
-  "center": [0, 100, 0],
+  "center": [0, 100, 500],
   "radius": 200,
   "rotationSpeed": 0.001,
 

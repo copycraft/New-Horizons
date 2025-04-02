@@ -1,7 +1,7 @@
 {
   "name": "earth",
-  "center": [0, 100, 350],
-  "radius": 50,
+  "center": [0, 20, -300],
+  "radius": 140,
   "rotationSpeed": 0.001,
 
   "surfaceTexturePath": "textures/test_textures/earth_texture.png",
@@ -12,7 +12,7 @@
   "normalMapPath": "textures/test_textures/earth_normal.png",
 
 
-  "hasAtmosphere": true,
+  "hasAtmosphere": false,
   "atmosphereColor1": null,
   "atmosphereColor2": null,
   "atmosphereRadius": 160,

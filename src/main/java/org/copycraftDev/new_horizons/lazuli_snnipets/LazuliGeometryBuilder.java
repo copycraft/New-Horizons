@@ -1,11 +1,9 @@
 package org.copycraftDev.new_horizons.lazuli_snnipets;
 
-import net.fabricmc.loader.impl.lib.sat4j.core.Vec;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.Camera;
 import net.minecraft.util.math.Vec3d;
 import org.joml.Matrix4f;
-import org.joml.Quaterniond;
 
 public class LazuliGeometryBuilder {
 
@@ -212,8 +210,8 @@ public class LazuliGeometryBuilder {
     private static void addVertexTextureNormal(Vec3d pos, double u, double v, Vec3d normal, Matrix4f matrix4f2, BufferBuilder bufferBuilder) {
         normal = normal.normalize();
 
-        Vec3d pos2 = pos.add(mainDisplacement).rotateX((float) yaw).rotateZ((float) roll).rotateY((float) pitch);
-        Vec3d normal2 = normal.rotateX((float) yaw).rotateZ((float) roll).rotateY((float) pitch);
+        Vec3d pos2 = pos.add(mainDisplacement).rotateZ((float) yaw).rotateX((float) roll).rotateY((float) pitch);
+        Vec3d normal2 = normal.rotateZ((float) yaw).rotateX((float) roll).rotateY((float) pitch);
 
         bufferBuilder.vertex(matrix4f2, (float) pos2.x, (float) pos2.y, (float) pos2.z)
                 .texture((float) u, (float) v)
@@ -227,13 +225,27 @@ public class LazuliGeometryBuilder {
                 .color(0, 0, 0, 1);
     }
 
-    public static void displaceRenderingSpace(Vec3d dis){
+    public static void displaceRenderingSpacePos(Vec3d dis){
         mainDisplacement = mainDisplacement.add(dis);
     }
 
-    public static void rotateRenderingSpace(double pitchDis, double yawDis, double rollDis){
+    public static void setRenderingSpacePos(Vec3d dis){
+        mainDisplacement = dis;
+    }
+
+    public static void rotatedSpaceDisplaceRenderingSpacePos(Vec3d dis){
+        mainDisplacement = mainDisplacement.add(dis.rotateZ((float) yaw).rotateX((float) roll).rotateY((float) pitch));
+    }
+
+    public static void displaceRenderingSpaceDir(double pitchDis, double yawDis, double rollDis){
         pitch += pitchDis;
         yaw += yawDis;
         roll += rollDis;
+    }
+
+    public static void setRenderingSpaceDir(double pitchDis, double yawDis, double rollDis){
+        pitch = pitchDis;
+        yaw = yawDis;
+        roll = rollDis;
     }
 }
