@@ -7,7 +7,7 @@
     "client.SpaceSkyboxMixin"
   ],
   "client": [
-    "CameraMixin",
+    "client.CameraMixin",
     "CameraRotationMixin",
     "client.GameRendererMixin"
   ],

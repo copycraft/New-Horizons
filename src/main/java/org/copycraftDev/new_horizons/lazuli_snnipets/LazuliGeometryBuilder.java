@@ -234,7 +234,7 @@ public class LazuliGeometryBuilder {
     }
 
     public static void rotatedSpaceDisplaceRenderingSpacePos(Vec3d dis){
-        mainDisplacement = mainDisplacement.add(dis.rotateZ((float) yaw).rotateX((float) roll).rotateY((float) pitch));
+        mainDisplacement = mainDisplacement.add(dis.rotateZ((float) -yaw).rotateX((float) -roll).rotateY((float) -pitch));
     }
 
     public static void displaceRenderingSpaceDir(double pitchDis, double yawDis, double rollDis){

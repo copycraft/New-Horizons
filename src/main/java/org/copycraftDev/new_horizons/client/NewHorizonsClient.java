@@ -26,6 +26,7 @@ public class NewHorizonsClient implements ClientModInitializer {
     private static float currentTickDelta = 0.0F;
     static double speed = 0;
     static Vec3d direction = Vec3d.ZERO;
+    static Vec3d speed3d = Vec3d.ZERO;
 
     public static float getCurrentTickDelta() {
         return currentTickDelta;
@@ -36,6 +37,8 @@ public class NewHorizonsClient implements ClientModInitializer {
     public static KeyBinding ARROW_RIGHT;
     private static final GameOptions options = client.options;
     private static Vec3d movementDirection = Vec3d.ZERO;
+
+
 
     @Override
     public void onInitializeClient() {
@@ -109,34 +112,39 @@ public class NewHorizonsClient implements ClientModInitializer {
 
                 // --- 2. Process Arrow Key Input for Movement ---
                 // Build an input vector based on arrow key presses.
+
                 Vec3d inputVec = Vec3d.ZERO;
                 if (ARROW_UP.isPressed()) {
-                    inputVec = inputVec.add(0, 0, -1);
+                    inputVec = inputVec.add(0, 0, 1);
                     LOGGER.info("Arrow Up pressed");
                 }
                 if (ARROW_DOWN.isPressed()) {
-                    inputVec = inputVec.add(0, 0, 1);
+                    inputVec = inputVec.add(0, 0, -1);
                     LOGGER.info("Arrow Down pressed");
                 }
                 if (ARROW_LEFT.isPressed()) {
-                    inputVec = inputVec.add(-1, 0, 0);
+                    inputVec = inputVec.add(1, 0, 0);
                     LOGGER.info("Arrow Left pressed");
                 }
                 if (ARROW_RIGHT.isPressed()) {
-                    inputVec = inputVec.add(1, 0, 0);
+                    inputVec = inputVec.add(-1, 0, 0);
                     LOGGER.info("Arrow Right pressed");
                 }
+
+                Vec3d acceleration = inputVec;
 
                 // Update speed: accelerate if there is input; otherwise, decelerate.
                 if (inputVec.lengthSquared() > 0) {
                     inputVec = inputVec.normalize();
                     speed += (1.0 - speed) * 0.015;  // Gradually accelerate toward speed 1.0
+                    speed3d = speed3d.add(acceleration.multiply(0.02));
                 } else {
                     speed *= 0.95;  // Gradually decelerate when no keys are pressed
+                    speed3d = speed3d.multiply(0.92);
                 }
 
                 movementDirection = inputVec;
-                Vec3d displacement = movementDirection.multiply(speed);
+                Vec3d displacement = speed3d;
 
                 // Apply the displacement with rotation applied in the geometry builder.
                 LazuliGeometryBuilder.rotatedSpaceDisplaceRenderingSpacePos(displacement);

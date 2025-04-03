@@ -8,6 +8,7 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraft.entity.vehicle.MinecartEntity;
 import org.copycraftDev.new_horizons.core.blocks.CaptainsChairBlock;
+import org.copycraftDev.new_horizons.lazuli_snnipets.LazuliCameraManager;
 
 public class SeatEntity extends MinecartEntity {
 
@@ -35,12 +36,15 @@ public class SeatEntity extends MinecartEntity {
     public void tick() {
         super.tick();
 
+        LazuliCameraManager.setCameraDisplacement(new Vec3d(0,6,0));
+
         // Ensure the entity remains static
         this.setVelocity(Vec3d.ZERO);
         this.setPosition(chairPos.getX() + 0.5, chairPos.getY() + 0.5, chairPos.getZ() + 0.5);
 
         // If the player gets out, remove the entity and notify the chair block if needed.
         if (this.getPassengerList().isEmpty()) {
+            LazuliCameraManager.setCameraDisplacement(Vec3d.ZERO);
             this.remove(RemovalReason.DISCARDED);
             if (this.getWorld().getBlockState(chairPos).getBlock() instanceof CaptainsChairBlock) {
                 ((CaptainsChairBlock) this.getWorld().getBlockState(chairPos).getBlock())
