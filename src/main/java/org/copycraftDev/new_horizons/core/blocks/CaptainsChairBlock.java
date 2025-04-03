@@ -1,16 +1,18 @@
 package org.copycraftDev.new_horizons.core.blocks;
 
-import net.minecraft.block.Block;
+import com.mojang.serialization.MapCodec;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.HorizontalFacingBlock;
 import net.minecraft.block.ShapeContext;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.BooleanProperty;
-import net.minecraft.text.Text;
+import net.minecraft.state.property.DirectionProperty;
 import net.minecraft.util.ActionResult;
-import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
 import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.util.shape.VoxelShapes;
 import net.minecraft.world.BlockView;
@@ -18,18 +20,32 @@ import net.minecraft.world.World;
 import org.copycraftDev.new_horizons.core.entity.SeatEntity;
 import org.copycraftDev.new_horizons.core.entity.ModEntities;
 
-public class CaptainsChairBlock extends Block {
+public class CaptainsChairBlock extends HorizontalFacingBlock {
     public static final BooleanProperty OCCUPIED = BooleanProperty.of("occupied");
+    // The FACING property is already defined in HorizontalFacingBlock as a DirectionProperty.
 
     public CaptainsChairBlock(Settings settings) {
         super(settings);
-        setDefaultState(getStateManager().getDefaultState().with(OCCUPIED, false));
+        // Set the default state to be unoccupied and facing north.
+        this.setDefaultState(this.stateManager.getDefaultState().with(OCCUPIED, false).with(FACING, Direction.NORTH));
     }
 
     @Override
-    protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
-        builder.add(OCCUPIED);
+    protected MapCodec<? extends HorizontalFacingBlock> getCodec() {
+        return null;
     }
+
+    @Override
+    protected void appendProperties(StateManager.Builder<net.minecraft.block.Block, BlockState> builder) {
+        builder.add(OCCUPIED, FACING);
+    }
+
+    // Determines the block state when the block is placed in the world.
+    @Override
+    public BlockState getPlacementState(ItemPlacementContext ctx) {
+        return this.getDefaultState().with(FACING, ctx.getHorizontalPlayerFacing().getOpposite());
+    }
+
 
     @Override
     public VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
@@ -62,11 +78,10 @@ public class CaptainsChairBlock extends Block {
                 world.setBlockState(pos, state.with(OCCUPIED, true));
                 return ActionResult.SUCCESS;
             } else {
-                // If mounting fails, remove the seat entity with a removal reason.
+                // If mounting fails, remove the seat entity.
                 seat.remove(net.minecraft.entity.Entity.RemovalReason.DISCARDED);
             }
         }
-
         return ActionResult.PASS;
     }
 
@@ -76,7 +91,9 @@ public class CaptainsChairBlock extends Block {
      */
     public void onEntityLeft(World world, BlockPos pos) {
         if (!world.isClient) {
-            world.setBlockState(pos, getDefaultState().with(OCCUPIED, false));
+            // Retrieve the current facing so that it is preserved.
+            Direction currentFacing = world.getBlockState(pos).get(FACING);
+            world.setBlockState(pos, this.getDefaultState().with(OCCUPIED, false).with(FACING, currentFacing));
         }
     }
 }

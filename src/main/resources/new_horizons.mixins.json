@@ -4,10 +4,11 @@
   "package": "org.copycraftDev.new_horizons.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
-
     "client.SpaceSkyboxMixin"
   ],
   "client": [
+    "CameraMixin",
+    "CameraRotationMixin",
     "client.GameRendererMixin"
   ],
   "injectors": {
