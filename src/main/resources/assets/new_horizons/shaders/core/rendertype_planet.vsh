@@ -12,7 +12,7 @@ uniform float GameTime;
 out vec2 texCoord0;
 out vec3 normal;
 
-#define HEIGHTMAP_MULTIPLIER 2
+#define HEIGHTMAP_MULTIPLIER 1
 void main() {
 
     float height = texture(Sampler1, UV0).r * HEIGHTMAP_MULTIPLIER;
@@ -23,6 +23,8 @@ void main() {
     normal = Normal;
     texCoord0 = UV0;
 }
+
+
 
 
 

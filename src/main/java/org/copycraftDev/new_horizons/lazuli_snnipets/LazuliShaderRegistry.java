@@ -3,7 +3,6 @@ package org.copycraftDev.new_horizons.lazuli_snnipets;
 import net.fabricmc.fabric.api.client.rendering.v1.CoreShaderRegistrationCallback;
 import net.minecraft.client.gl.ShaderProgram;
 import net.minecraft.client.render.VertexFormat;
-import net.minecraft.client.render.VertexFormats;
 import net.minecraft.util.Identifier;
 import org.copycraftDev.new_horizons.NewHorizonsMain;
 

@@ -99,7 +99,7 @@ public class NewHorizonsClient implements ClientModInitializer {
                 var player = client.player;
                 if (player.hasVehicle()) {
                     // Invert yaw and pitch when in seat
-                    double playerPitch = -Math.toRadians(player.getYaw());  // Invert yaw
+                    double playerPitch = Math.toRadians(player.getYaw());  // Invert yaw
                     double playerYaw = -Math.toRadians(player.getPitch()); // Invert pitch
                     LazuliGeometryBuilder.setRenderingSpaceDir(playerPitch, 0, playerYaw);
 
@@ -107,11 +107,6 @@ public class NewHorizonsClient implements ClientModInitializer {
 
                 }
 
-
-
-
-                // --- 2. Process Arrow Key Input for Movement ---
-                // Build an input vector based on arrow key presses.
 
                 Vec3d inputVec = Vec3d.ZERO;
                 if (ARROW_UP.isPressed()) {
