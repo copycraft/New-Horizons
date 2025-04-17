@@ -25,9 +25,3 @@ void main() {
     texProj0 = vec4(Position, 1.0);
     texCoord0 = UV0;
 }
-
-
-
-
-
-

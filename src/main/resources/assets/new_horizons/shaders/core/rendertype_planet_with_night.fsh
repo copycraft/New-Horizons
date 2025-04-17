@@ -34,8 +34,3 @@ void main() {
 
     fragColor = color * ColorModulator;
 }
-
-
-
-
-

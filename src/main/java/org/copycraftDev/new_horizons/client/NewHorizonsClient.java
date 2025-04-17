@@ -6,8 +6,11 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.particle.v1.ParticleFactoryRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
+import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.GameOptions;
 import net.minecraft.client.option.KeyBinding;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.Vec3d;
 import org.copycraftDev.new_horizons.client.particle.ModParticlesClient;
 import org.copycraftDev.new_horizons.client.rendering.CelestialBodyRenderer;
@@ -90,61 +93,69 @@ public class NewHorizonsClient implements ClientModInitializer {
 
         ParticleFactoryRegistry.getInstance().register(ModParticles.FOG_PARTICLE, FogParticle.Factory::new);
         EntityRendererRegistry.register(ModEntities.SEAT_ENTITY, SeatEntityRenderer::new);
-        
-
-        ClientTickEvents.END_CLIENT_TICK.register(client -> {
-            if (client.player != null) {
-                // --- 1. Update Orientation Based on Look ---
-                // Get player's yaw and pitch in radians when seated
-                var player = client.player;
-                if (player.hasVehicle()) {
-                    // Invert yaw and pitch when in seat
-                    double playerPitch = Math.toRadians(player.getYaw());  // Invert yaw
-                    double playerYaw = -Math.toRadians(player.getPitch()); // Invert pitch
-                    LazuliGeometryBuilder.setRenderingSpaceDir(playerPitch, 0, playerYaw);
-
-                } else {
-
-                }
 
 
-                Vec3d inputVec = Vec3d.ZERO;
-                if (ARROW_UP.isPressed()) {
-                    inputVec = inputVec.add(0, 0, 1);
-                    LOGGER.info("Arrow Up pressed");
-                }
-                if (ARROW_DOWN.isPressed()) {
-                    inputVec = inputVec.add(0, 0, -1);
-                    LOGGER.info("Arrow Down pressed");
-                }
-                if (ARROW_LEFT.isPressed()) {
-                    inputVec = inputVec.add(1, 0, 0);
-                    LOGGER.info("Arrow Left pressed");
-                }
-                if (ARROW_RIGHT.isPressed()) {
-                    inputVec = inputVec.add(-1, 0, 0);
-                    LOGGER.info("Arrow Right pressed");
-                }
+        WorldRenderEvents.BEFORE_ENTITIES.register((context) -> {
+            MinecraftClient client = MinecraftClient.getInstance();
 
-                Vec3d acceleration = inputVec;
+            if (client.player == null) return;
+            var player = client.player;
 
-                // Update speed: accelerate if there is input; otherwise, decelerate.
-                if (inputVec.lengthSquared() > 0) {
-                    inputVec = inputVec.normalize();
-                    speed += (1.0 - speed) * 0.015;  // Gradually accelerate toward speed 1.0
-                    speed3d = speed3d.add(acceleration.multiply(0.02));
-                } else {
-                    speed *= 0.95;  // Gradually decelerate when no keys are pressed
-                    speed3d = speed3d.multiply(0.92);
-                }
-
-                movementDirection = inputVec;
-                Vec3d displacement = speed3d;
-
-                // Apply the displacement with rotation applied in the geometry builder.
-                LazuliGeometryBuilder.rotatedSpaceDisplaceRenderingSpacePos(displacement);
+            // === Invert Pitch/Yaw if Player is in a Vehicle ===
+            if (player.hasVehicle()) {
+                double playerPitch = Math.toRadians(player.getYaw());   // Invert yaw
+                double playerYaw = -Math.toRadians(player.getPitch());  // Invert pitch
+                LazuliGeometryBuilder.setRenderingSpaceDir(playerPitch, 0, playerYaw);
             }
+
+            // === Input Detection (per frame!) ===
+            // === Input Detection (per frame!) ===
+            Vec3d inputVec = Vec3d.ZERO;
+
+            if (ARROW_UP.isPressed()) {
+                inputVec = inputVec.add(0, 0, 1);
+            }
+            if (ARROW_DOWN.isPressed()) {
+                inputVec = inputVec.add(0, 0, -1);
+            }
+            if (ARROW_LEFT.isPressed()) {
+                inputVec = inputVec.add(1, 0, 0);
+            }
+            if (ARROW_RIGHT.isPressed()) {
+                inputVec = inputVec.add(-1, 0, 0);
+            }
+
+            Vec3d acceleration = inputVec;
+
+            if (inputVec.lengthSquared() > 0) {
+                inputVec = inputVec.normalize();
+
+                // 🐢 SLOWER acceleration
+                speed += (0.5 - speed) * 0.005; // Acceleration approaches 0.5 slower
+
+                // 🐌 SLOWER acceleration effect per frame
+                speed3d = speed3d.add(acceleration.multiply(0.005));
+            } else {
+                // 🧊 More subtle deceleration (feels "floaty")
+                speed *= 0.98;
+                speed3d = speed3d.multiply(0.96);
+            }
+
+// ✋ Optional: Cap max speed
+            double maxSpeed = 0.2;
+            if (speed3d.length() > maxSpeed) {
+                speed3d = speed3d.normalize().multiply(maxSpeed);
+            }
+
+            movementDirection = inputVec;
+            Vec3d displacement = speed3d;
+
+// === Apply Movement to Rendering Space ===
+            LazuliGeometryBuilder.rotatedSpaceDisplaceRenderingSpacePos(displacement);
+
         });
+
+
 
     };
 
