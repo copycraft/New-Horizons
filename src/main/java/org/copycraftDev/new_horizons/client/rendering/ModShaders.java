@@ -11,6 +11,7 @@ public class ModShaders {
     public static String RENDER_TYPE_ATMOSPHERE = "rendertype_test_atmosphere";
     public static String RENDER_TYPE_STAR = "rendertype_star";
     public static String RENDER_TYPE_STAR_AURA = "rendertype_star_aura";
+    public static String RENDERTYPE_KABOOM_OOHHHHHHHHHHHH_SHINY_1 = "rendertype_explosion_1";
 
 
     public static void registerShaders(){
@@ -19,5 +20,6 @@ public class ModShaders {
         LazuliShaderRegistry.registerShader(RENDER_TYPE_ATMOSPHERE, VertexFormats.POSITION_TEXTURE_COLOR_NORMAL);
         LazuliShaderRegistry.registerShader(RENDER_TYPE_STAR, VertexFormats.POSITION_TEXTURE_COLOR_NORMAL);
         LazuliShaderRegistry.registerShader(RENDER_TYPE_STAR_AURA, VertexFormats.POSITION_TEXTURE_COLOR_NORMAL);
+        LazuliShaderRegistry.registerShader(RENDERTYPE_KABOOM_OOHHHHHHHHHHHH_SHINY_1, VertexFormats.POSITION_TEXTURE_COLOR_NORMAL);
     }
 }
