@@ -1,0 +1,22 @@
+{
+  "name": "neptune",
+  "center": [60, 100, -2200],
+  "radius": 130,
+  "rotationSpeed": 0.001,
+
+  "surfaceTexturePath": "textures/test_textures/2k_neptune.jpg",
+  "cloudsTexturePath": null,
+  "atmosphereTexturePath": null,
+  "darkAlbedoMapPath": null,
+  "heightMapPath": "textures/test_textures/neptune_height.jpg",
+  "normalMapPath": "textures/test_textures/neptune_normal.jpg",
+
+
+  "hasAtmosphere": false,
+  "isStar": false,
+  "atmosphereColor1": null,
+  "atmosphereColor2": null,
+  "atmosphereRadius": 0,
+
+  "hasDarkAlbedoMap": null
+}

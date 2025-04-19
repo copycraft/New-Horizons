@@ -1,0 +1,22 @@
+{
+  "name": "jupiter",
+  "center": [40, 100, -1200],
+  "radius": 110,
+  "rotationSpeed": 0.001,
+
+  "surfaceTexturePath": "textures/test_textures/8k_jupiter.jpg",
+  "cloudsTexturePath": null,
+  "atmosphereTexturePath": null,
+  "darkAlbedoMapPath": null,
+  "heightMapPath": "textures/test_textures/jupiter_height.jpg",
+  "normalMapPath": "textures/test_textures/jupiter_normal.jpg",
+
+
+  "hasAtmosphere": false,
+  "isStar": false,
+  "atmosphereColor1": null,
+  "atmosphereColor2": null,
+  "atmosphereRadius": 0,
+
+  "hasDarkAlbedoMap": null
+}
