@@ -18,5 +18,9 @@
   "atmosphereColor2": null,
   "atmosphereRadius": 120,
 
-  "hasDarkAlbedoMap": null
+  "hasDarkAlbedoMap": null,
+
+  "ringsTexturePath": null,
+  "ringsInnerRadius": 0,
+  "ringsOuterRadius": 0
 }

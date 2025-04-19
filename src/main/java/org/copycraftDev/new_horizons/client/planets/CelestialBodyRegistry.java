@@ -22,7 +22,7 @@ import java.util.stream.Stream;
 import static com.google.common.io.Resources.getResource;
 
 /**
- * Handles planet registration and JSON loading.
+ * Handles planet registration and JSON loading, now with optional rings.
  */
 public class CelestialBodyRegistry {
     private static final Gson GSON = new GsonBuilder()
@@ -61,20 +61,27 @@ public class CelestialBodyRegistry {
                 CelestialBodyData planet = GSON.fromJson(reader, type);
 
                 // Convert texture paths to Identifiers
-                planet.surfaceTexture = planet.surfaceTexturePath != null ? NewHorizonsMain.id(planet.surfaceTexturePath) : null;
-                planet.cloudsTexture = planet.cloudsTexturePath != null ? NewHorizonsMain.id(planet.cloudsTexturePath) : null;
+                planet.surfaceTexture    = planet.surfaceTexturePath    != null ? NewHorizonsMain.id(planet.surfaceTexturePath)    : null;
+                planet.cloudsTexture     = planet.cloudsTexturePath     != null ? NewHorizonsMain.id(planet.cloudsTexturePath)     : null;
                 planet.atmosphereTexture = planet.atmosphereTexturePath != null ? NewHorizonsMain.id(planet.atmosphereTexturePath) : null;
-                planet.darkAlbedoMap = planet.darkAlbedoMapPath != null ? NewHorizonsMain.id(planet.darkAlbedoMapPath) : null;
-                planet.heightMap = planet.heightMapPath != null ? NewHorizonsMain.id(planet.heightMapPath) : null;
-                planet.normalMap = planet.normalMapPath != null ? NewHorizonsMain.id(planet.normalMapPath) : null;
+                planet.darkAlbedoMap     = planet.darkAlbedoMapPath     != null ? NewHorizonsMain.id(planet.darkAlbedoMapPath)     : null;
+                planet.heightMap         = planet.heightMapPath         != null ? NewHorizonsMain.id(planet.heightMapPath)         : null;
+                planet.normalMap         = planet.normalMapPath         != null ? NewHorizonsMain.id(planet.normalMapPath)         : null;
+
+                // Convert ring texture if present
+                if (planet.hasRing && planet.ringTexturePath != null) {
+                    planet.ringTexture = NewHorizonsMain.id(planet.ringTexturePath);
+                } else {
+                    planet.ringTexture = null;
+                }
 
                 Identifier planetId = NewHorizonsMain.id(planet.name.toLowerCase());
-                if(REGISTERED_PLANETS.containsKey(planetId)) {
+                if (REGISTERED_PLANETS.containsKey(planetId)) {
                     REGISTERED_PLANETS.replace(planetId, planet);
-                }else{
+                } else {
                     REGISTERED_PLANETS.put(planetId, planet);
                 }
-                System.out.println("Registered planet: " + planet.name);
+                System.out.println("Registered planet: " + planet.name + (planet.hasRing ? " [with ring]" : ""));
             }
         } catch (Exception e) {
             System.err.println("Error loading planet: " + jsonPath);
@@ -131,6 +138,11 @@ public class CelestialBodyRegistry {
 
         // Albedo Map
         public boolean hasDarkAlbedoMap;
+
+        // Ring Properties
+        public boolean hasRing;
+        String ringTexturePath;
+        public transient Identifier ringTexture;
     }
 
     public static void registerAllPlanets(String folderPath, String namespace) {

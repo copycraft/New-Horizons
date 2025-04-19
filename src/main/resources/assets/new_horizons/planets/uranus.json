@@ -13,10 +13,14 @@
 
 
   "hasAtmosphere": false,
-  "isStar": false,
+  "isStar": true,
   "atmosphereColor1": null,
   "atmosphereColor2": null,
   "atmosphereRadius": 0,
 
-  "hasDarkAlbedoMap": null
+  "hasDarkAlbedoMap": null,
+
+  "ringsTexturePath": null,
+  "ringsInnerRadius": 0,
+  "ringsOuterRadius": 0
 }

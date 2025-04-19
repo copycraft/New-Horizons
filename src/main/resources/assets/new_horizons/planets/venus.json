@@ -8,8 +8,8 @@
   "cloudsTexturePath": null,
   "atmosphereTexturePath": null,
   "darkAlbedoMapPath": null,
-  "heightMapPath": "textures/test_textures/venus_height_map.png",
-  "normalMapPath": "textures/test_textures/venus_normal_map.png",
+  "heightMapPath": "textures/test_textures/venus_height_map.jpg",
+  "normalMapPath": "textures/test_textures/venus_normal_map.jpg",
 
 
   "hasAtmosphere": false,
@@ -18,5 +18,9 @@
   "atmosphereColor2": null,
   "atmosphereRadius": 0,
 
-  "hasDarkAlbedoMap": null
+  "hasDarkAlbedoMap": null,
+
+  "ringsTexturePath": null,
+  "ringsInnerRadius": 0,
+  "ringsOuterRadius": 0
 }

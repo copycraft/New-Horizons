@@ -103,6 +103,43 @@ public class LazuliGeometryBuilder {
         }
     }
 
+    public static void buildRing(float innerRadius, float outerRadius, int segments,
+                                 Vec3d center, Camera camera, Matrix4f matrix4f2, BufferBuilder bufferBuilder) {
+        Vec3d displacement = camera.getPos().subtract(center);
+        double twoPi = Math.PI * 2;
+        for (int i = 0; i < segments; i++) {
+            double angle1 = twoPi * i / segments;
+            double angle2 = twoPi * (i + 1) / segments;
+
+            // Inner points
+            Vec3d inner1 = new Vec3d(Math.cos(angle1) * innerRadius, 0, Math.sin(angle1) * innerRadius);
+            Vec3d inner2 = new Vec3d(Math.cos(angle2) * innerRadius, 0, Math.sin(angle2) * innerRadius);
+            // Outer points
+            Vec3d outer1 = new Vec3d(Math.cos(angle1) * outerRadius, 0, Math.sin(angle1) * outerRadius);
+            Vec3d outer2 = new Vec3d(Math.cos(angle2) * outerRadius, 0, Math.sin(angle2) * outerRadius);
+
+            // Transform to world-relative coords and subtract camera displacement
+            Vec3d v1 = inner1.subtract(displacement);
+            Vec3d v2 = outer1.subtract(displacement);
+            Vec3d v3 = outer2.subtract(displacement);
+            Vec3d v4 = inner2.subtract(displacement);
+
+            // Texture coords: U around ring, V from inner(0) to outer(1)
+            float u1 = (float) i / segments;
+            float u2 = (float) (i + 1) / segments;
+
+            Vec3d normal = new Vec3d(0, 1, 0);
+
+            // Add quad (inner1 → outer1 → outer2 → inner2)
+            addVertexTextureNormal(v1, u1, 0.0, normal, matrix4f2, bufferBuilder);
+            addVertexTextureNormal(v2, u1, 1.0, normal, matrix4f2, bufferBuilder);
+            addVertexTextureNormal(v3, u2, 1.0, normal, matrix4f2, bufferBuilder);
+            addVertexTextureNormal(v4, u2, 0.0, normal, matrix4f2, bufferBuilder);
+        }
+    }
+
+
+
     public static void buildTexturedSphereWithCameraRelativeNormals(int res, float radius, Vec3d center , float roll, boolean flipNormals,  Camera camera, Matrix4f matrix4f2, BufferBuilder bufferBuilder) {
         Vec3d displacement = camera.getPos().subtract(center); // Get displacement relative to camera
         Vec3d axle = displacement.normalize();
