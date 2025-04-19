@@ -1,0 +1,26 @@
+{
+  "name": "venus",
+  "center": [10, 100, -400],
+  "radius": 80,
+  "rotationSpeed": 0.001,
+
+  "surfaceTexturePath": "textures/test_textures/8k_venus_surface.jpg",
+  "cloudsTexturePath": null,
+  "atmosphereTexturePath": null,
+  "darkAlbedoMapPath": null,
+  "heightMapPath": "textures/test_textures/venus_height_map.jpg",
+  "normalMapPath": "textures/test_textures/venus_normal_map.jpg",
+
+
+  "hasAtmosphere": false,
+  "isStar": false,
+  "atmosphereColor1": null,
+  "atmosphereColor2": null,
+  "atmosphereRadius": 0,
+
+  "hasDarkAlbedoMap": null,
+
+  "ringsTexturePath": null,
+  "ringsInnerRadius": 0,
+  "ringsOuterRadius": 0
+}
