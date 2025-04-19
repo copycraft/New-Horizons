@@ -12,11 +12,11 @@
   "normalMapPath": "textures/test_textures/jupiter_normal.jpg",
 
 
-  "hasAtmosphere": false,
-  "isStar": false,
+  "hasAtmosphere": true,
+  "isStar": true,
   "atmosphereColor1": null,
   "atmosphereColor2": null,
-  "atmosphereRadius": 0,
+  "atmosphereRadius": 120,
 
   "hasDarkAlbedoMap": null
 }

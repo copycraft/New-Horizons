@@ -23,3 +23,4 @@ void main() {
     normal = Normal;
     texCoord0 = UV0;
 }
+
