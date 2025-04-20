@@ -2,6 +2,7 @@ package org.copycraftDev.new_horizons.client;
 
 import foundry.veil.Veil;
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.particle.v1.ParticleFactoryRegistry;
@@ -10,6 +11,7 @@ import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.GameOptions;
 import net.minecraft.client.option.KeyBinding;
+import net.minecraft.client.render.RenderLayer;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.Vec3d;
 import org.copycraftDev.new_horizons.client.particle.ModParticlesClient;
@@ -19,6 +21,7 @@ import org.copycraftDev.new_horizons.core.particle.FogParticle;
 import org.copycraftDev.new_horizons.core.particle.ModParticles;
 import org.copycraftDev.new_horizons.client.render.entity.SeatEntityRenderer;
 import org.copycraftDev.new_horizons.lazuli_snnipets.LazuliGeometryBuilder;
+import org.copycraftDev.new_horizons.core.blocks.ModBlocks;
 import org.lwjgl.glfw.GLFW;
 
 import static org.copycraftDev.new_horizons.NewHorizonsMain.LOGGER;
@@ -40,7 +43,11 @@ public class NewHorizonsClient implements ClientModInitializer {
     public static KeyBinding ARROW_RIGHT;
     private static final GameOptions options = client.options;
     private static Vec3d movementDirection = Vec3d.ZERO;
-
+    private static Vec3d velocity = Vec3d.ZERO;
+    private static final double MASS = 1.0;               // kg, for acceleration = force/mass
+    private static final double THRUST = 0.2;             // unit force when input is full
+    private static final double DRAG_COEFF = 0.5;         // arbitrary drag coefficient
+    private static final Vec3d GRAVITY = new Vec3d(0, -0.01, 0); // weak constant gravity
 
 
     @Override
@@ -48,6 +55,9 @@ public class NewHorizonsClient implements ClientModInitializer {
         Veil.init();
 
         CelestialBodyRenderer.register();
+
+        BlockRenderLayerMap.INSTANCE.putBlock(ModBlocks.PRIVACY_GLASS, RenderLayer.getTranslucent());
+
 
         ParticleFactoryRegistry.getInstance().register(ModParticles.FOG_PARTICLE, spriteProvider ->
                 new ModParticlesClient.FogParticle.Factory(spriteProvider)
@@ -158,6 +168,8 @@ public class NewHorizonsClient implements ClientModInitializer {
 
 
     };
+
+
 
 }
 

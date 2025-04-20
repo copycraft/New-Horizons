@@ -19,6 +19,7 @@ public class ModBlocks {
     public static final Block GOLD_LAMP = register("gold_lamp", new GoldLampBlock());
     public static final Block GOLD_TILE_LAMP = register("gold_tile_lamp", new GoldTileLampBlock());
     public static final Block GOLD_FLOWER_LAMP = register("gold_flower_lamp", new GoldFlowerLampBlock());
+    public static final Block PRIVACY_GLASS = register("privacy_glass", new PrivacyGlassBlock());
 
     private static Block register(String path, Block block) {
         Identifier id = Identifier.of(NewHorizonsMain.MOD_ID, path);

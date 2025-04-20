@@ -1,0 +1,6 @@
+{
+  "variants": {
+    "privacy=false":  { "model": "new_horizons:block/privacy_glass" },
+    "privacy=true":   { "model": "new_horizons:block/privacy_glass_opaque" }
+  }
+}
