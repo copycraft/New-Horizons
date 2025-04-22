@@ -9,7 +9,8 @@
   "client": [
     "client.CameraMixin",
     "CameraRotationMixin",
-    "client.GameRendererMixin"
+    "client.GameRendererMixin",
+    "TitleScreenMixin"
   ],
   "injectors": {
     "defaultRequire": 1
