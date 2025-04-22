@@ -39,7 +39,3 @@ void main() {
     // Manipulate distance to generate a useful value for later (in the fragment shader).
     dist = 2.0 * cos(3.1415 - (2.0 * acos(d / 2.0)));
 }
-
-
-
-

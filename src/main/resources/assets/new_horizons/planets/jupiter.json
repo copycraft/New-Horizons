@@ -9,18 +9,14 @@
   "atmosphereTexturePath": null,
   "darkAlbedoMapPath": null,
   "heightMapPath": "textures/test_textures/jupiter_height.jpg",
-  "normalMapPath": "textures/test_textures/jupiter_normal.jpg",
+  "normalMapPath": "textures/test_textures/jupitertest.jpg",
 
 
-  "hasAtmosphere": true,
+  "hasAtmosphere": false,
   "isStar": true,
   "atmosphereColor1": null,
   "atmosphereColor2": null,
-  "atmosphereRadius": 120,
+  "atmosphereRadius": 0,
 
-  "hasDarkAlbedoMap": null,
-
-  "ringsTexturePath": null,
-  "ringsInnerRadius": 0,
-  "ringsOuterRadius": 0
+  "hasDarkAlbedoMap": null
 }

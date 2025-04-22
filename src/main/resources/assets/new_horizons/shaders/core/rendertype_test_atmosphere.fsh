@@ -57,4 +57,3 @@ void main() {
 
     fragColor = vec4(finalColor, baseColor.a) * ColorModulator;
 }
-

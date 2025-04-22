@@ -43,11 +43,6 @@ public class NewHorizonsClient implements ClientModInitializer {
     public static KeyBinding ARROW_RIGHT;
     private static final GameOptions options = client.options;
     private static Vec3d movementDirection = Vec3d.ZERO;
-    private static Vec3d velocity = Vec3d.ZERO;
-    private static final double MASS = 1.0;               // kg, for acceleration = force/mass
-    private static final double THRUST = 0.2;             // unit force when input is full
-    private static final double DRAG_COEFF = 0.5;         // arbitrary drag coefficient
-    private static final Vec3d GRAVITY = new Vec3d(0, -0.01, 0); // weak constant gravity
 
 
     @Override

@@ -1,0 +1,17 @@
+{
+  "render_style": "CUBE",
+  "additive": false,
+  "init_modules": [],
+  "update_modules": [],
+  "collision_modules": [],
+  "render_modules": [
+    "new_horizons:color/meteor"
+  ],
+  "face_velocity": false,
+  "should_collide": false,
+  "sprite_data": {
+    "atlas": "minecraft:particle_atlas",
+    "sprite": "new_horizons:img.png"
+  },
+  "velocity_stretch_factor": 0.0
+}
