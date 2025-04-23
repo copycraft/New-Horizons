@@ -20,6 +20,14 @@ public class ModBlocks {
     public static final Block GOLD_TILE_LAMP = register("gold_tile_lamp", new GoldTileLampBlock());
     public static final Block GOLD_FLOWER_LAMP = register("gold_flower_lamp", new GoldFlowerLampBlock());
     public static final Block PRIVACY_GLASS = register("privacy_glass", new PrivacyGlassBlock());
+    public static final Block PORTAL_BLOCK = register(
+            "teleport_portal_block",
+            new PortalBlock(
+                    AbstractBlock.Settings.create()
+                            .noCollision()
+                            .strength(-1.0f)
+            )
+    );
 
     private static Block register(String path, Block block) {
         Identifier id = Identifier.of(NewHorizonsMain.MOD_ID, path);

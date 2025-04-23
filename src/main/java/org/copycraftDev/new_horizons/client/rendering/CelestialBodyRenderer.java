@@ -199,4 +199,13 @@ public class CelestialBodyRenderer {
         RenderSystem.depthMask(true);
         RenderSystem.assertOnRenderThread();
     }
+    public static Vec3d getPlanetLocation(String planetName) {
+        for (CelestialBodyRegistry.CelestialBodyData planet : CelestialBodyRegistry.getAllPlanets().values()) {
+            if (planet.name.equals(planetName)) {
+                return planet.center;
+            }
+        }
+        return null; // or throw an exception if not found
+    }
+
 }

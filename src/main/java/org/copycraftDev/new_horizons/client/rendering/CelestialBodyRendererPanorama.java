@@ -21,83 +21,80 @@ import java.util.concurrent.atomic.AtomicReference;
 public class CelestialBodyRendererPanorama {
     private static final AtomicReference<Float> time = new AtomicReference<>(0f);
 
-    private static float rotationX = 0f;
-    private static float rotationY = 90f;  // Default 90 degrees on Y-axis
-    private static float rotationZ = 0f;
-    private static float scale = 1.0f;  // Default scale (1 = normal size)
+    private static float rotationX      = 0f;
+    private static float rotationY      = 90f;
+    private static float rotationZ      = 0f;
+    private static float scale          = 1.0f;
 
-    // Offsets for X and Y positioning (can be dynamically updated)
-    private static float offsetX = 0f;
-    private static float offsetY = 0f;
+    private static float offsetX        = 0f;
+    private static float offsetY        = 0f;
 
-    public static void setRotationX(float rotationX) {
-        CelestialBodyRendererPanorama.rotationX = rotationX;
+    private static float cameraOffsetX  = 0f;
+    private static float cameraOffsetY  = 0f;
+    private static float cameraOffsetZ  = 0f;
+
+    /** Base depth at which all bodies are drawn; per-body X goes to depth now. */
+    private static float planetZ        = 0f;
+
+    public static void setRotationX(float r)        { rotationX      = r; }
+    public static void setRotationY(float r)        { rotationY      = r; }
+    public static void setRotationZ(float r)        { rotationZ      = r; }
+    public static void setScale(float s)            { scale          = s; }
+    public static void setOffsetX(float x)          { offsetX        = x; }
+    public static void setOffsetY(float y)          { offsetY        = y; }
+    public static void setCameraOffset(float x, float y, float z) {
+        cameraOffsetX = x;
+        cameraOffsetY = y;
+        cameraOffsetZ = z;
     }
+    public static void setPlanetZ(float z)          { planetZ        = z; }
 
-    public static void setRotationY(float rotationY) {
-        CelestialBodyRendererPanorama.rotationY = rotationY;
-    }
-
-    public static void setRotationZ(float rotationZ) {
-        CelestialBodyRendererPanorama.rotationZ = rotationZ;
-    }
-
-    public static void setScale(float scale) {
-        CelestialBodyRendererPanorama.scale = scale;
-    }
-
-    public static void setOffsetX(float offsetX) {
-        CelestialBodyRendererPanorama.offsetX = offsetX;
-    }
-
-    public static void setOffsetY(float offsetY) {
-        CelestialBodyRendererPanorama.offsetY = offsetY;
-    }
-
+    /**
+     * Renders the panorama, centering at (width/2, height/2), then placing each
+     * body at ( body.center.z → X, body.center.y → Y, planetZ + body.center.x → Z ).
+     */
     public static void render(DrawContext context, int width, int height, float backgroundAlpha, float delta) {
+        // advance time
         time.updateAndGet(v -> v + delta);
 
         Tessellator tessellator = Tessellator.getInstance();
-        MatrixStack matrixStack = new MatrixStack();
+        MatrixStack ms = new MatrixStack();
 
-        // Calculate the center of the screen
-        float centerX = width / 2.0f;
-        float centerY = height / 2.0f;
+        // start from the current projection
+        ms.multiplyPositionMatrix(context.getMatrices().peek().getPositionMatrix());
+        ms.push();
 
-        // Get current projection matrix
-        matrixStack.multiplyPositionMatrix(context.getMatrices().peek().getPositionMatrix());
+        // compute true screen center plus offsets
+        float centerX = (width  * 0.5f) + offsetX + cameraOffsetX;
+        float centerY = (height * 0.5f) + offsetY + cameraOffsetY;
 
-        // ✅ Begin matrix transformation for the celestial system
-        matrixStack.push();
+        // move origin to that center
+        ms.translate(centerX, centerY, cameraOffsetZ);
 
-        // Apply scaling based on screen resolution
-        matrixStack.scale(scale, scale, scale);
+        // then scale and rotate around it
+        ms.scale(scale, scale, scale);
+        applyRotation(ms);
 
-        // Apply rotation using the quaternion (apply X, Y, Z rotations)
-        applyRotation(matrixStack);
-
-        // ✅ Move the celestial body to the center of the screen, then apply the offsets
-        matrixStack.translate(centerX + offsetX, centerY + offsetY, -200.0f);  // Offset Z to place it behind UI elements
-
-        Matrix4f proj = matrixStack.peek().getPositionMatrix();
-
+        Matrix4f proj = ms.peek().getPositionMatrix();
         MinecraftClient client = MinecraftClient.getInstance();
         Camera cam = client.gameRenderer.getCamera();
 
-        for (Map.Entry<Identifier, CelestialBodyRegistry.CelestialBodyData> entry : CelestialBodyRegistry.getAllPlanets().entrySet()) {
-            CelestialBodyRegistry.CelestialBodyData body = entry.getValue();
+        for (Map.Entry<Identifier, CelestialBodyRegistry.CelestialBodyData> e
+                : CelestialBodyRegistry.getAllPlanets().entrySet()) {
+            CelestialBodyRegistry.CelestialBodyData body = e.getValue();
 
+            // bind textures
             RenderSystem.setShaderTexture(0, body.surfaceTexture);
             if (body.hasDarkAlbedoMap) {
                 RenderSystem.setShaderTexture(1, body.darkAlbedoMap);
             }
 
+            // choose shader
             ShaderProgram shader = body.isStar
                     ? LazuliShaderRegistry.getShader(ModShaders.RENDER_TYPE_STAR)
                     : (body.hasDarkAlbedoMap
                     ? LazuliShaderRegistry.getShader(ModShaders.RENDER_TYPE_PLANET_WITH_NIGHT)
                     : LazuliShaderRegistry.getShader(ModShaders.RENDER_TYPE_PLANET));
-
             RenderSystem.setShader(() -> shader);
             RenderSystem.setShaderFogStart(Integer.MAX_VALUE);
             RenderSystem.setShaderFogEnd(Integer.MAX_VALUE);
@@ -106,14 +103,26 @@ public class CelestialBodyRendererPanorama {
             RenderSystem.depthMask(true);
             RenderSystem.assertOnRenderThread();
 
-            BufferBuilder buf = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR_NORMAL);
-            float angle = (float) body.rotationSpeed * time.get();
+            BufferBuilder buf = tessellator.begin(
+                    VertexFormat.DrawMode.QUADS,
+                    VertexFormats.POSITION_TEXTURE_COLOR_NORMAL
+            );
+            // cast to float again for safety
+            float spinAngle = (float)(body.rotationSpeed * time.get());
+
+            // SWAPPED AXES: z→X, y→Y, x→Z
+            Vec3d orig = body.center;
+            float x = (float) orig.z;
+            float y = (float) orig.y;
+            float z = planetZ + (float) orig.x;
+
+            Vec3d renderCenter = new Vec3d(x, y, z);
             LazuliGeometryBuilder.buildTexturedSphere(
-                    5,
+                    256,
                     (float) body.radius,
-                    body.center,
+                    renderCenter,
                     new Vec3d(0, 1, 0),
-                    angle,
+                    spinAngle,
                     false,
                     cam,
                     proj,
@@ -122,9 +131,8 @@ public class CelestialBodyRendererPanorama {
             BufferRenderer.drawWithGlobalProgram(buf.end());
         }
 
-        // ✅ End of transformation — restore to original matrix
-        matrixStack.pop();
-
+        // restore
+        ms.pop();
         RenderSystem.setShaderFogShape(FogShape.CYLINDER);
         RenderSystem.setShaderFogColor(0, 0, 0);
         RenderSystem.setShader(GameRenderer::getPositionColorProgram);
@@ -132,20 +140,13 @@ public class CelestialBodyRendererPanorama {
         RenderSystem.enableDepthTest();
     }
 
-    private static void applyRotation(MatrixStack matrixStack) {
-        // Apply X, Y, Z rotations (ensure correct order)
-        Quaternionf rotation = new Quaternionf();
-
-        // Apply X-axis rotation first
-        rotation.set(new AxisAngle4f(1, 0, 0, (float) Math.toRadians(rotationX)));
-        matrixStack.multiply(rotation);
-
-        // Apply Y-axis rotation second
-        rotation.set(new AxisAngle4f(0, 1, 0, (float) Math.toRadians(rotationY)));
-        matrixStack.multiply(rotation);
-
-        // Apply Z-axis rotation last
-        rotation.set(new AxisAngle4f(0, 0, 1, (float) Math.toRadians(rotationZ)));
-        matrixStack.multiply(rotation);
+    private static void applyRotation(MatrixStack ms) {
+        Quaternionf q = new Quaternionf();
+        q.set(new AxisAngle4f(1, 0, 0, (float) Math.toRadians(rotationX)));
+        ms.multiply(q);
+        q.set(new AxisAngle4f(0, 1, 0, (float) Math.toRadians(rotationY)));
+        ms.multiply(q);
+        q.set(new AxisAngle4f(0, 0, 1, (float) Math.toRadians(rotationZ)));
+        ms.multiply(q);
     }
 }

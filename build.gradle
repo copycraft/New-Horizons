@@ -69,6 +69,7 @@ dependencies {
     modImplementation("foundry.veil:veil-fabric-1.21.1:1.0.0.206") {
        exclude group: "maven.modrinth"
    }
+    include modApi('teamreborn:energy:4.1.0')
 }
 
 processResources {
