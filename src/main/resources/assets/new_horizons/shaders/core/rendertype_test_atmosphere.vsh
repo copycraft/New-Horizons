@@ -15,7 +15,7 @@ out vec3 normal;
 out vec3 lightDirection;
 
 void main() {
-    vec4 pos = ProjMat * ModelViewMat * vec4(Position, 2.0);
+    vec4 pos = ProjMat * ModelViewMat * vec4(Position, 1.0);
     gl_Position = pos;
 
     // Pass along the projected XY coordinates as screen coordinates.
@@ -39,3 +39,4 @@ void main() {
     // Manipulate distance to generate a useful value for later (in the fragment shader).
     dist = 2.0 * cos(3.1415 - (2.0 * acos(d / 2.0)));
 }
+

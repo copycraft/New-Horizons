@@ -205,7 +205,7 @@ public class CelestialBodyRenderer {
                 return planet.center;
             }
         }
-        return null; // or throw an exception if not found
+        return null;
     }
 
 }

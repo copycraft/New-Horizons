@@ -66,7 +66,7 @@ dependencies {
     implementation "org.reflections:reflections:0.10.2"
     modImplementation "com.github.iPortalTeam:ImmersivePortalsMod:v6.0.6-mc1.21.1"
     modImplementation "maven.modrinth:cardinal-components-api:6.1.2"
-    modImplementation("foundry.veil:veil-fabric-1.21.1:1.0.0.206") {
+    modImplementation("foundry.veil:veil-fabric-1.21.1:1.0.0.241") {
        exclude group: "maven.modrinth"
    }
     include modApi('teamreborn:energy:4.1.0')

@@ -3,11 +3,11 @@
   "id": "new_horizons",
   "version": "${version}",
   "name": "New Horizons",
-  "description": "",
-  "authors": [],
+  "description": "yea. this is a mod that adds a new dimension to the game. it is a work in progress and will be updated frequently. it is not recommended to use this mod in a production environment.",
+  "authors": ["CopicraftDev(main developer)", "Flugi(artist)", "Nico44(idea)" , "Eyalego(artist)"],
   "contact": {},
   "license": "LGPL-3.0",
-  "icon": "assets/new_horizons/icon.png",
+  "icon": "assets/new_horizons/fog.png",
   "environment": "*",
   "entrypoints": {
     "client": [
@@ -26,6 +26,8 @@
   "depends": {
     "fabricloader": ">=${loader_version}",
     "fabric": "*",
-    "minecraft": "${minecraft_version}"
+    "minecraft": "${minecraft_version}",
+    "liby":"*",
+    "immersive_portals": "*"
   }
 }

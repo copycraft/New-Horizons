@@ -16,7 +16,6 @@ import org.copycraftDev.new_horizons.client.planets.MeteorCommand;
 import org.copycraftDev.new_horizons.client.planets.MeteorScheduler;
 import org.copycraftDev.new_horizons.core.entity.ModEntities;
 import org.copycraftDev.new_horizons.core.items.ModItems;
-import org.copycraftDev.new_horizons.core.render.ShaderClass;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.copycraftDev.new_horizons.core.world.biome.ModBiomes;
