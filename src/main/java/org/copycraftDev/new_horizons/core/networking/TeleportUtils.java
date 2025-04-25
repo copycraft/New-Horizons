@@ -1,9 +1,8 @@
-package org.copycraftDev.new_horizons.networking;
+package org.copycraftDev.new_horizons.core.networking;
 
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.Registries;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.world.World;
 

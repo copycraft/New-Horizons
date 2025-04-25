@@ -8,6 +8,7 @@ import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.particle.v1.ParticleFactoryRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.GameOptions;
 import net.minecraft.client.option.KeyBinding;
@@ -16,6 +17,8 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.Vec3d;
 import org.copycraftDev.new_horizons.client.particle.ModParticlesClient;
 import org.copycraftDev.new_horizons.client.rendering.CelestialBodyRenderer;
+import org.copycraftDev.new_horizons.core.bigbang.BigBangCutsceneManager;
+import org.copycraftDev.new_horizons.core.bigbang.BigBangManager;
 import org.copycraftDev.new_horizons.core.entity.ModEntities;
 import org.copycraftDev.new_horizons.core.particle.FogParticle;
 import org.copycraftDev.new_horizons.core.particle.ModParticles;
@@ -52,6 +55,13 @@ public class NewHorizonsClient implements ClientModInitializer {
         CelestialBodyRenderer.register();
 
         BlockRenderLayerMap.INSTANCE.putBlock(ModBlocks.PRIVACY_GLASS, RenderLayer.getTranslucent());
+
+        ClientTickEvents.END_CLIENT_TICK.register(client -> {
+            if (client.world != null) {
+                BigBangManager.tick(client);
+            }
+        });
+
 
 
         ParticleFactoryRegistry.getInstance().register(ModParticles.FOG_PARTICLE, spriteProvider ->
@@ -163,6 +173,7 @@ public class NewHorizonsClient implements ClientModInitializer {
 
 
     };
+
 
 
 

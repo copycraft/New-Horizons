@@ -5,7 +5,7 @@
     "settings": {
       "biome": "minecraft:the_void",
       "lakes": false,
-      "features": true,
+      "features": false,
       "layers": [{
           "height": 1,
           "block": "minecraft:air"

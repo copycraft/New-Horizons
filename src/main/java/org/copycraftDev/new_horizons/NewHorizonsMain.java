@@ -11,9 +11,11 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 import org.copycraftDev.new_horizons.client.planets.MeteorCommand;
 import org.copycraftDev.new_horizons.client.planets.MeteorScheduler;
+import org.copycraftDev.new_horizons.core.bigbang.BigBangCutsceneManager;
 import org.copycraftDev.new_horizons.core.entity.ModEntities;
 import org.copycraftDev.new_horizons.core.items.ModItems;
 import org.slf4j.Logger;
@@ -36,6 +38,13 @@ public class NewHorizonsMain implements ModInitializer {
         ServerLifecycleEvents.SERVER_STARTED.register(server -> {
             CommandDispatcher<ServerCommandSource> dispatcher = server.getCommandManager().getDispatcher();
             MeteorCommand.register(dispatcher);  // Register the custom command
+        });
+        ServerLifecycleEvents.SERVER_STARTED.register(server -> {
+            server.execute(() -> {
+                for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
+                    BigBangCutsceneManager.execute(player);
+                }
+            });
         });
     }
     public static Identifier id(String name){

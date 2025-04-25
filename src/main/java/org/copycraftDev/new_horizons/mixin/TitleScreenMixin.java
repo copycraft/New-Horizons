@@ -22,8 +22,8 @@ public abstract class TitleScreenMixin {
 
     @Unique private float rotationX = 0f;
     @Unique private float rotationY = 90f;
-    @Unique private float rotationZ = 0f;
-    @Unique private float scale     = 0.18f;
+    @Unique private float rotationZ = 45f;
+    @Unique private float scale     = 0.115f;
     // Manual offset tweaks (renderer will add these to width/2, height/2)
     @Unique private float offsetX   = 0f;
     @Unique private float offsetY   = 0f;

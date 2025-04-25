@@ -1,4 +1,4 @@
-package org.copycraftDev.new_horizons.misc;
+package org.copycraftDev.new_horizons.core.misc;
 
 import nazario.liby.api.registry.auto.LibyAutoRegister;
 import nazario.liby.api.registry.auto.LibyEntrypoints;

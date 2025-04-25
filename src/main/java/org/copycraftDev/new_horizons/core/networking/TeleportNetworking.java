@@ -1,4 +1,4 @@
-package org.copycraftDev.new_horizons.networking;
+package org.copycraftDev.new_horizons.core.networking;
 
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;

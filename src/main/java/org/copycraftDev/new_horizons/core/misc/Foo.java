@@ -1,10 +1,9 @@
-package org.copycraftDev.new_horizons.misc;
+package org.copycraftDev.new_horizons.core.misc;
 
 
 import foundry.veil.api.client.render.VeilRenderSystem;
 import foundry.veil.api.client.render.VeilRenderer;
 import foundry.veil.api.client.render.shader.ShaderPreDefinitions;
-import nazario.liby.api.registry.auto.LibyAutoRegister;
 import net.minecraft.util.Identifier;
 
 //@LibyAutoRegister(method = "onPreRender")
