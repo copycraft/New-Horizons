@@ -27,7 +27,6 @@ public class LazuliGeometryBuilder {
      */
     public static void buildTexturedSphere(int res, float radius, Vec3d center, Vec3d axle, float roll, boolean flipNormals,  Camera camera, Matrix4f matrix4f2, BufferBuilder bufferBuilder) {
         Vec3d displacement = camera.getPos().subtract(center); // Get displacement relative to camera
-
         float angle2 = 0f;
         float nextAngle2;
         float thisRingRadius;
@@ -106,6 +105,8 @@ public class LazuliGeometryBuilder {
         }
     }
 
+
+
     public static void buildRing(float innerRadius, float outerRadius, int segments,
                                  Vec3d center, Camera camera, Matrix4f matrix4f2, BufferBuilder bufferBuilder) {
         Vec3d displacement = camera.getPos().subtract(center);
@@ -140,6 +141,7 @@ public class LazuliGeometryBuilder {
             addVertexTextureNormal(v4, u2, 0.0, normal, matrix4f2, bufferBuilder);
         }
     }
+
 
 
 
@@ -318,10 +320,14 @@ public class LazuliGeometryBuilder {
      */
     private static void addVertexTextureNormal(Vec3d pos, double u, double v, Vec3d normal, Matrix4f matrix4f2, BufferBuilder bufferBuilder) {
         normal = normal.normalize();
+        float clampDist = 600;
 
         Vec3d pos2 = pos.add(mainDisplacement).rotateZ((float) yaw).rotateX((float) roll).rotateY((float) pitch);
         Vec3d normal2 = normal.rotateZ((float) yaw).rotateX((float) roll).rotateY((float) pitch);
 
+        if (pos2.length()>clampDist) {
+            pos2 = pos2.normalize().multiply(clampDist+(0.01*(pos2.length()-clampDist)));
+        }
         bufferBuilder.vertex(matrix4f2, (float) pos2.x, (float) pos2.y, (float) pos2.z)
                 .texture((float) u, (float) v)
                 .color(0, 0, 0, 1)

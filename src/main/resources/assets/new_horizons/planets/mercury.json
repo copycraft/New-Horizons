@@ -1,6 +1,6 @@
 {
   "name": "mercury",
-  "center": [0, 100, -220],
+  "center": [0, 100, -390],
   "radius": 50,
   "rotationSpeed": 0.001,
 

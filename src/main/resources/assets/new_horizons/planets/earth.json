@@ -1,6 +1,6 @@
 {
   "name": "earth",
-  "center": [20, 100, -700],
+  "center": [20, 100, -1000],
   "radius": 100,
   "rotationSpeed": 0.001,
 
@@ -16,10 +16,12 @@
   "isStar": false,
   "atmosphereColor1": null,
   "atmosphereColor2": null,
-  "atmosphereRadius": 105,
+  "atmosphereRadius": 110,
 
   "hasDarkAlbedoMap": true
 }
+
+
 
 
 

@@ -1,6 +1,6 @@
 {
   "name": "uranus",
-  "center": [50, 100, -1800],
+  "center": [50, 100, -19200],
   "radius": 120,
   "rotationSpeed": 0.001,
 

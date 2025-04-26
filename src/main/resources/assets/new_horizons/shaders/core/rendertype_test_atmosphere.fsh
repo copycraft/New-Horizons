@@ -37,7 +37,7 @@ void main() {
     vec2 uv = (screenCoord - 0.5) * 2.0;
 
     // 'd' is slightly adjusted from the input distance.
-    float d = dist - 0.5;
+    float d = dist - 0.9;
 
     // Calculate a base color similar to the original design.
     vec4 baseColor = vec4(0.3 + d, 0.35 + d, 1.0 + d, d);
@@ -46,6 +46,11 @@ void main() {
     // Raising it to a power creates a soft glow effect on surfaces facing the light.
     float scatter = pow(max(dot(normalize(normal), normalize(lightDirection)), 0.0), 2.0);
 
+
+    vec3 lightDir2 = vec3(0.,0.0,1.);
+    
+	float shadow = max(dot(normal, lightDir2)+0.2, 0.00)*1.4;
+    
     // Apply a subtle color tint based on scattering. Tweak the vector values to adjust the tint.
     vec3 scatteredColor = baseColor.rgb + scatter * vec3(0.2, 0.15, 0.1);
 
@@ -55,5 +60,54 @@ void main() {
     // Add the bloom contribution to the scattered color.
     vec3 finalColor = scatteredColor + bloom;
 
-    fragColor = vec4(finalColor, baseColor.a) * ColorModulator;
+    fragColor = vec4((2.0 * finalColor * shadow) - scatter, length(scatteredColor)*shadow*dist) * ColorModulator;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

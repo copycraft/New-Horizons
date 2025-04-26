@@ -1,6 +1,6 @@
 {
   "name": "venus",
-  "center": [10, 100, -400],
+  "center": [10, 100, -720],
   "radius": 80,
   "rotationSpeed": 0.001,
 

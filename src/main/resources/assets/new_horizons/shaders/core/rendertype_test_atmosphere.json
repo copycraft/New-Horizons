@@ -1,6 +1,13 @@
 {
   "vertex": "new_horizons:rendertype_test_atmosphere",
   "fragment": "new_horizons:rendertype_test_atmosphere",
+  
+    "blend": {
+    "func": "add",
+    "srcrgb": "srcalpha",
+    "dstrgb": "1-srcalpha"
+  },
+  
   "samplers": [
     { "name": "Sampler0" },
     { "name": "Sampler1" }

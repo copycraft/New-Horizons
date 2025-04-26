@@ -1,6 +1,6 @@
 {
   "name": "jupiter",
-  "center": [40, 100, -1200],
+  "center": [40, 100, -5200],
   "radius": 110,
   "rotationSpeed": 0.001,
 

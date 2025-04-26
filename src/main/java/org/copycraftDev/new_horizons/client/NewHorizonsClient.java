@@ -8,16 +8,13 @@ import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.particle.v1.ParticleFactoryRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.GameOptions;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.render.RenderLayer;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.Vec3d;
 import org.copycraftDev.new_horizons.client.particle.ModParticlesClient;
 import org.copycraftDev.new_horizons.client.rendering.CelestialBodyRenderer;
-import org.copycraftDev.new_horizons.core.bigbang.BigBangCutsceneManager;
 import org.copycraftDev.new_horizons.core.bigbang.BigBangManager;
 import org.copycraftDev.new_horizons.core.entity.ModEntities;
 import org.copycraftDev.new_horizons.core.particle.FogParticle;
@@ -25,9 +22,9 @@ import org.copycraftDev.new_horizons.core.particle.ModParticles;
 import org.copycraftDev.new_horizons.client.render.entity.SeatEntityRenderer;
 import org.copycraftDev.new_horizons.lazuli_snnipets.LazuliGeometryBuilder;
 import org.copycraftDev.new_horizons.core.blocks.ModBlocks;
+import org.copycraftDev.new_horizons.lazuli_snnipets.LazuliRenderingRegistry;
 import org.lwjgl.glfw.GLFW;
 
-import static org.copycraftDev.new_horizons.NewHorizonsMain.LOGGER;
 import static qouteall.imm_ptl.core.render.MyRenderHelper.client;
 
 public class NewHorizonsClient implements ClientModInitializer {
@@ -52,7 +49,9 @@ public class NewHorizonsClient implements ClientModInitializer {
     public void onInitializeClient() {
         Veil.init();
 
+        StickDashHandler.register();
         CelestialBodyRenderer.register();
+        LazuliRenderingRegistry.registerLazuliRenderPhases();
 
         BlockRenderLayerMap.INSTANCE.putBlock(ModBlocks.PRIVACY_GLASS, RenderLayer.getTranslucent());
 
