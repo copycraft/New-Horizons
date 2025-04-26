@@ -6,7 +6,7 @@
 
   "surfaceTexturePath": "textures/test_textures/earth_texture.png",
   "cloudsTexturePath": null,
-  "atmosphereTexturePath": null,
+  "atmosphereTexturePath": "textures/test_textures/8k_earth_clouds.jpg",
   "darkAlbedoMapPath": "textures/test_textures/earth_night.png",
   "heightMapPath": "textures/test_textures/earth_height.png",
   "normalMapPath": "textures/test_textures/earth_normal.png",
