@@ -16,8 +16,8 @@ import net.minecraft.world.GameMode;
 import org.copycraftDev.new_horizons.client.planets.CelestialBodyRegistry;
 import org.copycraftDev.new_horizons.client.rendering.CelestialBodyRenderer;
 import org.copycraftDev.new_horizons.client.rendering.ScreenOverlayRenderer;
+import org.copycraftDev.new_horizons.core.bigbang.BigBangClientManager;
 import org.copycraftDev.new_horizons.core.bigbang.BigBangCutsceneManager;
-import org.copycraftDev.new_horizons.core.bigbang.BigBangManager;
 
 /**
  * All /new_horizons commands are server-side only.
@@ -104,7 +104,7 @@ public class ModCommands {
                                                         }
 
                                                         MinecraftClient client = MinecraftClient.getInstance();
-                                                        client.execute(() -> BigBangManager.spawnParticles(client.getServer(), count, radius));
+                                                        client.execute(() -> BigBangClientManager.spawnParticles( count, radius));
 
                                                         ctx.getSource().sendFeedback(() -> Text.of("Big Bang initiated with " + count + " particles in " + radius + " block radius!"), false);
                                                         return 1;

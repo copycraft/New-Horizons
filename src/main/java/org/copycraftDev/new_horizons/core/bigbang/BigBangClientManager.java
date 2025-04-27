@@ -1,49 +1,50 @@
 package org.copycraftDev.new_horizons.core.bigbang;
 
-import nazario.liby.api.registry.auto.LibyAutoRegister;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
+import net.minecraft.client.world.ClientWorld;
 import net.minecraft.particle.DustParticleEffect;
 import net.minecraft.particle.ParticleTypes;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.random.Random;
-import net.minecraft.world.World;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-@LibyAutoRegister(method = "register")
-public class BigBangManager {
+/**
+ * Client‐side Big Bang particle manager.
+ *
+ * Usage:
+ *   // On some client tick event:
+ *   BigBangClientManager.tick(client.world);
+ *
+ *   // To start explosion:
+ *   BigBangClientManager.spawnParticles(amount, radius);
+ */
+public class BigBangClientManager {
     private static final List<BigBangParticleData> particles = new ArrayList<>();
     private static final Vec3d CENTER = Vec3d.ZERO;
     private static final double COLLAPSE_SPEED = 0.3;
-    private static final double EXPLODE_SPEED  = 3.0;
-    private static final double THRESHOLD      = 0.5;
-    private static final double SPAWN_RADIUS   = 100;
+    private static final double EXPLODE_SPEED = 3.0;
+    private static final double THRESHOLD = 0.5;
+    private static final double SPAWN_RADIUS = 100;
     private static final double SECOND_EXPLOSION_SPEED = 10.0;
     private static final int WAIT_TIME_TICKS = 40; // 2 seconds (20 ticks/sec)
 
     private static int particleCount = 0;
     private static boolean finishedFirstPhase = false;
+    private static boolean finishedSecondPhase = false;
     private static int ticksAfterExplosion = 0;
 
-    // Register server tick handler
-    public static void register() {
-        ServerTickEvents.END_SERVER_TICK.register(BigBangManager::tick);
-    }
-
-    // Trigger initial collapse & explosion
-    public static void spawnParticles(MinecraftServer server, int amount, double radius) {
+    /**
+     * Initialize a Big Bang effect with the given number of particles and spawn radius.
+     */
+    public static void spawnParticles(int amount, double radius) {
         Random random = Random.create();
-        ServerWorld world = server.getWorld(World.OVERWORLD);
-
         particles.clear();
         for (int i = 0; i < amount; i++) {
             double theta = random.nextDouble() * 2 * Math.PI;
-            double phi   = Math.acos(2 * random.nextDouble() - 1);
-            double r     = Math.cbrt(random.nextDouble()) * radius;
+            double phi = Math.acos(2 * random.nextDouble() - 1);
+            double r = Math.cbrt(random.nextDouble()) * radius;
 
             double x = r * Math.sin(phi) * Math.cos(theta);
             double y = r * Math.sin(phi) * Math.sin(theta);
@@ -61,12 +62,14 @@ public class BigBangManager {
 
         particleCount = amount;
         finishedFirstPhase = false;
+        finishedSecondPhase = false;
         ticksAfterExplosion = 0;
     }
 
-    // Called every server tick
-    private static void tick(MinecraftServer server) {
-        ServerWorld world = server.getWorld(World.OVERWORLD);
+    /**
+     * Update and render the Big Bang particles. Call this each client tick.
+     */
+    public static void tick(ClientWorld world) {
         if (world == null) return;
 
         Iterator<BigBangParticleData> it = particles.iterator();
@@ -79,59 +82,36 @@ public class BigBangManager {
                 // Collapse inward
                 Vec3d move = CENTER.subtract(data.position).normalize().multiply(COLLAPSE_SPEED);
                 data.position = data.position.add(move);
-
-                world.spawnParticles(
-                        ParticleTypes.WAX_OFF,
+                world.addParticle(ParticleTypes.WAX_OFF,
                         data.position.x, data.position.y, data.position.z,
-                        1,      // count
-                        0.0, 0.0, 0.0,  // dx, dy, dz
-                        0.0    // speed
-                );
+                        0.0, 0.0, 0.0);
 
                 if (data.position.distanceTo(CENTER) < THRESHOLD) {
                     data.exploded = true;
                     data.velocity = data.explosionDirection.multiply(EXPLODE_SPEED);
-                    // Mini‐burst at center
+                    // Mini‐burst
                     for (int i = 0; i < 10; i++) {
                         double rx = (Math.random() - 0.5) * 0.5;
                         double ry = (Math.random() - 0.5) * 0.5;
                         double rz = (Math.random() - 0.5) * 0.5;
-                        world.spawnParticles(
-                                ParticleTypes.EXPLOSION,
+                        world.addParticle(ParticleTypes.EXPLOSION,
                                 CENTER.x, CENTER.y, CENTER.z,
-                                1,    // count
-                                rx, ry, rz,
-                                1.0  // speed
-                        );
+                                rx, ry, rz);
                     }
                 }
             } else {
                 // Explosion outward
                 data.position = data.position.add(data.velocity);
-
-                world.spawnParticles(
-                        new DustParticleEffect(
-                                new Vec3d(1f, 1f, 1f).toVector3f(),
-                                1.5f
-                        ),
+                world.addParticle(new DustParticleEffect(new Vec3d(1f,1f,1f).toVector3f(), 1.5f),
                         data.position.x, data.position.y, data.position.z,
-                        1,  // count
-                        data.velocity.x * 0.1,
-                        data.velocity.y * 0.1,
-                        data.velocity.z * 0.1,
-                        1.0
-                );
+                        data.velocity.x * 0.1, data.velocity.y * 0.1, data.velocity.z * 0.1);
 
                 if (data.ticksExploded % 5 == 0) {
-                    world.spawnParticles(
-                            ParticleTypes.FIREWORK,
+                    world.addParticle(ParticleTypes.FIREWORK,
                             data.position.x, data.position.y, data.position.z,
-                            1,
                             Math.random() - 0.5,
                             Math.random() - 0.5,
-                            Math.random() - 0.5,
-                            1.0
-                    );
+                            Math.random() - 0.5);
                 }
 
                 data.ticksExploded++;
@@ -143,7 +123,7 @@ public class BigBangManager {
             if (!data.exploded) allCollapsed = false;
         }
 
-        // After all exploded, wait then do second blast
+        // After collapse, wait then second blast
         if (allCollapsed && !finishedFirstPhase) {
             ticksAfterExplosion++;
             if (ticksAfterExplosion >= WAIT_TIME_TICKS) {
@@ -152,14 +132,14 @@ public class BigBangManager {
             }
         }
 
-        // Final outward lines
-        if (finishedFirstPhase && particles.isEmpty()) {
+        // Final outward lines (once)
+        if (finishedFirstPhase && particles.isEmpty() && !finishedSecondPhase) {
             spawnOutwardLines(world, particleCount, SPAWN_RADIUS);
+            finishedSecondPhase = true;
         }
     }
 
-    // Instant second blast from center
-    private static void spawnSecondExplosion(ServerWorld world, int amount) {
+    private static void spawnSecondExplosion(ClientWorld world, int amount) {
         Random random = Random.create();
         for (int i = 0; i < amount; i++) {
             Vec3d vel = new Vec3d(
@@ -170,35 +150,29 @@ public class BigBangManager {
 
             BigBangParticleData data = new BigBangParticleData(CENTER, Vec3d.ZERO);
             data.velocity = vel;
-            data.exploded = true; // skip collapse
+            data.exploded = true;
             particles.add(data);
         }
     }
 
-    // Radial streaks outward
-    private static void spawnOutwardLines(ServerWorld world, int amount, double radius) {
+    private static void spawnOutwardLines(ClientWorld world, int amount, double radius) {
         Random random = Random.create();
         for (int i = 0; i < amount; i++) {
             double theta = random.nextDouble()*2*Math.PI;
-            double phi   = Math.acos(2*random.nextDouble() - 1);
-            double r     = Math.cbrt(random.nextDouble())*radius;
+            double phi = Math.acos(2*random.nextDouble() - 1);
+            double r = Math.cbrt(random.nextDouble())*radius;
 
             double x = r * Math.sin(phi) * Math.cos(theta);
             double y = r * Math.sin(phi) * Math.sin(theta);
             double z = r * Math.cos(phi);
             Vec3d dir = new Vec3d(x, y, z).normalize().multiply(5);
 
-            world.spawnParticles(
-                    ParticleTypes.END_ROD,
+            world.addParticle(ParticleTypes.END_ROD,
                     CENTER.x, CENTER.y, CENTER.z,
-                    1,  // count
-                    dir.x, dir.y, dir.z,
-                    1.0
-            );
+                    dir.x, dir.y, dir.z);
         }
     }
 
-    // Particle tracking
     private static class BigBangParticleData {
         Vec3d position;
         Vec3d velocity = Vec3d.ZERO;

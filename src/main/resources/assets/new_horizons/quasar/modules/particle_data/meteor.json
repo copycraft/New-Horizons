@@ -11,7 +11,7 @@
   "should_collide": false,
   "sprite_data": {
     "atlas": "minecraft:particle_atlas",
-    "sprite": "new_horizons:img.png"
+    "sprite": "new_horizons:debris.png"
   },
   "velocity_stretch_factor": 0.0
 }

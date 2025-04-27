@@ -44,7 +44,7 @@ public class BigBangCutsceneManager {
         player.changeGameMode(GameMode.SPECTATOR);
 
         // Start Big Bang particles
-        BigBangManager.spawnParticles(player.getServer(), 1000, 50);
+        BigBangClientManager.spawnParticles(1000, 50);
     }
 
     public static void tick(MinecraftServer server) {
