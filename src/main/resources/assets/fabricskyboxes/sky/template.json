@@ -1,0 +1,37 @@
+{
+	"schemaVersion": 2,
+	"type": "square-textured",
+	"textures": {
+		"top": "fabricskyboxes:sky/space_sky_top.png", #
+		"bottom": "fabricskyboxes:sky/space_sky_bottom.png", #
+		"east": "fabricskyboxes:sky/space_sky_right.png", #
+		"west": "fabricskyboxes:sky/space_sky_left.png", #
+		"north": "fabricskyboxes:sky/space_sky_front.png",
+		"south": "fabricskyboxes:sky/space_sky_back.png" 
+	},
+	"fps": 1,
+	"blend": {"type" : "alpha"},
+	"properties": {
+		"priority": 1,
+		"fade": {
+			"startFadeIn": 1000,
+			"endFadeIn": 2000,
+			"startFadeOut": 3000,
+			"endFadeOut": 4000,
+			"alwaysOn": true
+			},
+		"rotation": {
+			"rotationSpeedY": 0.866,
+			"static": [0.0, 0.0, 0.0],
+			"axis": [0.0, -180.0, 0.0]
+		},
+		"transitionInDuration": 10,
+		"transitionOutDuration": 15,
+		"changeFog": false,
+		"fogColors": {"red": 0.84, "green": 0.91, "blue": 0.97, "alpha": 1.0},
+		"sunSkyTint": false,
+		"inThickFog": true,
+		"minAlpha": 0.0,
+		"maxAlpha": 1.0
+	}
+}

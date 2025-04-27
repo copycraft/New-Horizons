@@ -14,7 +14,7 @@ import static org.copycraftDev.new_horizons.NewHorizonsMain.MOD_ID;
 public class ModItems {
     private static final LibyItemRegister REGISTER = new LibyItemRegister(MOD_ID);
 
-    public static final Item CUSTOM_ITEM = REGISTER.registerItem("flashlight", new FlashlightItem(new Item.Settings()));
+    public static final Item FLASHLIGHT_ITEM = REGISTER.registerItem("flashlight", new FlashlightItem(new Item.Settings()));
 
     public static void initialize() {
 
