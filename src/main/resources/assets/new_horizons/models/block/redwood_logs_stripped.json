@@ -1,0 +1,7 @@
+{
+  "parent": "block/cube_column",
+  "textures": {
+    "end": "new_horizons:block/redwood_log_top_stripped",
+    "side": "new_horizons:block/redwood_log_side_stripped"
+  }
+}

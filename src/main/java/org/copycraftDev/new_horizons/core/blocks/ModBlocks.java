@@ -1,6 +1,7 @@
 package org.copycraftDev.new_horizons.core.blocks;
 
 import nazario.liby.api.registry.auto.LibyAutoRegister;
+import net.fabricmc.fabric.api.item.v1.FabricItem;
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 import net.minecraft.block.Block;
 import net.minecraft.block.AbstractBlock;
@@ -32,6 +33,9 @@ public class ModBlocks {
                             .strength(-1.0f)
             )
     );
+    public static final Block REDWOOD_LOG = register("redwood_logs", new WoodBlock());
+    public static final Block REDWOOD_PLANKS = register("redwood_planks", new WoodBlock());
+    public static final Block REDWOOD_LOG_STRIPPED = register("redwood_logs_stripped", new WoodBlock());
 
     private static Block register(String path, Block block) {
         Identifier id = Identifier.of(NewHorizonsMain.MOD_ID, path);
@@ -57,6 +61,9 @@ public class ModBlocks {
             entries.add(GOLD_FLOWER_LAMP.asItem());
             entries.add(PRIVACY_GLASS.asItem());
             entries.add(PORTAL_BLOCK.asItem());
+            entries.add(REDWOOD_LOG.asItem());
+            entries.add(REDWOOD_PLANKS.asItem());
+            entries.add(REDWOOD_LOG_STRIPPED.asItem());
         });
     }
 }
