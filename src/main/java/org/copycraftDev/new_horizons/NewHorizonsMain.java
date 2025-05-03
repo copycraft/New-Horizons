@@ -35,6 +35,7 @@ public class NewHorizonsMain implements ModInitializer {
         LibyRegistryLoader.load("org.copycraftDev.new_horizons", LOGGER, LibyEntrypoints.MAIN);
         Veil.init();
         ServerTickEvents.END_SERVER_TICK.register(MeteorScheduler::onServerTick);
+
         ServerLifecycleEvents.SERVER_STARTED.register(server -> {
             CommandDispatcher<ServerCommandSource> dispatcher = server.getCommandManager().getDispatcher();
             MeteorCommand.register(dispatcher);  // Register the custom command
@@ -47,6 +48,9 @@ public class NewHorizonsMain implements ModInitializer {
             });
         });
     }
+    // In your client entrypoint class:
+
+
     public static Identifier id(String name){
         return Identifier.of(MOD_ID, name);
     }

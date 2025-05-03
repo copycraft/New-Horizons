@@ -113,6 +113,7 @@ public class CelestialBodyRegistry {
         public transient Identifier darkAlbedoMap;
         public transient Identifier heightMap;
         public transient Identifier normalMap;
+        public int baseZ;
 
         // Texture paths (from JSON, only used for conversion)
         String surfaceTexturePath;

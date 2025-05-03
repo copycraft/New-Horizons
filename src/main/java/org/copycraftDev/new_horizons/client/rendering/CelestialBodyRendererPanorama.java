@@ -36,6 +36,10 @@ public class CelestialBodyRendererPanorama {
     /** Base depth at which all bodies are drawn; per-body X goes to depth now. */
     private static float planetZ        = 0f;
 
+    // Track last window size to minimize scale recalculation
+    private static int lastScreenWidth  = -1;
+    private static int lastScreenHeight = -1;
+
     public static void setRotationX(float r)        { rotationX      = r; }
     public static void setRotationY(float r)        { rotationY      = r; }
     public static void setRotationZ(float r)        { rotationZ      = r; }
@@ -54,7 +58,12 @@ public class CelestialBodyRendererPanorama {
      * body at ( body.center.z → X, body.center.y → Y, planetZ + body.center.x → Z ).
      */
     public static void render(DrawContext context, int width, int height, float backgroundAlpha, float delta) {
-        // advance time
+        RenderSystem.disableDepthTest();
+        RenderSystem.depthMask(false);
+        RenderSystem.disableCull(); // Optional: ensures visibility
+        RenderSystem.setShaderFogStart(Float.MAX_VALUE); // Disable fog
+        RenderSystem.setShaderFogEnd(Float.MAX_VALUE);
+
         time.updateAndGet(v -> v + delta);
 
         Tessellator tessellator = Tessellator.getInstance();
@@ -65,22 +74,21 @@ public class CelestialBodyRendererPanorama {
         ms.push();
 
         // compute true screen center plus offsets
-        float centerX = (width  * 0.5f) + offsetX + cameraOffsetX;
+        float centerX = (context.getScaledWindowHeight() * 0.5f) + offsetX + cameraOffsetX;
         float centerY = (height * 0.5f) + offsetY + cameraOffsetY;
+        float screencenterx = context.getScaledWindowWidth() / 2;
+        float screencentery = context.getScaledWindowHeight() / 2;
+        // Ensure the correct transformation matrix
+        ms.translate(screencenterx, screencentery, -10000);
+        ms.scale((float) (scale*1.5), (float) (scale*1.5), (float) (scale*1.5));
+        applyRotation(ms); // Make sure rotation is applied correctly
 
-        // move origin to that center
-        ms.translate(centerX, centerY, cameraOffsetZ);
-
-        // then scale and rotate around it
-        ms.scale(scale, scale, scale);
-        applyRotation(ms);
 
         Matrix4f proj = ms.peek().getPositionMatrix();
         MinecraftClient client = MinecraftClient.getInstance();
         Camera cam = client.gameRenderer.getCamera();
 
-        for (Map.Entry<Identifier, CelestialBodyRegistry.CelestialBodyData> e
-                : CelestialBodyRegistry.getAllPlanets().entrySet()) {
+        for (Map.Entry<Identifier, CelestialBodyRegistry.CelestialBodyData> e : CelestialBodyRegistry.getAllPlanets().entrySet()) {
             CelestialBodyRegistry.CelestialBodyData body = e.getValue();
 
             // bind textures
@@ -99,10 +107,9 @@ public class CelestialBodyRendererPanorama {
             RenderSystem.setShaderFogStart(Integer.MAX_VALUE);
             RenderSystem.setShaderFogEnd(Integer.MAX_VALUE);
             RenderSystem.disableCull();
-            RenderSystem.enableDepthTest();
-            RenderSystem.depthMask(true);
             RenderSystem.assertOnRenderThread();
-
+            RenderSystem.depthMask(true);
+            RenderSystem.enableDepthTest();
             BufferBuilder buf = tessellator.begin(
                     VertexFormat.DrawMode.QUADS,
                     VertexFormats.POSITION_TEXTURE_COLOR_NORMAL
@@ -114,11 +121,11 @@ public class CelestialBodyRendererPanorama {
             Vec3d orig = body.center;
             float x = (float) orig.z;
             float y = (float) orig.y;
-            float z = planetZ + (float) orig.x;
+            float z = planetZ + (float) orig.x; // Ensure fixed Z-depth
 
             Vec3d renderCenter = new Vec3d(x, y, z);
             LazuliGeometryBuilder.buildTexturedSphere(
-                    256,
+                    64,
                     (float) body.radius,
                     renderCenter,
                     new Vec3d(0, 1, 0),
@@ -140,13 +147,14 @@ public class CelestialBodyRendererPanorama {
         RenderSystem.enableDepthTest();
     }
 
+
     private static void applyRotation(MatrixStack ms) {
         Quaternionf q = new Quaternionf();
         q.set(new AxisAngle4f(1, 0, 0, (float) Math.toRadians(rotationX)));
         ms.multiply(q);
         q.set(new AxisAngle4f(0, 1, 0, (float) Math.toRadians(rotationY)));
         ms.multiply(q);
-        q.set(new AxisAngle4f(0, 0, 1, (float) Math.toRadians(rotationZ)));
+        q.set(new AxisAngle4f(0, 0, 45, (float) Math.toRadians(rotationZ)));
         ms.multiply(q);
     }
 }

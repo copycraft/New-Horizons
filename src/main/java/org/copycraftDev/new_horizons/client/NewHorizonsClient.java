@@ -49,6 +49,8 @@ public class NewHorizonsClient implements ClientModInitializer {
     public void onInitializeClient() {
         Veil.init();
 
+        org.copycraftDev.new_horizons.physics.PhysicsRenderer.register();
+
         StickDashHandler.register();
         CelestialBodyRenderer.register();
         LazuliRenderingRegistry.registerLazuliRenderPhases();

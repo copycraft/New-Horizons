@@ -1,0 +1,5 @@
+{
+  "variants": {
+    "": { "model": "new_horizons:block/assembler_block" }
+  }
+}

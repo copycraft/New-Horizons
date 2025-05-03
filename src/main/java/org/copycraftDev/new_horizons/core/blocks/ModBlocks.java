@@ -1,7 +1,6 @@
 package org.copycraftDev.new_horizons.core.blocks;
 
 import nazario.liby.api.registry.auto.LibyAutoRegister;
-import net.fabricmc.fabric.api.item.v1.FabricItem;
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 import net.minecraft.block.Block;
 import net.minecraft.block.AbstractBlock;
@@ -13,7 +12,8 @@ import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.util.Identifier;
 import org.copycraftDev.new_horizons.NewHorizonsMain;
-import org.copycraftDev.new_horizons.core.misc.ModItemGroup;
+import org.copycraftDev.new_horizons.core.blocks.custom.*;
+import org.copycraftDev.new_horizons.physics.block.AssemblerBlock;
 
 @LibyAutoRegister(method = "initialize")
 public class ModBlocks {
@@ -25,6 +25,7 @@ public class ModBlocks {
     public static final Block GOLD_TILE_LAMP = register("gold_tile_lamp", new GoldTileLampBlock());
     public static final Block GOLD_FLOWER_LAMP = register("gold_flower_lamp", new GoldFlowerLampBlock());
     public static final Block PRIVACY_GLASS = register("privacy_glass", new PrivacyGlassBlock());
+    public static final Block ASSEMBLER_BLOCK = register("assembler_block.json", new AssemblerBlock());
     public static final Block PORTAL_BLOCK = register(
             "teleport_portal_block",
             new PortalBlock(
@@ -64,6 +65,7 @@ public class ModBlocks {
             entries.add(REDWOOD_LOG.asItem());
             entries.add(REDWOOD_PLANKS.asItem());
             entries.add(REDWOOD_LOG_STRIPPED.asItem());
+            entries.add(ASSEMBLER_BLOCK.asItem());
         });
     }
 }
