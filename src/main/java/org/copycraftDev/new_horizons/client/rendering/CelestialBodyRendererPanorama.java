@@ -11,6 +11,7 @@ import net.minecraft.util.math.Vec3d;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.AxisAngle4f;
+import org.copycraftDev.new_horizons.lazuli_snnipets.LapisRenderer;
 import org.copycraftDev.new_horizons.client.planets.CelestialBodyRegistry;
 import org.copycraftDev.new_horizons.lazuli_snnipets.LazuliGeometryBuilder;
 import org.copycraftDev.new_horizons.lazuli_snnipets.LazuliShaderRegistry;
@@ -35,6 +36,14 @@ public class CelestialBodyRendererPanorama {
 
     /** Base depth at which all bodies are drawn; per-body X goes to depth now. */
     private static float planetZ        = 0f;
+
+    private static ShaderProgram
+            RENDER_TYPE_PLANET,
+            RENDER_TYPE_PLANET_WITH_NIGHT,
+            RENDER_TYPE_ATMOSPHERE,
+            RENDER_TYPE_STAR,
+            RENDER_TYPE_STAR_AURA,
+            RENDERTYPE_KABOOM_OOHHHHHHHHHHHH_SHINY_1;
 
     // Track last window size to minimize scale recalculation
     private static int lastScreenWidth  = -1;
@@ -93,9 +102,6 @@ public class CelestialBodyRendererPanorama {
 
             // bind textures
             RenderSystem.setShaderTexture(0, body.surfaceTexture);
-            if (body.hasDarkAlbedoMap) {
-                RenderSystem.setShaderTexture(1, body.darkAlbedoMap);
-            }
 
             // choose shader
             ShaderProgram shader = body.isStar
@@ -123,7 +129,20 @@ public class CelestialBodyRendererPanorama {
             float y = (float) orig.y;
             float z = planetZ + (float) orig.x; // Ensure fixed Z-depth
 
+            RENDER_TYPE_PLANET = LazuliShaderRegistry.getShader(ModShaders.RENDER_TYPE_PLANET);
+            RENDER_TYPE_PLANET_WITH_NIGHT = LazuliShaderRegistry.getShader(ModShaders.RENDER_TYPE_PLANET_WITH_NIGHT);
+            RENDER_TYPE_ATMOSPHERE = LazuliShaderRegistry.getShader(ModShaders.RENDER_TYPE_ATMOSPHERE);
+            RENDER_TYPE_STAR = LazuliShaderRegistry.getShader(ModShaders.RENDER_TYPE_STAR);
+            RENDER_TYPE_STAR_AURA = LazuliShaderRegistry.getShader(ModShaders.RENDER_TYPE_STAR_AURA);
+            RENDERTYPE_KABOOM_OOHHHHHHHHHHHH_SHINY_1 = LazuliShaderRegistry.getShader(ModShaders.RENDERTYPE_KABOOM_OOHHHHHHHHHHHH_SHINY_1);
+
             Vec3d renderCenter = new Vec3d(x, y, z);
+            if (body.hasDarkAlbedoMap) {
+                LapisRenderer.setShaderTexture(3, body.darkAlbedoMap);
+                LapisRenderer.setShader(RENDER_TYPE_PLANET_WITH_NIGHT);
+            } else {
+                LapisRenderer.setShader(RENDER_TYPE_PLANET);
+            }
             LazuliGeometryBuilder.buildTexturedSphere(
                     64,
                     (float) body.radius,

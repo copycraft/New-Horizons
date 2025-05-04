@@ -1,10 +1,11 @@
 package org.copycraftDev.new_horizons.physics;
 
 import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.*;
-import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.world.WorldAccess;
 
 import java.util.*;
@@ -13,50 +14,60 @@ public class PhysicsMain {
     public static final PhysicsManager PHYSICS_MANAGER = new PhysicsManager();
 
     public static class PhysicsManager {
-        private final List<PhysicsObject> activeObjects = new ArrayList<>();
+        private static final List<PhysicsObject> activeObjects = new ArrayList<>();
 
-        public PhysicsObject create(ServerWorld world, Vec3d pos) {
-            PhysicsObject obj = new PhysicsObject(pos);
+
+        /** create a new object at pos, remembering the block‑grid origin */
+        public PhysicsObject create(ServerWorld world, Vec3d pos, BlockPos origin) {
+            PhysicsObject obj = new PhysicsObject(pos, origin);
             activeObjects.add(obj);
             return obj;
         }
-
-        public void addObject(PhysicsObject object) {
-            activeObjects.add(object);
-        }
-
         public void removeObject(PhysicsObject object) {
             activeObjects.remove(object);
         }
-
         public List<PhysicsObject> getAllObjects() {
             return activeObjects;
         }
 
-        public void tickAll(ServerWorld world) {
+        /** call once per tick on server */
+        public static void tickAll(MinecraftServer world) {
             for (PhysicsObject obj : new ArrayList<>(activeObjects)) {
-                obj.tick(world);
+                obj.tick(world.getOverworld());
+                BlockAttachmentHandler.attachDetachedBlocks(world.getOverworld(), obj);
             }
         }
     }
 
     public static class PhysicsObject {
+        private final BlockPos origin;
         private Vec3d position;
         private Vec3d velocity = Vec3d.ZERO;
-        private Vec3d rotation = Vec3d.ZERO;  // for rendering only
-
-        private static final double GRAVITY = -0.04;
-        private static final double TERMINAL_VELOCITY = -2.5;
-        private static final double FRICTION = 0.91;
-        private static final double BOUNCE_FACTOR = 0.3;
-
-        private final Map<BlockPos, BlockState> blocks = new HashMap<>();
-        private final Map<BlockPos, BlockEntity> blockEntities = new HashMap<>();
+        private Vec3d rotation = Vec3d.ZERO;
         private Box localBounds = null;
 
-        public PhysicsObject(Vec3d startPos) {
+        private final Map<BlockPos, BlockState> blocks = new HashMap<>();
+        final Map<BlockPos, BlockEntity> blockEntities = new HashMap<>();
+        private final List<BlockPos> previousGlobals = new ArrayList<>();
+
+        public PhysicsObject(Vec3d startPos, BlockPos origin) {
             this.position = startPos;
+            this.origin = origin;
         }
+
+        /** easy control methods **/
+        public void setVelocity(Vec3d v) { velocity = v; }
+        public void addVelocity(Vec3d dv) { velocity = velocity.add(dv); }
+        public void setRotation(Vec3d rotDegrees) { rotation = rotDegrees; }
+        public void addRotation(Vec3d dRot) { rotation = rotation.add(dRot); }
+        public BlockPos getOrigin() { return origin; }
+        public Vec3d getPosition() { return position; }
+        public Vec3d getVelocity() { return velocity; }
+        public Map<BlockPos, BlockEntity> getBlockEntities() {
+            return blockEntities;
+        }
+
+        public Map<BlockPos, BlockState> getBlocks() { return blocks; }
 
         public void addBlock(BlockPos localPos, BlockState state, BlockEntity be) {
             blocks.put(localPos, state);
@@ -66,144 +77,132 @@ public class PhysicsMain {
 
         public void tick(ServerWorld world) {
             applyGravity();
-            doMovement(world);
+            Vec3d attempted = velocity;
+            Vec3d moved = doMovement(world, attempted);
+            position = position.add(moved);
             updateWorldBlocks(world);
         }
 
         private void applyGravity() {
-            velocity = velocity.add(0, GRAVITY, 0);
-            if (velocity.y < TERMINAL_VELOCITY) {
-                velocity = new Vec3d(velocity.x, TERMINAL_VELOCITY, velocity.z);
+            velocity = velocity.add(0, PhysicsConfig.GRAVITY, 0);
+            if (velocity.y < PhysicsConfig.TERMINAL_VELOCITY) {
+                velocity = new Vec3d(velocity.x, PhysicsConfig.TERMINAL_VELOCITY, velocity.z);
             }
         }
 
-        private void doMovement(ServerWorld world) {
-            Box bounds = getCollisionBox();
-            Vec3d attempted = velocity;
+        private Vec3d doMovement(WorldAccess world, Vec3d attempted) {
+            Box bounds = getWorldBounds();
             Vec3d moved = attempted;
 
+            // X axis
             moved = tryMove(world, bounds, moved.x, 0, 0);
             bounds = bounds.offset(moved.x, 0, 0);
-            if (moved.x != attempted.x) velocity = new Vec3d(velocity.x * FRICTION, velocity.y, velocity.z);
+            // Y axis
+            double my = tryMove(world, bounds, 0, moved.y, 0).y;
+            moved = new Vec3d(moved.x, my, moved.z);
+            bounds = bounds.offset(0, my, 0);
+            // Z axis
+            double mz = tryMove(world, bounds, 0, 0, moved.z).z;
+            moved = new Vec3d(moved.x, moved.y, mz);
 
-            Vec3d yMove = tryMove(world, bounds, 0, attempted.y, 0);
-            moved = new Vec3d(moved.x, yMove.y, moved.z);
-            bounds = bounds.offset(0, moved.y, 0);
-            if (moved.y != attempted.y) velocity = new Vec3d(velocity.x, -velocity.y * BOUNCE_FACTOR, velocity.z);
+            // bounce & friction
+            if (moved.y != attempted.y) velocity = new Vec3d(velocity.x, -velocity.y * PhysicsConfig.BOUNCE_FACTOR, velocity.z);
+            if (moved.x != attempted.x) velocity = new Vec3d(velocity.x * PhysicsConfig.FRICTION, velocity.y, velocity.z);
+            if (moved.z != attempted.z) velocity = new Vec3d(velocity.x, velocity.y, velocity.z * PhysicsConfig.FRICTION);
 
-            Vec3d zMove = tryMove(world, bounds, 0, 0, attempted.z);
-            moved = new Vec3d(moved.x, moved.y, zMove.z);
-            bounds = bounds.offset(0, 0, moved.z);
-            if (moved.z != attempted.z) velocity = new Vec3d(velocity.x, velocity.y, velocity.z * FRICTION);
-
-            position = position.add(moved);
+            return moved;
         }
 
         private Vec3d tryMove(WorldAccess world, Box bounds, double dx, double dy, double dz) {
-            Box newBox = bounds.offset(dx, dy, dz);
-            return collides(world, newBox) ? Vec3d.ZERO : new Vec3d(dx, dy, dz);
+            Box nb = bounds.offset(dx, dy, dz);
+            return collides(world, nb) ? Vec3d.ZERO : new Vec3d(dx, dy, dz);
         }
 
         private boolean collides(WorldAccess world, Box box) {
-            int minX = MathHelper.floor(box.minX);
-            int maxX = MathHelper.ceil(box.maxX);
-            int minY = MathHelper.floor(box.minY);
-            int maxY = MathHelper.ceil(box.maxY);
-            int minZ = MathHelper.floor(box.minZ);
-            int maxZ = MathHelper.ceil(box.maxZ);
-
-            BlockPos.Mutable pos = new BlockPos.Mutable();
+            // —————— 1) world collision (unchanged) ——————
+            int minX = MathHelper.floor(box.minX), maxX = MathHelper.ceil(box.maxX);
+            int minY = MathHelper.floor(box.minY), maxY = MathHelper.ceil(box.maxY);
+            int minZ = MathHelper.floor(box.minZ), maxZ = MathHelper.ceil(box.maxZ);
+            BlockPos.Mutable mpos = new BlockPos.Mutable();
             for (int x = minX; x < maxX; x++) {
                 for (int y = minY; y < maxY; y++) {
                     for (int z = minZ; z < maxZ; z++) {
-                        pos.set(x, y, z);
-                        BlockState state = world.getBlockState(pos);
-                        if (!state.isAir()) {
-                            VoxelShape shape = state.getCollisionShape(world, pos);
-                            for (Box bb : shape.getBoundingBoxes()) {
-                                if (box.intersects(bb.offset(pos))) return true;
-                            }
-                        }
-                        BlockEntity be = world.getBlockEntity(pos);
-                        if (be != null) {
-                            VoxelShape shape = state.getCollisionShape(world, pos);
-                            for (Box bb : shape.getBoundingBoxes()) {
-                                if (box.intersects(bb.offset(pos))) return true;
-                            }
+                        mpos.set(x, y, z);
+                        BlockState s = world.getBlockState(mpos);
+                        if (!s.isAir() && s.getCollisionShape(world, mpos).getBoundingBoxes().stream()
+                                .anyMatch(bb -> Box.from(new BlockBox(mpos)).offset(mpos).intersects(box))) {
+                            return true;
                         }
                     }
                 }
             }
+
+            // —————— 2) self‑collision: treat each stored block as collision shape ——————
+            Box worldBounds = getWorldBounds();
+            Vec3d objPos = getPosition();
+            for (BlockPos local : blocks.keySet()) {
+                // get that block’s AABB in world coords
+                Box bb = new Box(
+                        objPos.x + local.getX(),
+                        objPos.y + local.getY(),
+                        objPos.z + local.getZ(),
+                        objPos.x + local.getX() + 1,
+                        objPos.y + local.getY() + 1,
+                        objPos.z + local.getZ() + 1
+                );
+                if (bb.intersects(box)) {
+                    return true;
+                }
+
+            }
+
             return false;
         }
 
-        private Box getCollisionBox() {
-            Box local = getLocalBounds();
-            return local != null ? local.offset(position) : new Box(position, position.add(1, 1, 1));
-        }
 
         private Box getLocalBounds() {
             if (localBounds != null) return localBounds;
-            Box bb = null;
+            Box b = null;
             for (BlockPos p : blocks.keySet()) {
-                Box blockBox = new Box(p.getX(), p.getY(), p.getZ(), p.getX() + 1, p.getY() + 1, p.getZ() + 1);
-                bb = (bb == null) ? blockBox : bb.union(blockBox);
+                Box bb = new Box(p.getX(), p.getY(), p.getZ(),
+                        p.getX()+1, p.getY()+1, p.getZ()+1);
+                b = (b==null)? bb : b.union(bb);
             }
-            localBounds = bb;
-            return bb;
+            localBounds = b;
+            return b;
         }
 
-        public Box getBoundingBox() {
+        public Box getWorldBounds() {
             Box lb = getLocalBounds();
-            if (lb == null) return new Box(position, position.add(1, 1, 1));
-            Vec3d[] corners = new Vec3d[] {
-                    new Vec3d(lb.minX, lb.minY, lb.minZ),
-                    new Vec3d(lb.minX, lb.minY, lb.maxZ),
-                    new Vec3d(lb.minX, lb.maxY, lb.minZ),
-                    new Vec3d(lb.minX, lb.maxY, lb.maxZ),
-                    new Vec3d(lb.maxX, lb.minY, lb.minZ),
-                    new Vec3d(lb.maxX, lb.minY, lb.maxZ),
-                    new Vec3d(lb.maxX, lb.maxY, lb.minZ),
-                    new Vec3d(lb.maxX, lb.maxY, lb.maxZ)
-            };
-            Vec3d rot = this.rotation;
-            double minX = Double.POSITIVE_INFINITY, minY = Double.POSITIVE_INFINITY, minZ = Double.POSITIVE_INFINITY;
-            double maxX = Double.NEGATIVE_INFINITY, maxY = Double.NEGATIVE_INFINITY, maxZ = Double.NEGATIVE_INFINITY;
-            for (Vec3d c : corners) {
-                Vec3d r = c
-                        .rotateX((float) Math.toRadians(rot.x))
-                        .rotateY((float) Math.toRadians(rot.y))
-                        .rotateZ((float) Math.toRadians(rot.z));
-                minX = Math.min(minX, r.x);
-                minY = Math.min(minY, r.y);
-                minZ = Math.min(minZ, r.z);
-                maxX = Math.max(maxX, r.x);
-                maxY = Math.max(maxY, r.y);
-                maxZ = Math.max(maxZ, r.z);
-            }
-            return new Box(minX + position.x, minY + position.y, minZ + position.z,
-                    maxX + position.x, maxY + position.y, maxZ + position.z);
+            return new Box(lb.minX + position.x, lb.minY + position.y, lb.minZ + position.z,
+                    lb.maxX + position.x, lb.maxY + position.y, lb.maxZ + position.z);
         }
 
         private void updateWorldBlocks(ServerWorld world) {
-            for (var entry : blocks.entrySet()) {
+            // 1) remove last tick’s blocks from the world
+            for (BlockPos oldPos : previousGlobals) {
+                world.setBlockState(oldPos, Blocks.AIR.getDefaultState(), 3);
+            }
+            previousGlobals.clear();
+
+            // 2) place this tick’s blocks with flag=3 (update listeners & collision)
+            for (Map.Entry<BlockPos, BlockState> entry : blocks.entrySet()) {
                 BlockPos local = entry.getKey();
                 BlockState state = entry.getValue();
                 BlockPos global = new BlockPos(
-                        (int) (position.x + local.getX()),
-                        (int) (position.y + local.getY()),
-                        (int) (position.z + local.getZ())
+                        (int) Math.floor(position.x) + local.getX(),
+                        (int) Math.floor(position.y) + local.getY(),
+                        (int) Math.floor(position.z) + local.getZ()
                 );
-                world.setBlockState(global, state);
+                world.setBlockState(global, state, 3);
+                previousGlobals.add(global);
             }
         }
 
-        public Vec3d getPosition() { return position; }
-        public Vec3d getVelocity() { return velocity; }
-        public Vec3d getRotation() { return rotation; }
-        public Map<BlockPos, BlockState> getBlocks() { return blocks; }
-        public Map<BlockPos, BlockEntity> getBlockEntities() { return blockEntities; }
-        public void setVelocity(Vec3d v) { velocity = v; }
-        public void addVelocity(Vec3d d) { velocity = velocity.add(d); }
+
+        public Vec3d getRotation() {
+            return rotation;
+        }
+
     }
 }
