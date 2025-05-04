@@ -4,12 +4,12 @@ import org.copycraftDev.new_horizons.client.rendering.CelestialBodyRendererPanor
  * Immutable configuration for panorama rendering transforms.
  */
 public record PanoramaConfig(
-        float rotationX, float rotationY, float rotationZ,
-        float scale,
-        float offsetX, float offsetY,
-        float cameraX, float cameraY, float cameraZ,
-        float planetZ
-) {
+                float rotationX, float rotationY, float rotationZ,
+                float scale,
+                float offsetX, float offsetY,
+                float cameraX, float cameraY, float cameraZ,
+                float planetZ
+        ) {
     public static Builder builder() { return new Builder(); }
 
     /** Applies this config to the static renderer. */

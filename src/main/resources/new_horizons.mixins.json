@@ -10,7 +10,8 @@
     "client.CameraMixin",
     "CameraRotationMixin",
     "client.GameRendererMixin",
-    "TitleScreenMixin"
+    //"TitleScreenMixin",
+    "NoVoidDamageInSpaceLivingEntityMixin"
   ],
   "injectors": {
     "defaultRequire": 1

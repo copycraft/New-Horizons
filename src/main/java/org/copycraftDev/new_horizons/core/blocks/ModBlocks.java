@@ -34,7 +34,7 @@ public class ModBlocks {
                             .strength(-1.0f)
             )
     );
-    public static final Block REDWOOD_LOG = register("redwood_logs", new WoodBlock());
+    public static final Block REDWOOD_LOGS = register("redwood_logs", new WoodBlock());
     public static final Block REDWOOD_PLANKS = register("redwood_planks", new WoodBlock());
     public static final Block REDWOOD_LOG_STRIPPED = register("redwood_logs_stripped", new WoodBlock());
 
@@ -62,7 +62,7 @@ public class ModBlocks {
             entries.add(GOLD_FLOWER_LAMP.asItem());
             entries.add(PRIVACY_GLASS.asItem());
             entries.add(PORTAL_BLOCK.asItem());
-            entries.add(REDWOOD_LOG.asItem());
+            entries.add(REDWOOD_LOGS.asItem());
             entries.add(REDWOOD_PLANKS.asItem());
             entries.add(REDWOOD_LOG_STRIPPED.asItem());
             entries.add(ASSEMBLER_BLOCK.asItem());
