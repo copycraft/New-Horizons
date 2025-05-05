@@ -3,6 +3,7 @@
   "center": [50, 100, -9540],
   "radius": 110,
   "rotationSpeed": 0.001,
+  "orbitSpeed": 0.004,
 
   "surfaceTexturePath": "textures/test_textures/8k_saturn.jpg",
   "cloudsTexturePath": null,

@@ -3,6 +3,7 @@
   "center": [20, 100, -1000],
   "radius": 100,
   "rotationSpeed": 0.003,
+  "orbitSpeed" : 0.002,
 
   "surfaceTexturePath": "textures/test_textures/earth_texture.png",
   "cloudsTexturePath": null,

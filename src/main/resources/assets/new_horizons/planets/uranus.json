@@ -3,6 +3,7 @@
   "center": [50, 100, -19200],
   "radius": 120,
   "rotationSpeed": 0.001,
+  "orbitSpeed": 0.004,
 
   "surfaceTexturePath": "textures/test_textures/2k_uranus.jpg",
   "cloudsTexturePath": null,

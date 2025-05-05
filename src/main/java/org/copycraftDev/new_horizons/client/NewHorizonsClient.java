@@ -12,10 +12,8 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.util.math.Vec3d;
-import org.copycraftDev.new_horizons.client.misc.StickDashHandler;
 import org.copycraftDev.new_horizons.client.particle.ModParticlesClient;
 import org.copycraftDev.new_horizons.client.rendering.CelestialBodyRenderer;
-import org.copycraftDev.new_horizons.client.rendering.CelestialBodySkyRenderer;
 import org.copycraftDev.new_horizons.core.bigbang.BigBangClientManager;
 import org.copycraftDev.new_horizons.core.entity.ModEntities;
 import org.copycraftDev.new_horizons.core.particle.FogParticle;
@@ -27,21 +25,20 @@ import org.copycraftDev.new_horizons.lazuli_snnipets.LazuliRenderingRegistry;
 import org.copycraftDev.new_horizons.physics.PhysicsRenderer;
 import org.lwjgl.glfw.GLFW;
 
+import static org.copycraftDev.new_horizons.client.Preloader.init;
 
 public class NewHorizonsClient implements ClientModInitializer {
-    // Static field to store the current tick delta
     private static float currentTickDelta = 0.0F;
     static double speed = 0;
     static Vec3d direction = Vec3d.ZERO;
     static Vec3d speed3d = Vec3d.ZERO;
 
-    public static float getCurrentTickDelta() {
-        return currentTickDelta;
-    }
+    // Declare key bindings without initializing them statically
     public static KeyBinding ARROW_UP;
     public static KeyBinding ARROW_DOWN;
     public static KeyBinding ARROW_LEFT;
     public static KeyBinding ARROW_RIGHT;
+
     private static Vec3d movementDirection = Vec3d.ZERO;
 
 
@@ -54,62 +51,27 @@ public class NewHorizonsClient implements ClientModInitializer {
 
         StickDashHandler.register();
         CelestialBodyRenderer.register();
-        CelestialBodySkyRenderer.register();
         LazuliRenderingRegistry.registerLazuliRenderPhases();
 
         BlockRenderLayerMap.INSTANCE.putBlock(ModBlocks.PRIVACY_GLASS, RenderLayer.getTranslucent());
 
-
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             BigBangClientManager.tick(client.world);
+
+
         });
 
-
+        // Register particles
         ParticleFactoryRegistry.getInstance().register(ModParticles.FOG_PARTICLE, spriteProvider ->
                 new ModParticlesClient.FogParticle.Factory(spriteProvider)
         );
 
-        // Register a keybinding
-        KeyBinding flashlightKeyBinding = new KeyBinding(
-                "key.new_horizons.override_my_ass",  // Translation key
-                GLFW.GLFW_KEY_F5,                   // Default key
-                "category.new_horizons"             // Keybinding category
-        );
+        // Register keybindings
+        registerKeyBindings();
 
-
-        KeyBinding ARROW_UP = new KeyBinding(
-                "key.new_horizons.arrow_up",   // Translation key
-                GLFW.GLFW_KEY_UP,              // Default key (Up Arrow)
-                "category.new_horizons"        // Keybinding category
-        );
-
-        KeyBinding ARROW_DOWN = new KeyBinding(
-                "key.new_horizons.arrow_down", // Translation key
-                GLFW.GLFW_KEY_DOWN,            // Default key (Down Arrow)
-                "category.new_horizons"        // Keybinding category
-        );
-
-        KeyBinding ARROW_LEFT = new KeyBinding(
-                "key.new_horizons.arrow_left", // Translation key
-                GLFW.GLFW_KEY_LEFT,            // Default key (Left Arrow)
-                "category.new_horizons"        // Keybinding category
-        );
-
-        KeyBinding ARROW_RIGHT = new KeyBinding(
-                "key.new_horizons.arrow_right",// Translation key
-                GLFW.GLFW_KEY_RIGHT,           // Default key (Right Arrow)
-                "category.new_horizons"        // Keybinding category
-        );
-        KeyBindingHelper.registerKeyBinding(flashlightKeyBinding);
-        KeyBindingHelper.registerKeyBinding(ARROW_DOWN);
-        KeyBindingHelper.registerKeyBinding(ARROW_LEFT);
-        KeyBindingHelper.registerKeyBinding(ARROW_RIGHT);
-        KeyBindingHelper.registerKeyBinding(ARROW_UP);
-
-
+        // Register particle and entity renderers
         ParticleFactoryRegistry.getInstance().register(ModParticles.FOG_PARTICLE, FogParticle.Factory::new);
         EntityRendererRegistry.register(ModEntities.SEAT_ENTITY, SeatEntityRenderer::new);
-
 
         WorldRenderEvents.BEFORE_ENTITIES.register((context) -> {
             MinecraftClient client = MinecraftClient.getInstance();
@@ -124,7 +86,6 @@ public class NewHorizonsClient implements ClientModInitializer {
                 LazuliGeometryBuilder.setRenderingSpaceDir(playerPitch, 0, playerYaw);
             }
 
-            // === Input Detection (per frame!) ===
             // === Input Detection (per frame!) ===
             Vec3d inputVec = Vec3d.ZERO;
 
@@ -157,7 +118,7 @@ public class NewHorizonsClient implements ClientModInitializer {
                 speed3d = speed3d.multiply(0.96);
             }
 
-// ✋ Optional: Cap max speed
+            // ✋ Optional: Cap max speed
             double maxSpeed = 0.2;
             if (speed3d.length() > maxSpeed) {
                 speed3d = speed3d.normalize().multiply(maxSpeed);
@@ -166,17 +127,40 @@ public class NewHorizonsClient implements ClientModInitializer {
             movementDirection = inputVec;
             Vec3d displacement = speed3d;
 
-// === Apply Movement to Rendering Space ===
+            // === Apply Movement to Rendering Space ===
             LazuliGeometryBuilder.rotatedSpaceDisplaceRenderingSpacePos(displacement);
-
         });
+    }
 
+    private void registerKeyBindings() {
+        // Registering key bindings
+        ARROW_UP = new KeyBinding(
+                "key.new_horizons.arrow_up",   // Translation key
+                GLFW.GLFW_KEY_UP,              // Default key (Up Arrow)
+                "category.new_horizons"        // Keybinding category
+        );
 
+        ARROW_DOWN = new KeyBinding(
+                "key.new_horizons.arrow_down", // Translation key
+                GLFW.GLFW_KEY_DOWN,            // Default key (Down Arrow)
+                "category.new_horizons"        // Keybinding category
+        );
 
-    };
+        ARROW_LEFT = new KeyBinding(
+                "key.new_horizons.arrow_left", // Translation key
+                GLFW.GLFW_KEY_LEFT,            // Default key (Left Arrow)
+                "category.new_horizons"        // Keybinding category
+        );
 
+        ARROW_RIGHT = new KeyBinding(
+                "key.new_horizons.arrow_right",// Translation key
+                GLFW.GLFW_KEY_RIGHT,           // Default key (Right Arrow)
+                "category.new_horizons"        // Keybinding category
+        );
 
-
-
+        KeyBindingHelper.registerKeyBinding(ARROW_UP);
+        KeyBindingHelper.registerKeyBinding(ARROW_DOWN);
+        KeyBindingHelper.registerKeyBinding(ARROW_LEFT);
+        KeyBindingHelper.registerKeyBinding(ARROW_RIGHT);
+    }
 }
-

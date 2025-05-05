@@ -3,6 +3,7 @@
   "center": [10, 100, -720],
   "radius": 80,
   "rotationSpeed": 0.001,
+  "orbitSpeed": 0.004,
 
   "surfaceTexturePath": "textures/test_textures/8k_venus_surface.jpg",
   "cloudsTexturePath": null,

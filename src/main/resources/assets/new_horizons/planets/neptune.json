@@ -3,6 +3,7 @@
   "center": [60, 100, -30006],
   "radius": 130,
   "rotationSpeed": 0.001,
+  "orbitSpeed": 0.004,
 
   "surfaceTexturePath": "textures/test_textures/2k_neptune.jpg",
   "cloudsTexturePath": null,

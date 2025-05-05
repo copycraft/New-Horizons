@@ -1,269 +1,179 @@
+
 package org.copycraftDev.new_horizons.mixin;
 
-import foundry.veil.api.client.render.MatrixStack;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.minecraft.block.entity.VaultBlockEntity;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.Element;
-import net.minecraft.client.gui.ParentElement;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.screen.SplashTextRenderer;
 import net.minecraft.client.gui.screen.TitleScreen;
-import net.minecraft.client.gui.widget.ClickableWidget;
-import net.minecraft.client.util.InputUtil;
+import net.minecraft.client.render.Camera;
 import net.minecraft.text.Text;
+import net.minecraft.util.Identifier;
 import org.copycraftDev.new_horizons.client.rendering.CelestialBodyRendererPanorama;
-import org.jetbrains.annotations.Nullable;
-import org.slf4j.Logger;
+import org.copycraftDev.new_horizons.client.rendering.CelestialBodyRendererPanorama.ScreenPos;
+import org.copycraftDev.new_horizons.extrastuff.TextureResizer;
+import org.joml.Vector3f;
+import org.lwjgl.glfw.GLFW;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-
-import org.lwjgl.glfw.GLFW;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import java.util.List;
-
+import javax.annotation.Nullable;
+import java.util.Map;
 
 @Environment(EnvType.CLIENT)
 @Mixin(TitleScreen.class)
-public abstract class TitleScreenMixin extends Screen {
+public abstract class TitleScreenMixin extends net.minecraft.client.gui.screen.Screen {
+    @Unique private boolean solarView=false, showSidebar=false;
+    @Unique private boolean draggingZ=false, draggingS=false, dragOrbit=false, dragPan=false;
+    @Unique private float targetZoom=0.115f, smoothZoom=0.115f;
+    @Unique private float targetSpeed=1, smoothSpeed=1;
+    @Unique private float panX,panY,lastX,lastY;
+    @Unique private float rotX=0,rotY=90,rotZ=45;
+    @Unique private String selected="sun", hovered=null;
+    @Unique private final int icon=20;
+    @Shadow private float backgroundAlpha;
+    @Shadow @Final private static org.slf4j.Logger LOGGER;
+    @Shadow @Nullable private net.minecraft.client.gui.screen.SplashTextRenderer splashText;
 
-    @Unique
-    private boolean solarView = false;
-    @Unique
-    private boolean draggingSlider = false;
-    @Unique
-    private boolean draggingSlider2 = false;
-    @Unique
-    private boolean isDraggingPan = false;
-    @Unique
-    private boolean isDraggingOrbit = false;
+    @Shadow protected abstract void init();
 
-    @Unique
-    private float targetZoom = 0.115f;
-    @Unique
-    private float targetspeed = 1f;
-    @Unique
-    private float smoothZoom = 0.115f;
-    @Unique
-    private float smoothspeed = 1f;
+    private static Identifier splashRes=null;
 
-    @Unique
-    private float panX = 0f, panY = 0f;
-    @Unique
-    private float lastMouseX = 0f, lastMouseY = 0f;
+    protected TitleScreenMixin(Text t){super(t);}
 
-    @Unique
-    private float rotationX = 0f;
-    @Unique
-    private float rotationY = 90f;
-    @Unique
-    private float rotationZ = 45f;
-    @Unique
-    private float scale = 0.113f;
-
-    @Unique
-    private float cameraX = 0f, cameraY = 0f, cameraZ = 0f;
-    @Unique
-    private float planetZ = 0f;
-
-    protected TitleScreenMixin(Text title) {
-        super(title);
+    @Inject(method="init",at=@At("HEAD"))
+    public void onInit(CallbackInfo ci){
+        selected="sun";
     }
 
+    @Inject(method="tick",at=@At("HEAD"))
+    public void onTick(CallbackInfo ci){
+        if(!solarView) return;
+        Camera cam= MinecraftClient.getInstance().gameRenderer.getCamera();
+        Vector3f tgt=CelestialBodyRendererPanorama.getPlanetLocation(selected).toVector3f();
+        long w=MinecraftClient.getInstance().getWindow().getHandle();
+        boolean left= GLFW.glfwGetMouseButton(w,GLFW.GLFW_MOUSE_BUTTON_LEFT)==GLFW.GLFW_PRESS;
+        boolean right=GLFW.glfwGetMouseButton(w,GLFW.GLFW_MOUSE_BUTTON_RIGHT)==GLFW.GLFW_PRESS;
+        float r=100, ax=(float)Math.toRadians(rotX), ay=(float)Math.toRadians(rotY);
+        float cx=tgt.x + r*(float)Math.cos(ax)*(float)Math.cos(ay);
+        float cy=tgt.y + r*(float)Math.sin(ax);
+        float cz=tgt.z + r*(float)Math.cos(ax)*(float)Math.sin(ay);
+        try{
+            var acc=(CameraAccessor)cam;
+            acc.invokeSetPos(cx,cy,cz);
+            acc.invokeSetRotation(rotY,rotX);
+        }catch(Exception e){LOGGER.warn("cam fail",e);}
+    }
 
-    @Shadow
-    private float backgroundAlpha;
-    @Shadow
-    @Final
-    private static Logger LOGGER;
-
-
-
-    @Inject(method = "renderBackground(Lnet/minecraft/client/gui/DrawContext;IIF)V", at = @At("HEAD"))
-    public void renderSolar(DrawContext ctx, int mouseX, int mouseY, float delta, CallbackInfo ci) {
-        if (solarView) {
-            this.clearChildren();
-            
-        }
-
-        int screenWidth = ctx.getScaledWindowWidth();
-        int screenHeight = ctx.getScaledWindowHeight();
-
-        if (!solarView) {
-            this.init(client, screenWidth, screenHeight);
-            SplashTextRenderer.HAPPY_NEW_YEAR_.render(ctx, screenWidth, textRenderer, 100);
-        }
-
-
-        smoothZoom += (targetZoom - smoothZoom) * 0.15f;
-        smoothspeed += (targetspeed - smoothspeed) * 0.15f;
-
-
-        int sliderY = screenHeight / 2 - 100;
-        int sliderH = 200;
-        int sliderW = 8;
-
-        int slider1X = screenWidth - 30;
-        int slider2X = 20;
-
-        int backX = screenWidth / 2 - 30;
-        int backY = screenHeight - 30;
-        int backW = 60;
-        int backH = 20;
-
-        int backX2 = screenWidth / 2 - 30;
-        int backY2 = screenHeight - 30;
-        int backW2 = 60;
-        int backH2 = 20;
-
-        float aspectScale = smoothZoom;
-
-        CelestialBodyRendererPanorama.setRotationX(rotationX);
-        CelestialBodyRendererPanorama.setRotationY(rotationY);
-        CelestialBodyRendererPanorama.setRotationZ(rotationZ);
-        CelestialBodyRendererPanorama.setScale(aspectScale);
-        CelestialBodyRendererPanorama.setCameraOffset(panX, panY, cameraZ);
-        CelestialBodyRendererPanorama.setPlanetZ(planetZ);
-        CelestialBodyRendererPanorama.render(ctx, screenWidth, screenHeight, this.backgroundAlpha, delta);
-
-        if (!solarView) {
-            ctx.fill(backX2, backY2, backX2 + backW2, backY2 + backH2, 0xAA000000);
-            ctx.drawText(MinecraftClient.getInstance().textRenderer, "Start", screenWidth / 2 - 15, backY2 + 6, 0xFFFFFF, false);
+    @Inject(method="renderBackground(Lnet/minecraft/client/gui/DrawContext;IIF)V", at=@At("HEAD"))
+    public void renderSolar(DrawContext ctx,int mx,int my,float d,CallbackInfo ci){
+        int w=ctx.getScaledWindowWidth(), h=ctx.getScaledWindowHeight();
+        if(solarView){
+            clearChildren(); splashText=null;
+            int sw=265/2,sh=66/2;
+            if(splashRes==null) splashRes=TextureResizer.resizeTexture("minecraft","textures/gui/title/titlesplash.png",sw,sh,"ts_res");
+            ctx.drawTexture(splashRes,w/2-sw/2,0,0,0,sw,sh,sw,sh);
         } else {
-            ctx.fill(backX, backY, backX + backW, backY + backH, 0xAA000000);
-            ctx.drawText(MinecraftClient.getInstance().textRenderer, "Back", screenWidth / 2 - 14, backY + 6, 0xFFFFFF, false);
-
-            ctx.fill(slider1X, sliderY, slider1X + sliderW, sliderY + sliderH, 0xAA333333);
-            ctx.fill(slider2X, sliderY, slider2X + sliderW, sliderY + sliderH, 0xAA333333);
-
-            float zoomRatio = (targetZoom - 0.01f) / (10f - 0.01f);
-            int zoomHandleY = sliderY + (int) ((1f - zoomRatio) * (sliderH - 10));
-            ctx.fill(slider1X - 2, zoomHandleY, slider1X + sliderW + 2, zoomHandleY + 10, 0xFFAAAAAA);
-
-            float speedRatio = (targetspeed - 0.01f) / (5f - 0.01f);
-            int speedHandleY = sliderY + (int) ((1f - speedRatio) * (sliderH - 10));
-            ctx.fill(slider2X - 2, speedHandleY, slider2X + sliderW + 2, speedHandleY + 10, 0xFF55FF55);
-        }
-    }
-
-    @Inject(method = "renderBackground(Lnet/minecraft/client/gui/DrawContext;IIF)V", at = @At("TAIL"))
-    private void handleDragging(DrawContext ctx, int mouseX, int mouseY, float delta, CallbackInfo ci) {
-        if (!solarView) return;
-
-        final long handle = MinecraftClient.getInstance().getWindow().getHandle();
-
-        int screenWidth = ctx.getScaledWindowWidth();
-        int screenHeight = ctx.getScaledWindowHeight();
-
-        int sliderY = screenHeight / 2 - 100;
-        int sliderH = 200;
-        int sliderW = 8;
-
-        int slider1X = screenWidth - 30;
-        int slider2X = 20;
-
-        if (draggingSlider) {
-            int clamped = Math.min(Math.max(mouseY, sliderY), sliderY + sliderH - 10);
-            float t = 1f - (float) (clamped - sliderY) / (sliderH - 10);
-            targetZoom = 0.01f + t * (10f - 0.01f);
-        }
-        if (draggingSlider2) {
-            int clamped = Math.min(Math.max(mouseY, sliderY), sliderY + sliderH - 10);
-            float t = 1f - (float) (clamped - sliderY) / (sliderH - 10);
-            targetspeed = 0.01f + t * (5f - 0.01f);
+            init(MinecraftClient.getInstance(), w, h);
+            int sw=265,sh=66;
+            if(splashRes==null) splashRes=TextureResizer.resizeTexture("minecraft","textures/gui/title/titlesplash.png",sw,sh,"ts_res");
+            ctx.drawTexture(splashRes,w/2-sw/2,0,0,0,sw,sh,sw,sh);
         }
 
-        // Calculate mouse deltas
-        float dx = mouseX - lastMouseX;
-        float dy = mouseY - lastMouseY;
+        smoothZoom+=(targetZoom-smoothZoom)*0.15f;
+        smoothSpeed+=(targetSpeed-smoothSpeed)*0.15f;
+        CelestialBodyRendererPanorama.setRotationX(rotX);
+        CelestialBodyRendererPanorama.setRotationY(rotY);
+        CelestialBodyRendererPanorama.setRotationZ(rotZ);
+        CelestialBodyRendererPanorama.setScale(smoothZoom);
+        CelestialBodyRendererPanorama.setOffsetX(panX);
+        CelestialBodyRendererPanorama.setOffsetY(panY);
+        CelestialBodyRendererPanorama.setSimulationSpeed(smoothSpeed);
+        CelestialBodyRendererPanorama.setPlanetZ(0);
+        CelestialBodyRendererPanorama.render(ctx,w,h,backgroundAlpha,d, solarView?selected:null);
 
-        if (isDraggingPan) {
-            panX += dx;
-            panY += dy;
+        hovered=null;
+        for(var e:CelestialBodyRendererPanorama.getScreenPositions().entrySet()){
+            float dx=mx-e.getValue().x, dy=my-e.getValue().y;
+            if(dx*dx+dy*dy<100){hovered=e.getKey();break;}
+        }
+        if(hovered!=null){
+            var sp=CelestialBodyRendererPanorama.getScreenPositions().get(hovered);
+            ctx.fill((int)sp.x-6,(int)sp.y-6,(int)sp.x+6,(int)sp.y+6,0x80FFFFFF);
+            int tx=mx+8,ty=my+8,tw=textRenderer.getWidth(hovered);
+            ctx.fill(tx-2,ty-2,tx+tw+2,ty+10,0xAA000000);
+            ctx.drawText(textRenderer,Text.of(hovered),tx,ty,0xFFFFFF,false);
         }
 
-        if (isDraggingOrbit) {
-            rotationY += dx * 0.4f;
-            rotationX += dy * 0.4f;
-            rotationX = Math.max(-90f, Math.min(90f, rotationX));
-        }
-
-        lastMouseX = mouseX;
-        lastMouseY = mouseY;
-
-        // Update dragging states based on current input
-        if (!InputUtil.isKeyPressed(handle, GLFW.GLFW_MOUSE_BUTTON_LEFT)) {
-            draggingSlider = false;
-            draggingSlider2 = false;
-            isDraggingOrbit = false;
-        }
-        if (!InputUtil.isKeyPressed(handle, GLFW.GLFW_MOUSE_BUTTON_RIGHT)) {
-            isDraggingPan = false;
-        }
-    }
-
-    // Add this method to start dragging from mouse click handler
-    @Inject(method = "mouseClicked", at = @At("HEAD"), cancellable = true)
-    private void onMouseClick(double mouseX, double mouseY, int button, CallbackInfoReturnable<Boolean> cir) {
-
-        int screenWidth = MinecraftClient.getInstance().getWindow().getScaledWidth();
-        int screenHeight = MinecraftClient.getInstance().getWindow().getScaledHeight();
-
-        int sliderY = screenHeight / 2 - 100;
-        int sliderH = 200;
-        int sliderW = 8;
-
-        int slider1X = screenWidth - 30;
-        int slider2X = 20;
-
-        int backX = screenWidth / 2 - 30;
-        int backY = screenHeight - 30;
-        int backW = 60;
-        int backH = 20;
-
-        int backX2 = screenWidth / 2 - 30;
-        int backY2 = screenHeight - 30;
-        int backW2 = 60;
-        int backH2 = 20;
-
-        if (!solarView) {
-            if (mouseX >= backX2 && mouseX <= backX2 + backW2 && mouseY >= backY2 && mouseY <= backY2 + backH2) {
-                solarView = true;
-                cir.setReturnValue(true); // Cancel further processing
-            }
-        } else {
-
-            if (mouseX >= backX && mouseX <= backX + backW && mouseY >= backY && mouseY <= backY + backH) {
-                solarView = false;
-                cir.setReturnValue(true); // Cancel further processing
-            }
-            if (button == GLFW.GLFW_MOUSE_BUTTON_LEFT) {
-                if (mouseX >= slider1X && mouseX <= slider1X + sliderW && mouseY >= sliderY && mouseY <= sliderY + sliderH) {
-                    draggingSlider = true;
-                    cir.cancel();
-                } else if (mouseX >= slider2X && mouseX <= slider2X + sliderW && mouseY >= sliderY && mouseY <= sliderY + sliderH) {
-                    draggingSlider2 = true;
-                    cir.cancel();
-                } else {
-                    isDraggingOrbit = true;
+        if(solarView){
+            ctx.drawText(textRenderer,Text.of("☰"),w-icon,5,0xFFFFFF,false);
+            if(showSidebar){
+                ctx.fill(w-100,0,w,h,0xAA000000);
+                int y=10;
+                for(String n:CelestialBodyRendererPanorama.getScreenPositions().keySet()){
+                    ctx.drawText(textRenderer,Text.of(n),w-95,y,0xFFFFFF,false); y+=12;
                 }
             }
-
-            if (button == GLFW.GLFW_MOUSE_BUTTON_RIGHT) {
-                isDraggingPan = true;
-            }
-
-            lastMouseX = (float) mouseX;
-            lastMouseY = (float) mouseY;
         }
+        int sy=h/2-100,sh=200;
+        ctx.fill(w/2-30,h-30,w/2+30,h-10,0xAA000000);
+        ctx.drawText(textRenderer,Text.of(solarView?"Back":"Start"),w/2-25,h-26,0xFFFFFF,false);
+        if(solarView){
+            ctx.fill(w-30,sy,w-22,sy+sh,0xAA333333);
+            ctx.fill(20,sy,28,sy+sh,0xAA333333);
+            int zy=sy+(int)((1f-((targetZoom-0.01f)/9.99f))*(sh-10));
+            int sy2=sy+(int)((1f-((targetSpeed-0.01f)/4.99f))*(sh-10));
+            ctx.fill(w-32,zy,w-20,zy+10,0xFFAAAAAA);
+            ctx.fill(18,sy2,30,sy2+10,0xFF55FF55);
+        }
+    }
+
+    @Inject(method="renderBackground(Lnet/minecraft/client/gui/DrawContext;IIF)V",at=@At("TAIL"))
+    private void drag(DrawContext ctx,int mx,int my,float d,CallbackInfo ci){
+        if(!solarView) return;
+        int w=ctx.getScaledWindowWidth(),h=ctx.getScaledWindowHeight();
+        int sy=h/2-100,sh=200;
+        boolean left= GLFW.glfwGetMouseButton(MinecraftClient.getInstance().getWindow().getHandle(),GLFW.GLFW_MOUSE_BUTTON_LEFT)==GLFW.GLFW_PRESS;
+        boolean right= GLFW.glfwGetMouseButton(MinecraftClient.getInstance().getWindow().getHandle(),GLFW.GLFW_MOUSE_BUTTON_RIGHT)==GLFW.GLFW_PRESS;
+
+        if(left && !draggingZ && mx>=w-30&&mx<=w-22&&my>=sy&&my<=sy+sh) draggingZ=true;
+        if(left && !draggingS && mx>=20&&mx<=28&&my>=sy&&my<=sy+sh) draggingS=true;
+        if(left && !dragOrbit && !draggingZ&&!draggingS) dragOrbit=true;
+        if(right && !dragPan) dragPan=true;
+
+        if(draggingZ){int c=Math.min(Math.max(my,sy),sy+sh-10);float t=1f-(c-sy)/(sh-10f);targetZoom=0.01f+t*9.99f;}
+        if(draggingS){int c=Math.min(Math.max(my,sy),sy+sh-10);float t=1f-(c-sy)/(sh-10f);targetSpeed=0.01f+t*4.99f;}
+
+        float dx=mx-lastX,dy=my-lastY;
+        if(dragOrbit){rotY=(rotY+dx)%360;rotX=Math.max(-90,Math.min(90,rotX+dy));}
+        if(dragPan){panX+=dx;panY+=dy;}
+
+        lastX=mx; lastY=my;
+        if(!left){draggingZ=draggingS=dragOrbit=false;}
+        if(!right){dragPan=false;}
+    }
+
+    @Inject(method="mouseClicked",at=@At("HEAD"),cancellable=true)
+    private void click(double mx,double my,int btn,CallbackInfoReturnable<Boolean> cir){
+        int w=width,h=height;
+        if(solarView){
+            if(mx>=w-icon-5&&mx<=w-5&&my>=5&&my<=5+icon){showSidebar=!showSidebar;cir.setReturnValue(true);return;}
+            if(showSidebar&&mx>=w-100){
+                int y=10;
+                for(String n:CelestialBodyRendererPanorama.getScreenPositions().keySet()){
+                    if(my>=y&&my<y+12){selected=n;showSidebar=false;cir.setReturnValue(true);return;}
+                    y+=12;
+                }
+            }
+            if(hovered!=null&&btn==GLFW.GLFW_MOUSE_BUTTON_LEFT){selected=hovered;cir.setReturnValue(true);return;}
+        }
+        if(mx>=w/2-30&&mx<=w/2+30&&my>=h-30&&my<=h-10){solarView=!solarView;cir.setReturnValue(true);}
     }
 }

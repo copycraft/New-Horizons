@@ -1,0 +1,17 @@
+{
+  "engine_ambiance": {
+    "sounds": [
+      { "name": "new_horizons:engine_ambiance", "stream": true }
+    ]
+  },
+  "engine_broken": {
+    "sounds": [
+      { "name": "new_horizons:engine_broken", "volume": 1.0, "pitch": 1.0 }
+    ]
+  },
+  "engine_powerup": {
+    "sounds": [
+      { "name": "new_horizons:engine_powerup", "volume": 1.0, "pitch": 1.2 }
+    ]
+  }
+}
