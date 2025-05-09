@@ -15,6 +15,7 @@ import net.minecraft.client.render.RenderLayer;
 import net.minecraft.util.math.Vec3d;
 import org.copycraftDev.new_horizons.client.particle.ModParticlesClient;
 import org.copycraftDev.new_horizons.client.rendering.CelestialBodyRenderer;
+import org.copycraftDev.new_horizons.client.rendering.CelestialBodySkyRenderer;
 import org.copycraftDev.new_horizons.core.bigbang.BigBangClientManager;
 import org.copycraftDev.new_horizons.core.entity.ModEntities;
 import org.copycraftDev.new_horizons.core.particle.FogParticle;
@@ -53,6 +54,7 @@ public class NewHorizonsClient implements ClientModInitializer {
 
         StickDashHandler.register();
         CelestialBodyRenderer.register();
+        CelestialBodySkyRenderer.register();
         LazuliRenderingRegistry.registerLazuliRenderPhases();
 
         BlockRenderLayerMap.INSTANCE.putBlock(ModBlocks.PRIVACY_GLASS, RenderLayer.getTranslucent());
@@ -61,6 +63,7 @@ public class NewHorizonsClient implements ClientModInitializer {
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             BigBangClientManager.tick(client.world);
         });
+
 
         ParticleFactoryRegistry.getInstance().register(ModParticles.FOG_PARTICLE, spriteProvider ->
                 new ModParticlesClient.FogParticle.Factory(spriteProvider)
