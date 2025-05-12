@@ -1,6 +1,5 @@
 package org.copycraftDev.new_horizons.core.world.biome;
 
-import nazario.liby.api.registry.auto.LibyAutoRegister;
 import net.minecraft.registry.Registerable;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
@@ -20,7 +19,7 @@ public class ModBiomes {
     public static final RegistryKey<Biome> VENUS = RegistryKey.of(RegistryKeys.BIOME,
             Identifier.of(NewHorizonsMain.MOD_ID, "venus"));
 
-    public static void boostrap(Registerable<Biome> context) {
+    public static void bootstrap(Registerable<Biome> context) {
         context.register(VENUS, venusBiome(context));
     }
 
@@ -55,8 +54,8 @@ public class ModBiomes {
         DefaultBiomeFeatures.addDefaultVegetation(biomeBuilder);
 
         return new Biome.Builder()
-                .precipitation(true)
-                .downfall(0.4f)
+                .precipitation(false) // Set to false for consistency with venus.json
+                .downfall(0.0f) // Matches the downfall value in venus.json
                 .temperature(0.7f)
                 .generationSettings(biomeBuilder.build())
                 .spawnSettings(spawnBuilder.build())

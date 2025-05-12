@@ -1,0 +1,11 @@
+{
+  "max_lifetime": 100000000,
+  "loop": false,
+  "rate": 1000,
+  "count": 1000,
+  "emitter_settings": {
+    "shape": "new_horizons:star",
+    "particle_settings": "new_horizons:test_particle"
+  },
+  "particle_data": "new_horizons:meteor"
+}

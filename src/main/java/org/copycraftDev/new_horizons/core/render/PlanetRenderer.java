@@ -19,6 +19,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 
+import static org.copycraftDev.new_horizons.core.redoingminecraftshit.TickHandler.partialTicks;
+
 public class PlanetRenderer {
 
     public static final List<Planet> planets = new ArrayList<>();
@@ -37,10 +39,11 @@ public class PlanetRenderer {
                 0.0f, 1.0f, planets.get(0), null, "new_horizons:venus", 0.0f, PlanetShape.CUBE));
     }
 
-    public static void tick(Level level) {
-
+    public static void logictick(Level level) {
         checkCollisions(level);
-
+    }
+    public static void renderctick(MatrixStack poseStack) {
+        renderPlanets(poseStack, partialTicks);
     }
 
 

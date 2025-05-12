@@ -48,9 +48,9 @@ void main() {
 
 
     vec3 lightDir2 = vec3(0.,0.0,1.);
-    
+
 	float shadow = max(dot(normal, lightDir2)+0.2, 0.00)*1.4;
-    
+
     // Apply a subtle color tint based on scattering. Tweak the vector values to adjust the tint.
     vec3 scatteredColor = baseColor.rgb + scatter * vec3(0.2, 0.15, 0.1);
 

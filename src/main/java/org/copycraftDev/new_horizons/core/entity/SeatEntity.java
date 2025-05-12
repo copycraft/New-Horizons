@@ -7,7 +7,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraft.entity.vehicle.MinecartEntity;
-import org.copycraftDev.new_horizons.core.blocks.CaptainsChairBlock;
+import org.copycraftDev.new_horizons.core.blocks.custom.CaptainsChairBlock;
 import org.copycraftDev.new_horizons.lazuli_snnipets.LazuliCameraManager;
 
 public class SeatEntity extends MinecartEntity {

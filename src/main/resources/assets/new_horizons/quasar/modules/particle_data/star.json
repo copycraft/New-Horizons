@@ -1,0 +1,13 @@
+{
+  "render_style": "SPHERE",
+  "additive": false,
+  "init_modules": [],
+  "update_modules": [],
+  "collision_modules": [],
+  "render_modules": [
+    "new_horizons:color/meteor"
+  ],
+  "face_velocity": false,
+  "should_collide": false,
+  "velocity_stretch_factor": 0.0
+}

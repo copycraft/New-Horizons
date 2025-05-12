@@ -16,8 +16,9 @@ import net.minecraft.world.GameMode;
 import org.copycraftDev.new_horizons.client.planets.CelestialBodyRegistry;
 import org.copycraftDev.new_horizons.client.rendering.CelestialBodyRenderer;
 import org.copycraftDev.new_horizons.client.rendering.ScreenOverlayRenderer;
+import org.copycraftDev.new_horizons.core.bigbang.BigBangClientManager;
 import org.copycraftDev.new_horizons.core.bigbang.BigBangCutsceneManager;
-import org.copycraftDev.new_horizons.core.bigbang.BigBangManager;
+import org.copycraftDev.new_horizons.physics.block.AssemblerBlock;
 
 /**
  * All /new_horizons commands are server-side only.
@@ -40,6 +41,17 @@ public class ModCommands {
                                         return 1;
                                     })
                             )
+                            .then(CommandManager.literal("setassemblermaxrange")
+                                    .then(CommandManager.argument("value", IntegerArgumentType.integer(1))
+                                            .executes(ctx -> {
+                                                int val = IntegerArgumentType.getInteger(ctx, "value");
+                                                AssemblerBlock.maxRange = val;
+                                                ctx.getSource().sendFeedback(() -> Text.of("Assembler max range set to " + val), false);
+                                                return 1;
+                                            })
+                                    )
+                            )
+
 
                             // trigger kaboom effect
                             .then(CommandManager.literal("kaboom")
@@ -104,7 +116,7 @@ public class ModCommands {
                                                         }
 
                                                         MinecraftClient client = MinecraftClient.getInstance();
-                                                        client.execute(() -> BigBangManager.spawnParticles(client.getServer(), count, radius));
+                                                        client.execute(() -> BigBangClientManager.spawnParticles( count, radius));
 
                                                         ctx.getSource().sendFeedback(() -> Text.of("Big Bang initiated with " + count + " particles in " + radius + " block radius!"), false);
                                                         return 1;
