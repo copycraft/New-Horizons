@@ -19,6 +19,7 @@ import org.copycraftDev.new_horizons.core.entity.ModEntities;
 import org.copycraftDev.new_horizons.core.particle.FogParticle;
 import org.copycraftDev.new_horizons.core.particle.ModParticles;
 import org.copycraftDev.new_horizons.client.render.entity.SeatEntityRenderer;
+import org.copycraftDev.new_horizons.extrastuff.PlanetTextureGenerator;
 import org.copycraftDev.new_horizons.lazuli_snnipets.LazuliGeometryBuilder;
 import org.copycraftDev.new_horizons.core.blocks.ModBlocks;
 import org.copycraftDev.new_horizons.lazuli_snnipets.LazuliRenderingRegistry;

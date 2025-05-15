@@ -19,5 +19,6 @@
   "atmosphereColor2": null,
   "atmosphereRadius": 115,
 
-  "hasDarkAlbedoMap": null
+  "hasDarkAlbedoMap": null,
+  "usesGeneratedTexture": true
 }

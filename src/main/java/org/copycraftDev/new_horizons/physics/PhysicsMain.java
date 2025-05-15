@@ -3,10 +3,12 @@ package org.copycraftDev.new_horizons.physics;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.entity.Entity;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.*;
 import net.minecraft.world.WorldAccess;
+import org.copycraftDev.new_horizons.core.entity.ModEntities;
 
 import java.util.*;
 
@@ -49,6 +51,7 @@ public class PhysicsMain {
         private final Map<BlockPos, BlockState> blocks = new HashMap<>();
         final Map<BlockPos, BlockEntity> blockEntities = new HashMap<>();
         private final List<BlockPos> previousGlobals = new ArrayList<>();
+        private final Map<PhysicsObject, Map<Vec3d, BlockColliderEntity>> colliders = new IdentityHashMap<>();
 
         public PhysicsObject(Vec3d startPos, BlockPos origin) {
             this.position = startPos;
@@ -76,12 +79,35 @@ public class PhysicsMain {
         }
 
         public void tick(ServerWorld world) {
-            applyGravity();
-            Vec3d attempted = velocity;
-            Vec3d moved = doMovement(world, attempted);
-            position = position.add(moved);
-            updateWorldBlocks(world);
+            for (PhysicsObject obj : PHYSICS_MANAGER.getAllObjects()) {
+                Map<Vec3d, BlockColliderEntity> map = colliders.computeIfAbsent(obj, o -> new HashMap<>());
+
+                for (var entry : obj.getBlocks().entrySet()) {
+                    Vec3d offset = Vec3d.of(entry.getKey());
+                    if (!map.containsKey(offset)) {
+                        BlockColliderEntity c = new BlockColliderEntity(ModEntities.BLOCK_COLLIDER, world);
+                        world.spawnEntity(c);
+                        c.init(obj, offset);
+                        map.put(offset, c);
+                    }
+                    map.get(offset).init(obj, offset);
+                }
+
+                map.keySet().removeIf(off -> {
+                    boolean gone = !obj.getBlocks().containsKey(off);
+                    if (gone) map.get(off).remove(Entity.RemovalReason.DISCARDED); // or .KILLED/.UNLOADED
+                    return gone;
+                });
+
+                // These must be done for each object!
+                obj.applyGravity();
+                Vec3d attempted = obj.velocity;
+                Vec3d moved = obj.doMovement(world, attempted);
+                obj.position = obj.position.add(moved);
+                obj.updateWorldBlocks(world);
+            }
         }
+
 
         private void applyGravity() {
             velocity = velocity.add(0, PhysicsConfig.GRAVITY, 0);
@@ -204,5 +230,8 @@ public class PhysicsMain {
             return rotation;
         }
 
+        public boolean isAlive() {
+            return true;
+        }
     }
 }

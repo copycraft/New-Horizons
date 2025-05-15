@@ -4,7 +4,9 @@
   "package": "org.copycraftDev.new_horizons.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
-    "client.SpaceSkyboxMixin"
+    "client.SpaceSkyboxMixin",
+    "AbstractBlockCollisionMixin",
+    "AbstractBlockMixin"
   ],
   "client": [
     "client.CameraMixin",

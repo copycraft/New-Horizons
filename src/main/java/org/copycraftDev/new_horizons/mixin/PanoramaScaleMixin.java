@@ -11,35 +11,24 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-/**
- * Mixin to scale the vanilla panorama cube by 5×.
- */
 @Mixin(BackgroundRenderer.class)
 public class PanoramaScaleMixin {
 
-    /**
-     * Inject code to scale the panorama cube by 5x.
-     */
     @Inject(
             method = "render(Lnet/minecraft/client/render/Camera;FLnet/minecraft/client/world/ClientWorld;IF)V",
             at = @At("HEAD")
     )
     private static void scalePanoramaHead(Camera camera, float tickDelta, ClientWorld world, int viewDistance, float skyDarkness, CallbackInfo ci) {
-        // Using MatrixStack to scale the rendering of the panorama cube.
         Matrix4fStack matrixStack = RenderSystem.getModelViewStack();
         matrixStack.pushMatrix();
         matrixStack.scale(500.0F, 500.0F, 500.0F);  // Scale 5x
     }
 
-    /**
-     * Reset matrix after the panorama is rendered.
-     */
     @Inject(
             method = "render(Lnet/minecraft/client/render/Camera;FLnet/minecraft/client/world/ClientWorld;IF)V",
             at = @At("TAIL")
     )
     private static void scalePanoramaTail(Camera camera, float tickDelta, ClientWorld world, int viewDistance, float skyDarkness, CallbackInfo ci) {
-        // Restore matrix stack after rendering panorama.
         Matrix4fStack matrixStack = RenderSystem.getModelViewStack();
         matrixStack.popMatrix();
     }

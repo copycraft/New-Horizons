@@ -18,6 +18,7 @@ import org.copycraftDev.new_horizons.client.rendering.CelestialBodyRenderer;
 import org.copycraftDev.new_horizons.client.rendering.ScreenOverlayRenderer;
 import org.copycraftDev.new_horizons.core.bigbang.BigBangClientManager;
 import org.copycraftDev.new_horizons.core.bigbang.BigBangCutsceneManager;
+import org.copycraftDev.new_horizons.lazuli_snnipets.LazuliGeometryBuilder;
 import org.copycraftDev.new_horizons.physics.block.AssemblerBlock;
 
 /**
@@ -35,12 +36,11 @@ public class ModCommands {
                             // reload planet data
                             .then(CommandManager.literal("reloadPlanets")
                                     .executes(ctx -> {
-                                        CelestialBodyRegistry.registerAllPlanets(
-                                                "new_horizons/planets", NewHorizonsMain.MOD_ID
-                                        );
+                                       CelestialBodyRegistry.reloadPlanets();
                                         return 1;
                                     })
                             )
+
                             .then(CommandManager.literal("setassemblermaxrange")
                                     .then(CommandManager.argument("value", IntegerArgumentType.integer(1))
                                             .executes(ctx -> {
@@ -74,14 +74,13 @@ public class ModCommands {
 
                             // toggle planet rendering on/off
                             .then(CommandManager.literal("toggleRender")
-                                    .then(CommandManager.argument("enabled", BoolArgumentType.bool())
                                             .executes(ctx -> {
-                                                boolean flag = BoolArgumentType.getBool(ctx, "enabled");
-                                                CelestialBodyRenderer.setShouldRender(flag);
+                                                CelestialBodyRenderer.setShouldRender(!CelestialBodyRenderer.shouldRender);
+                                                System.out.println("Planet rendering " + (CelestialBodyRenderer.shouldRender ? "enabled" : "disabled"));
                                                 return 1;
                                             })
                                     )
-                            )
+
 
                             // blackout: full-screen black + message
                             .then(CommandManager.literal("blackout")

@@ -23,5 +23,7 @@
 
   "ringsTexturePath": null,
   "ringsInnerRadius": 0,
-  "ringsOuterRadius": 0
+  "ringsOuterRadius": 0,
+
+  "usesGeneratedTexture": true
 }

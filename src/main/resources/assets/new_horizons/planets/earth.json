@@ -1,25 +1,27 @@
 {
   "name": "earth",
-  "center": [20, 100, -1000],
+  "center": [
+    20,
+    100,
+    -1000
+  ],
   "radius": 100,
   "rotationSpeed": 0.003,
-  "orbitSpeed" : 0.002,
-
+  "orbitSpeed": 0.002,
   "surfaceTexturePath": "textures/test_textures/earth_texture.png",
   "cloudsTexturePath": null,
   "atmosphereTexturePath": "textures/test_textures/8k_earth_clouds.jpg",
   "darkAlbedoMapPath": "textures/test_textures/earth_night.png",
   "heightMapPath": "textures/test_textures/earth_height.png",
   "normalMapPath": "textures/test_textures/earth_normal.png",
-
-
   "hasAtmosphere": true,
   "isStar": false,
   "atmosphereColor1": null,
   "atmosphereColor2": null,
   "atmosphereRadius": 105,
+  "hasDarkAlbedoMap": true,
 
-  "hasDarkAlbedoMap": true
+  "usesGeneratedTexture": false
 }
 
 

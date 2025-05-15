@@ -7,6 +7,7 @@ import net.minecraft.client.gl.ShaderProgram;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.render.*;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Vec3d;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
@@ -47,105 +48,96 @@ public class CelestialBodyRendererPanorama {
     public static void setPlanetZ(float z){planetZ=z;}
 
     public static void render(DrawContext ctx, int w, int h, float alpha, float delta, String focusPlanet){
+        // Clear previous screen positions and update time
         screenPositions.clear();
-        time.updateAndGet(t->t+delta);
+        time.updateAndGet(t -> t + delta);
 
-        if(focusPlanet!=null){
+        // Rotation logic for the focus planet
+        if (focusPlanet != null) {
             Vec3d loc = getPlanetLocation(focusPlanet);
-            if(loc!=null){
-                float xScene=(float)loc.z, yScene=(float)loc.y, zScene=planetZ+(float)loc.x;
-                float desiredY=(float)Math.toDegrees(Math.atan2(xScene,zScene));
-                float horiz=(float)Math.hypot(xScene,zScene);
-                float desiredX=-(float)Math.toDegrees(Math.atan2(yScene,horiz));
-                rotationY += (desiredY-rotationY)*0.1f;
-                rotationX += (desiredX-rotationX)*0.1f;
+            if (loc != null) {
+                float xScene = (float) loc.z, yScene = (float) loc.y, zScene = planetZ + (float) loc.x;
+                float desiredY = (float) Math.toDegrees(Math.atan2(xScene, zScene));
+                float horiz = (float) Math.hypot(xScene, zScene);
+                float desiredX = -(float) Math.toDegrees(Math.atan2(yScene, horiz));
+                rotationY += (desiredY - rotationY) * 0.1f;
+                rotationX += (desiredX - rotationX) * 0.1f;
             }
         }
 
-        rotationX = Math.max(-90,Math.min(90,rotationX));
+        rotationX = Math.max(-90, Math.min(90, rotationX));
 
-
-        RenderSystem.disableDepthTest();
+        // Set up the rendering context
         RenderSystem.depthMask(false);
         RenderSystem.disableCull();
         RenderSystem.setShaderFogStart(Float.MAX_VALUE);
         RenderSystem.setShaderFogEnd(Float.MAX_VALUE);
 
-        Tessellator tess=Tessellator.getInstance();
-        MatrixStack ms=new MatrixStack();
+        Tessellator tess = Tessellator.getInstance();
+        MatrixStack ms = new MatrixStack();
         ms.multiplyPositionMatrix(ctx.getMatrices().peek().getPositionMatrix());
         ms.push();
-        ms.translate(w*0.5f+offsetX,h*0.5f+offsetY,-1000);
-        ms.scale(scale*1.5f,scale*1.5f,scale*1.5f);
+        ms.translate(w * 0.5f + offsetX, h * 0.5f + offsetY, -1000);
+        ms.scale(scale * 1.5f, scale * 1.5f, scale * 1.5f);
         applyRotation(ms);
-        Matrix4f mvp=ms.peek().getPositionMatrix();
+        Matrix4f mvp = ms.peek().getPositionMatrix();
 
-
-        S_PLANET        = LazuliShaderRegistry.getShader(ModShaders.RENDER_TYPE_PLANET);
+        // Load the shaders
+        S_PLANET = LazuliShaderRegistry.getShader(ModShaders.RENDER_TYPE_PLANET);
         S_PLANET_NIGHT = LazuliShaderRegistry.getShader(ModShaders.RENDER_TYPE_PLANET_WITH_NIGHT);
-        S_ATMOSPHERE   = LazuliShaderRegistry.getShader(ModShaders.RENDER_TYPE_ATMOSPHERE);
-        S_STAR         = LazuliShaderRegistry.getShader(ModShaders.RENDER_TYPE_STAR);
-        S_STAR_AURA    = LazuliShaderRegistry.getShader(ModShaders.RENDER_TYPE_STAR_AURA);
-        S_KABOOM       = LazuliShaderRegistry.getShader(ModShaders.RENDERTYPE_KABOOM_OOHHHHHHHHHHHH_SHINY_1);
+        S_ATMOSPHERE = LazuliShaderRegistry.getShader(ModShaders.RENDER_TYPE_ATMOSPHERE);
+        S_STAR = LazuliShaderRegistry.getShader(ModShaders.RENDER_TYPE_STAR);
+        S_STAR_AURA = LazuliShaderRegistry.getShader(ModShaders.RENDER_TYPE_STAR_AURA);
+        S_KABOOM = LazuliShaderRegistry.getShader(ModShaders.RENDERTYPE_KABOOM_OOHHHHHHHHHHHH_SHINY_1);
 
-        Camera cam= MinecraftClient.getInstance().gameRenderer.getCamera();
+        Camera cam = MinecraftClient.getInstance().gameRenderer.getCamera();
 
-        for(var e:CelestialBodyRegistry.getAllPlanets().entrySet()){
-            var body=e.getValue();
+        // Loop through each celestial body and render it
+        for (var e : CelestialBodyRegistry.getAllPlanets().entrySet()) {
+            var body = e.getValue();
 
+            Vec3d orig = body.center;
+            float ang = (float) (time.get() * body.orbitSpeed * simulationSpeed);
+            double cos = Math.cos(ang), sin = Math.sin(ang);
+            Vec3d orb = new Vec3d(orig.x * cos - orig.z * sin, orig.y, orig.x * sin + orig.z * cos);
 
-            Vec3d orig=body.center;
-            float ang=time.get()*body.orbitSpeed*simulationSpeed;
-            double cos=Math.cos(ang), sin=Math.sin(ang);
-            Vec3d orb=new Vec3d(orig.x*cos - orig.z*sin, orig.y, orig.x*sin + orig.z*cos);
-
-
-            Vector4f v=new Vector4f((float)orb.z,(float)orb.y,planetZ+(float)orb.x,1);
+            Vector4f v = new Vector4f((float) orb.z, (float) orb.y, planetZ + (float) orb.x, 1);
             v.mul(mvp);
-            if(v.w>0){
-                float sx=(v.x/v.w*0.5f+0.5f)*w;
-                float sy=((-v.y/v.w)*0.5f+0.5f)*h;
-                screenPositions.put(body.name,new ScreenPos(sx,sy));
+            if (v.w > 0) {
+                float sx = (v.x / v.w * 0.5f + 0.5f) * w;
+                float sy = (-v.y / v.w * 0.5f + 0.5f) * h;
+                screenPositions.put(body.name, new ScreenPos(sx, sy));
             }
 
 
-            RenderSystem.setShaderTexture(0,body.surfaceTexture);
-            ShaderProgram sh= body.isStar?S_STAR:(body.hasDarkAlbedoMap?S_PLANET_NIGHT:S_PLANET);
-            RenderSystem.setShader(()->sh);
+            ShaderProgram sh = body.isStar ? S_STAR : (body.hasDarkAlbedoMap ? S_PLANET_NIGHT : S_PLANET);
+            RenderSystem.setShader(() -> sh);
             RenderSystem.setShaderFogStart(Float.MAX_VALUE);
             RenderSystem.setShaderFogEnd(Float.MAX_VALUE);
             RenderSystem.disableCull();
             RenderSystem.depthMask(true);
             RenderSystem.enableDepthTest();
 
-
-            BufferBuilder bb=tess.begin(VertexFormat.DrawMode.QUADS,VertexFormats.POSITION_TEXTURE_COLOR_NORMAL);
-            Vec3d sceneCenter=new Vec3d((float)orb.z,(float)orb.y,planetZ+(float)orb.x);
-            float roll=(float)(body.rotationSpeed*time.get());
-            if(body.hasDarkAlbedoMap) LapisRenderer.setShaderTexture(3,body.darkAlbedoMap);
-            LapisRenderer.setShader(sh);
-            LazuliGeometryBuilder.buildTexturedSphere(64,(float)body.radius,sceneCenter,new Vec3d(0,1,0),roll,false,cam,mvp,bb);
-            BufferRenderer.drawWithGlobalProgram(bb.end());
-
-
-            if(body.hasAtmosphere){
-                RenderSystem.enableBlend();
-                RenderSystem.setShader(()->S_ATMOSPHERE);
-                LapisRenderer.setShaderTexture(0,body.darkAlbedoMap!=null?body.darkAlbedoMap:body.surfaceTexture);
-                BufferBuilder ab=tess.begin(VertexFormat.DrawMode.QUADS,VertexFormats.POSITION_TEXTURE_COLOR_NORMAL);
-                LazuliGeometryBuilder.buildTexturedSphere(32, (float) body.atmosphereRadius,sceneCenter,new Vec3d(0,1,0),0,true,cam,mvp,ab);
-                BufferRenderer.drawWithGlobalProgram(ab.end());
-                RenderSystem.disableBlend();
+            // Begin rendering the body
+            BufferBuilder bb = tess.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR_NORMAL);
+            Vec3d sceneCenter = new Vec3d((float) orb.z, (float) orb.y, planetZ + (float) orb.x);
+            float roll = (float) (body.rotationSpeed * time.get());
+            if (body.hasDarkAlbedoMap) {
+                LapisRenderer.setShaderTexture(3, body.darkAlbedoMap);
             }
+            LapisRenderer.setShader(sh);
+            LazuliGeometryBuilder.buildTexturedSphere(64, (float) body.radius, sceneCenter, new Vec3d(0, 1, 0), roll, false, cam, mvp, bb);
+            BufferRenderer.drawWithGlobalProgram(bb.end());
         }
 
         ms.pop();
         RenderSystem.setShaderFogShape(FogShape.CYLINDER);
-        RenderSystem.setShaderFogColor(0,0,0);
+        RenderSystem.setShaderFogColor(0, 0, 0);
         RenderSystem.setShader(GameRenderer::getPositionColorProgram);
         RenderSystem.depthMask(true);
         RenderSystem.enableDepthTest();
     }
+
 
     private static void applyRotation(MatrixStack ms){
         Quaternionf q=new Quaternionf().set(new AxisAngle4f(1,0,0,(float)Math.toRadians(rotationX))); ms.multiply(q);

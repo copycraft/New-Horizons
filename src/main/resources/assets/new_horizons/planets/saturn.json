@@ -23,5 +23,7 @@
 
   "ringsTexturePath": "textures/test_textures/saturn_ring.jpg",
   "ringsInnerRadius": 100,
-  "ringsOuterRadius": 100
+  "ringsOuterRadius": 100,
+
+  "usesGeneratedTexture": true
 }

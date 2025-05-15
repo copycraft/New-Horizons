@@ -8,29 +8,22 @@ import org.joml.Matrix4f;
 import static java.lang.Math.*;
 import static java.lang.Math.sin;
 
-public class LazuliGeometryBuilder {
+public class LunarGeometryBuilder {
 
     static Vec3d mainDisplacement = new Vec3d(0,0,0);
     static double pitch  = 0;
     static double yaw  = 0;
     static double roll = 0;
+    public static float clampDist = 60000;
 
-    /**
-     * Builds a textured sphere using triangle strips.
-     *
-     * @param res           The resolution of the sphere (higher = smoother)
-     * @param radius        The radius of the sphere
-     * @param center        The center position of the sphere
-     * @param camera        The player camera
-     * @param matrix4f2     The transformation matrix
-     * @param bufferBuilder The buffer to store vertices
-     */
+
     public static void buildTexturedSphere(int res, float radius, Vec3d center, Vec3d axle, float roll, boolean flipNormals,  Camera camera, Matrix4f matrix4f2, BufferBuilder bufferBuilder) {
-        Vec3d displacement = camera.getPos().subtract(center); // Get displacement relative to camera
+        Vec3d displacement = camera.getPos().subtract(center);
         float angle2 = 0f;
         float nextAngle2;
         float thisRingRadius;
         float nextRingRadius;
+
 
         Vec3d yAxle = axle;
         Vec3d xAxle = (yAxle.x == 0 && yAxle.z == 0) ? new Vec3d(1, 0, 0) : new Vec3d(yAxle.x, 0, yAxle.z).normalize().rotateY(90);
@@ -47,13 +40,13 @@ public class LazuliGeometryBuilder {
             float angle = roll;
             for (int i = 0; i < res * 2; i++) {
 
-                //Vertex 1
+
                 Vec3d v1 = new Vec3d(
                         sin(angle) * thisRingRadius,
                         thisRingY,
                         cos(angle) * thisRingRadius
                 );
-                //Vertex 2
+
                 Vec3d v2 = new Vec3d(
                         sin(angle) * nextRingRadius,
                         nextRingY,
@@ -62,13 +55,13 @@ public class LazuliGeometryBuilder {
 
                 angle += (float) (PI / res);
 
-                //Vertex 3
+
                 Vec3d v3 = new Vec3d(
                         sin(angle) * nextRingRadius,
                         nextRingY,
                         cos(angle) * nextRingRadius
                 );
-                //Vertex 4
+
                 Vec3d v4 = new Vec3d(
                         sin(angle) * thisRingRadius,
                         thisRingY,
@@ -81,14 +74,14 @@ public class LazuliGeometryBuilder {
                 v4 = yAxle.multiply(v4.y).add(xAxle.multiply(v4.x)).add(zAxle.multiply(v4.z));
 
 
-                //Equatorial texture coordinates
+
                 double U1 = ((angle - roll) / PI) / 2;
                 double U2 = ((angle - roll) / PI) / 2 + (0.5 / res);
-                //Longitudinal texture coordinates
+
                 double V1 = angle2 / PI;
                 double V2 = nextAngle2 / PI;
 
-                //actually add the vertexes
+
 
                 if(flipNormals) {
                     addVertexTextureNormal(v4.subtract(displacement), U2, V1, v4, matrix4f2, bufferBuilder);
@@ -115,26 +108,26 @@ public class LazuliGeometryBuilder {
             double angle1 = twoPi * i / segments;
             double angle2 = twoPi * (i + 1) / segments;
 
-            // Inner points
+
             Vec3d inner1 = new Vec3d(Math.cos(angle1) * innerRadius, 0, Math.sin(angle1) * innerRadius);
             Vec3d inner2 = new Vec3d(Math.cos(angle2) * innerRadius, 0, Math.sin(angle2) * innerRadius);
-            // Outer points
+
             Vec3d outer1 = new Vec3d(Math.cos(angle1) * outerRadius, 0, Math.sin(angle1) * outerRadius);
             Vec3d outer2 = new Vec3d(Math.cos(angle2) * outerRadius, 0, Math.sin(angle2) * outerRadius);
 
-            // Transform to world-relative coords and subtract camera displacement
+
             Vec3d v1 = inner1.subtract(displacement);
             Vec3d v2 = outer1.subtract(displacement);
             Vec3d v3 = outer2.subtract(displacement);
             Vec3d v4 = inner2.subtract(displacement);
 
-            // Texture coords: U around ring, V from inner(0) to outer(1)
+
             float u1 = (float) i / segments;
             float u2 = (float) (i + 1) / segments;
 
             Vec3d normal = new Vec3d(0, 1, 0);
 
-            // Add quad (inner1 → outer1 → outer2 → inner2)
+
             addVertexTextureNormal(v1, u1, 0.0, normal, matrix4f2, bufferBuilder);
             addVertexTextureNormal(v2, u1, 1.0, normal, matrix4f2, bufferBuilder);
             addVertexTextureNormal(v3, u2, 1.0, normal, matrix4f2, bufferBuilder);
@@ -146,7 +139,7 @@ public class LazuliGeometryBuilder {
 
 
     public static void buildTexturedSphereWithCameraRelativeNormals(int res, float radius, Vec3d center , float roll, boolean flipNormals,  Camera camera, Matrix4f matrix4f2, BufferBuilder bufferBuilder) {
-        Vec3d displacement = camera.getPos().subtract(center); // Get displacement relative to camera
+        Vec3d displacement = camera.getPos().subtract(center);
         Vec3d axle = displacement.normalize();
 
         float angle2 = 0f;
@@ -169,13 +162,13 @@ public class LazuliGeometryBuilder {
             float angle = roll;
             for (int i = 0; i < res * 2; i++) {
 
-                //Vertex 1
+
                 Vec3d v1 = new Vec3d(
                         sin(angle) * thisRingRadius,
                         thisRingY,
                         cos(angle) * thisRingRadius
                 );
-                //Vertex 2
+
                 Vec3d v2 = new Vec3d(
                         sin(angle) * nextRingRadius,
                         nextRingY,
@@ -184,13 +177,13 @@ public class LazuliGeometryBuilder {
 
                 angle += (float) (PI / res);
 
-                //Vertex 3
+
                 Vec3d v3 = new Vec3d(
                         sin(angle) * nextRingRadius,
                         nextRingY,
                         cos(angle) * nextRingRadius
                 );
-                //Vertex 4
+
                 Vec3d v4 = new Vec3d(
                         sin(angle) * thisRingRadius,
                         thisRingY,
@@ -308,19 +301,8 @@ public class LazuliGeometryBuilder {
         addVertexTextureNormal(Vec3d.ZERO.subtract(displacement), 1, 0, displacement.normalize(), matrix4f2, bufferBuilder);
     }
 
-
-    /**
-     * Helper function to add a vertex with position, texture, color, and normal data.
-     *
-     * @param pos           The position of the vertex
-     * @param u             Texture U coordinate
-     * @param v             Texture V coordinate
-     * @param matrix4f2     The transformation matrix
-     * @param bufferBuilder The buffer to store vertices
-     */
-    private static void addVertexTextureNormal(Vec3d pos, double u, double v, Vec3d normal, Matrix4f matrix4f2, BufferBuilder bufferBuilder) {
+    static void addVertexTextureNormal(Vec3d pos, double u, double v, Vec3d normal, Matrix4f matrix4f2, BufferBuilder bufferBuilder) {
         normal = normal.normalize();
-        float clampDist = 600;
 
         Vec3d pos2 = pos.add(mainDisplacement).rotateZ((float) yaw).rotateX((float) roll).rotateY((float) pitch);
         Vec3d normal2 = normal.rotateZ((float) yaw).rotateX((float) roll).rotateY((float) pitch);

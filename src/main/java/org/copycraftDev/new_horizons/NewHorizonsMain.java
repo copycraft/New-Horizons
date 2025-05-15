@@ -13,7 +13,9 @@ import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
+import net.fabricmc.fabric.api.object.builder.v1.entity.FabricDefaultAttributeRegistry;
 import net.minecraft.block.BlockState;
+import net.minecraft.entity.mob.ShulkerEntity;
 import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.item.ItemUsageContext;
 import net.minecraft.registry.Registries;
@@ -33,6 +35,7 @@ import org.copycraftDev.new_horizons.core.bigbang.BigBangCutsceneManager;
 import org.copycraftDev.new_horizons.core.blocks.ModBlocks;
 import org.copycraftDev.new_horizons.core.entity.ModEntities;
 import org.copycraftDev.new_horizons.core.items.ModItems;
+import org.copycraftDev.new_horizons.physics.BlockColliderEntity;
 import org.copycraftDev.new_horizons.physics.PhysicsMain;
 import org.copycraftDev.new_horizons.physics.PhysicsRenderer;
 import org.slf4j.Logger;
@@ -55,6 +58,8 @@ public class NewHorizonsMain implements ModInitializer {
 
     @Override
     public void onInitialize() {
+        BlockColliderEntity.createAttributes();
+        ModEntities.registerAttributes();
         LibyRegistryLoader.load("org.copycraftDev.new_horizons", LOGGER, LibyEntrypoints.MAIN);
         Veil.init();
         ServerTickEvents.END_SERVER_TICK.register(MeteorScheduler::onServerTick);
@@ -110,6 +115,7 @@ public class NewHorizonsMain implements ModInitializer {
             return ActionResult.PASS;
         });
         createRecipes();
+
 
     }
     public void createRecipes() {

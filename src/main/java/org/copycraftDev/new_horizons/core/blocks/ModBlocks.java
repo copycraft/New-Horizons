@@ -25,7 +25,7 @@ public class ModBlocks {
     public static final Block GOLD_TILE_LAMP = register("gold_tile_lamp", new GoldTileLampBlock());
     public static final Block GOLD_FLOWER_LAMP = register("gold_flower_lamp", new GoldFlowerLampBlock());
     public static final Block PRIVACY_GLASS = register("privacy_glass", new PrivacyGlassBlock());
-    public static final Block ASSEMBLER_BLOCK = register("assembler_block.json", new AssemblerBlock());
+    public static final Block ASSEMBLER_BLOCK = register("assembler_block", new AssemblerBlock());
     public static final Block PORTAL_BLOCK = register(
             "teleport_portal_block",
             new PortalBlock(

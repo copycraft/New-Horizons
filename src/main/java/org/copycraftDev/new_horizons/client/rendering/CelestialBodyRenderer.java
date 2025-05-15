@@ -1,18 +1,10 @@
 package org.copycraftDev.new_horizons.client.rendering;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gl.ShaderProgram;
-import net.minecraft.client.render.Camera;
-import net.minecraft.client.render.BufferBuilder;
-import net.minecraft.client.render.Tessellator;
-import net.minecraft.client.render.VertexFormat;
-import net.minecraft.client.render.VertexFormats;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.RegistryKeys;
+import net.minecraft.client.render.*;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
 import org.copycraftDev.new_horizons.client.planets.CelestialBodyRegistry;
 import org.copycraftDev.new_horizons.lazuli_snnipets.LapisRenderer;
 import org.copycraftDev.new_horizons.lazuli_snnipets.LazuliGeometryBuilder;
@@ -45,10 +37,6 @@ public class CelestialBodyRenderer {
     public static float explosionStartingTime;
     public static AtomicReference<Float> time = new AtomicReference<>(0f);
 
-    // Define the custom space dimension key
-    public static final RegistryKey<World> SPACE_DIMENSION_KEY =
-            RegistryKey.of(RegistryKeys.WORLD, Identifier.of("new_horizons", "space"));
-
     public static final Identifier CELESTIAL_SYNC =
             Identifier.of("new_horizons", "celestial_sync");
 
@@ -56,12 +44,6 @@ public class CelestialBodyRenderer {
         LazuliRenderingRegistry.register((context, viewProjMatrix, tickDelta) -> {
             // *** early-out if rendering is disabled ***
             if (!shouldRender) return;
-
-            // Only render in the custom space dimension
-            if (MinecraftClient.getInstance().world == null
-                    || MinecraftClient.getInstance().world.getRegistryKey() != SPACE_DIMENSION_KEY) {
-                return;
-            }
 
             Tessellator tessellator = Tessellator.getInstance();
             time.updateAndGet(v -> v + context.tickCounter().getTickDelta(true));
@@ -88,12 +70,20 @@ public class CelestialBodyRenderer {
                     CelestialBodyRegistry.getAllPlanets();
 
             for (var entry : planets.entrySet()) {
+
+                Vec3d orig=entry.getValue().center;
+                float ang= (float) (time.get()*entry.getValue().orbitSpeed);
+                double cos=Math.cos(ang), sin=Math.sin(ang);
+                Vec3d orb=new Vec3d(orig.x*cos - orig.z*sin, orig.y, orig.x*sin + orig.z*cos);
+
                 var planet = entry.getValue();
                 float angle = (float) planet.rotationSpeed * time.get();
-                double distance = planet.center.distanceTo(camera.getPos());
-                int resolution = Math.min(Math.max((int)(150 - 0.1 * (distance - planet.radius)), 10), 200);
+                double distance = planet.center.subtract(camera.getPos())
+.distanceTo(camera.getPos());
+                int resolution = Math.min(Math.max((int)( 300 - 0.1*( distance - planet.radius )),32),500);
 
-                RenderSystem.setShaderFogColor(0, 0, 0, 0);
+                RenderSystem.setShaderFogColor(0,0,0,0);
+
 
                 // bind textures
                 RenderSystem.setShaderTexture(0, planet.surfaceTexture);
@@ -108,8 +98,8 @@ public class CelestialBodyRenderer {
                         LapisRenderer.setShader(RENDER_TYPE_STAR);
                         LazuliGeometryBuilder.buildTexturedSphere(
                                 resolution,
-                                (float) planet.radius,
-                                planet.center,
+                                (float) planet.radius, // scale down
+                                orb,
                                 new Vec3d(0, 1, 0),
                                 angle,
                                 false,
@@ -117,6 +107,7 @@ public class CelestialBodyRenderer {
                                 viewProjMatrix,
                                 bb
                         );
+
                         bb = LapisRenderer.drawAndReset(bb, tessellator);
 
                         // star aura
@@ -125,15 +116,16 @@ public class CelestialBodyRenderer {
                         LapisRenderer.enableCull();
                         LazuliGeometryBuilder.buildTexturedSphere(
                                 resolution,
-                                (float) planet.atmosphereRadius,
-                                planet.center,
+                                (float) planet.radius,
+                                orb,
                                 new Vec3d(0, 1, 0),
-                                0,
-                                true,
+                                angle,
+                                false,
                                 camera,
                                 viewProjMatrix,
                                 bb
                         );
+
                         LapisRenderer.drawAndReset(bb, tessellator);
 
                     } else {
@@ -146,8 +138,8 @@ public class CelestialBodyRenderer {
                         }
                         LazuliGeometryBuilder.buildTexturedSphere(
                                 resolution,
-                                (float) planet.radius,
-                                planet.center,
+                                (float) planet.radius, // scale down
+                                orb,
                                 new Vec3d(0, 1, 0),
                                 angle,
                                 false,
@@ -155,6 +147,7 @@ public class CelestialBodyRenderer {
                                 viewProjMatrix,
                                 bb
                         );
+
                         bb = LapisRenderer.drawAndReset(bb, tessellator);
 
                         // atmosphere
@@ -167,7 +160,7 @@ public class CelestialBodyRenderer {
                                     resolution / 2,
                                     (float) planet.atmosphereRadius,
                                     planet.center,
-                                    new Vec3d(0, 1, 0),
+                                    new Vec3d(0,1,0),
                                     0,
                                     true,
                                     camera,
@@ -181,10 +174,10 @@ public class CelestialBodyRenderer {
                     }
                 }
 
-                // explosion effect (unchanged)
+                // explosion effect (unchanged) …
                 if (planet.name.equals(explodingPlanet)) {
                     float progress = time.get() - explosionStartingTime;
-                    // ... inner glow, outer flash, ring
+                    // … inner glow, outer flash, ring
                     // (same as your original code)
                 }
             }
@@ -204,6 +197,9 @@ public class CelestialBodyRenderer {
         explodedPlanets.clear();
         explodingPlanet = null;
     }
+
+
+
 
     public static Vec3d getPlanetLocation(String planetName) {
         for (var body : CelestialBodyRegistry.getAllPlanets().values()) {
