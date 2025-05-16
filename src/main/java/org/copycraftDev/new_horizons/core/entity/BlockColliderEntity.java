@@ -1,14 +1,13 @@
-package org.copycraftDev.new_horizons.physics;
+package org.copycraftDev.new_horizons.core.entity;
 
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.mob.ShulkerEntity;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.shape.VoxelShapes;
 import net.minecraft.world.World;
+import org.copycraftDev.new_horizons.physics.PhysicsMain;
 
 /**
  * Invisible 1×1×1 collider‑entity synced to a PhysicsObject’s single block.
@@ -38,7 +37,7 @@ public class BlockColliderEntity extends ShulkerEntity {
     @Override
     public void tick() {
         if (linkedObject == null || !linkedObject.isAlive()) {
-            this.remove(RemovalReason.valueOf("ded"));
+            this.remove(RemovalReason.DISCARDED);
             return;
         }
         Vec3d w = linkedObject.getPosition().add(localOffset);

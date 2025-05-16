@@ -8,6 +8,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.*;
 import net.minecraft.world.WorldAccess;
+import org.copycraftDev.new_horizons.core.entity.BlockColliderEntity;
 import org.copycraftDev.new_horizons.core.entity.ModEntities;
 
 import java.util.*;

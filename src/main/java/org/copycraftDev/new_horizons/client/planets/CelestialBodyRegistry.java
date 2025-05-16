@@ -71,7 +71,7 @@ public class CelestialBodyRegistry {
         p.atmosphereColor2 = null;
         p.atmosphereRadius = 0;
         p.hasDarkAlbedoMap = false;
-        p.usesGeneratedTexture = true;
+        p.usesGeneratedTexture = false;
         p.surfaceTexturePath    = "textures/test_textures/8k_mercury.jpg";
         p.heightMapPath         = "textures/test_textures/mercury_height_map.jpg";
         p.normalMapPath         = "textures/test_textures/mercury_normal_map.jpg";
@@ -92,7 +92,7 @@ public class CelestialBodyRegistry {
         p.atmosphereColor2 = null;
         p.atmosphereRadius = 0;
         p.hasDarkAlbedoMap = false;
-        p.usesGeneratedTexture = true;
+        p.usesGeneratedTexture = false;
         p.surfaceTexturePath    = "textures/test_textures/8k_venus_surface.jpg";
         p.heightMapPath         = "textures/test_textures/venus_height_map.jpg";
         p.normalMapPath         = "textures/test_textures/venus_normal_map.jpg";
@@ -136,7 +136,7 @@ public class CelestialBodyRegistry {
         p.atmosphereColor2 = null;
         p.atmosphereRadius = 0;
         p.hasDarkAlbedoMap = false;
-        p.usesGeneratedTexture = true;
+        p.usesGeneratedTexture = false;
         p.surfaceTexturePath    = "textures/test_textures/8k_mars.jpg";
         p.heightMapPath         = "textures/test_textures/mars_height.jpg";
         p.normalMapPath         = "textures/test_textures/mars_normal.jpg";
@@ -157,7 +157,7 @@ public class CelestialBodyRegistry {
         p.atmosphereColor2 = null;
         p.atmosphereRadius = 115;
         p.hasDarkAlbedoMap = false;
-        p.usesGeneratedTexture = true;
+        p.usesGeneratedTexture = false;
         p.surfaceTexturePath    = "textures/test_textures/8k_jupiter.jpg";
         p.heightMapPath         = "textures/test_textures/jupiter_height.jpg";
         p.normalMapPath         = "textures/test_textures/jupitertest.jpg";
@@ -178,7 +178,7 @@ public class CelestialBodyRegistry {
         p.atmosphereColor2 = null;
         p.atmosphereRadius = 0;
         p.hasDarkAlbedoMap = false;
-        p.usesGeneratedTexture = true;
+        p.usesGeneratedTexture = false;
         p.surfaceTexturePath    = "textures/test_textures/8k_saturn.jpg";
         p.heightMapPath         = "textures/test_textures/saturn_height_map.jpg";
         p.normalMapPath         = "textures/test_textures/saturn_normal_map.jpg";
@@ -201,7 +201,7 @@ public class CelestialBodyRegistry {
         p.atmosphereColor2 = null;
         p.atmosphereRadius = 0;
         p.hasDarkAlbedoMap = false;
-        p.usesGeneratedTexture = true;
+        p.usesGeneratedTexture = false;
         p.surfaceTexturePath    = "textures/test_textures/2k_uranus.jpg";
         p.heightMapPath         = "textures/test_textures/earth_height.png";
         p.normalMapPath         = "textures/test_textures/earth_normal.png";
@@ -222,7 +222,7 @@ public class CelestialBodyRegistry {
         p.atmosphereColor2 = null;
         p.atmosphereRadius = 135;
         p.hasDarkAlbedoMap = false;
-        p.usesGeneratedTexture = true;
+        p.usesGeneratedTexture = false;
         p.surfaceTexturePath    = "textures/test_textures/2k_neptune.jpg";
         p.heightMapPath         = "textures/test_textures/neptune_height.jpg";
         p.normalMapPath         = "textures/test_textures/neptune_normal.jpg";

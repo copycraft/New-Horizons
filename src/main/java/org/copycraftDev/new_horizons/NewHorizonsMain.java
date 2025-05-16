@@ -2,8 +2,6 @@ package org.copycraftDev.new_horizons;
 
 import com.mojang.brigadier.CommandDispatcher;
 import foundry.veil.Veil;
-import foundry.veil.api.client.render.shader.program.ShaderProgram;
-import foundry.veil.platform.VeilEventPlatform;
 import nazario.liby.api.registry.auto.LibyEntrypoints;
 import nazario.liby.api.registry.auto.LibyRegistryLoader;
 import nazario.liby.api.registry.runtime.recipe.LibyIngredient;
@@ -13,14 +11,11 @@ import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
-import net.fabricmc.fabric.api.object.builder.v1.entity.FabricDefaultAttributeRegistry;
 import net.minecraft.block.BlockState;
-import net.minecraft.entity.mob.ShulkerEntity;
 import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.item.ItemUsageContext;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundEvent;
@@ -28,19 +23,16 @@ import net.minecraft.util.ActionResult;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.math.Vec3i;
 import org.copycraftDev.new_horizons.client.planets.MeteorCommand;
 import org.copycraftDev.new_horizons.client.planets.MeteorScheduler;
 import org.copycraftDev.new_horizons.core.bigbang.BigBangCutsceneManager;
 import org.copycraftDev.new_horizons.core.blocks.ModBlocks;
 import org.copycraftDev.new_horizons.core.entity.ModEntities;
-import org.copycraftDev.new_horizons.core.items.ModItems;
-import org.copycraftDev.new_horizons.physics.BlockColliderEntity;
+import org.copycraftDev.new_horizons.core.entity.BlockColliderEntity;
 import org.copycraftDev.new_horizons.physics.PhysicsMain;
 import org.copycraftDev.new_horizons.physics.PhysicsRenderer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.copycraftDev.new_horizons.core.world.biome.ModBiomes;
 
 public class NewHorizonsMain implements ModInitializer {
 
