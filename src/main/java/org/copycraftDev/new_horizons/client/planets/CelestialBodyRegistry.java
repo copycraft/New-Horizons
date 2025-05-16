@@ -266,13 +266,6 @@ public class CelestialBodyRegistry {
                     "textures/generated/" + key + "/" + key + "_normal.png",
                     4096,2048, key + "_nrm_resized", false
             );
-        } else {
-            planet.surfaceTexture    = planet.surfaceTexturePath    != null ? NewHorizonsMain.id(planet.surfaceTexturePath)    : null;
-            planet.cloudsTexture     = planet.cloudsTexturePath     != null ? NewHorizonsMain.id(planet.cloudsTexturePath)     : null;
-            planet.atmosphereTexture = planet.atmosphereTexturePath != null ? NewHorizonsMain.id(planet.atmosphereTexturePath) : null;
-            planet.darkAlbedoMap     = planet.darkAlbedoMapPath     != null ? NewHorizonsMain.id(planet.darkAlbedoMapPath)     : null;
-            planet.heightMap         = planet.heightMapPath         != null ? NewHorizonsMain.id(planet.heightMapPath)         : null;
-            planet.normalMap         = planet.normalMapPath         != null ? NewHorizonsMain.id(planet.normalMapPath)         : null;
         }
 
         // handle rings if present

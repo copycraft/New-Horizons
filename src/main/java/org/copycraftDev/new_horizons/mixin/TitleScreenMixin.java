@@ -52,6 +52,7 @@ public abstract class TitleScreenMixin extends net.minecraft.client.gui.screen.S
     @Inject(method = "tick", at = @At("HEAD"))
     public void onTick(CallbackInfo ci) {
         if (!solarView) return;
+        if (!(selected == null)){
         Camera cam = MinecraftClient.getInstance().gameRenderer.getCamera();
         Vector3f tgt = CelestialBodyRendererPanorama.getPlanetLocation(selected).toVector3f();
         long w = MinecraftClient.getInstance().getWindow().getHandle();
@@ -71,27 +72,60 @@ public abstract class TitleScreenMixin extends net.minecraft.client.gui.screen.S
         } catch (Exception e) {
             LOGGER.warn("cam fail", e);
         }
-    }
+    }}
 
     @Inject(method = "renderBackground(Lnet/minecraft/client/gui/DrawContext;IIF)V", at = @At("HEAD"))
     public void renderSolar(DrawContext ctx, int mx, int my, float d, CallbackInfo ci) {
         int w = ctx.getScaledWindowWidth(), h = ctx.getScaledWindowHeight();
-        int innit = 3;
         if (solarView) {
-            clearChildren(); splashText = null;
-            innit = 0;
+            clearChildren();
+            splashText = null;
         } else {
-            init(MinecraftClient.getInstance(), w, h);
+            MinecraftClient client = MinecraftClient.getInstance();
+            init(client, w, h);
+
             int sw = 265, sh = 66;
-            if (innit <1) {
-                if (splashRes == null)
-                    splashRes = TextureResizer.resizeTexture("minecraft", "textures/gui/title/titlesplash.png", sw, sh, "ts_res", false);
-            innit = 2;
+            if (splashRes == null) {
+                Identifier resized = null;
+
+                // Try up to 2 times
+                for (int attempt = 1; attempt <= 2; attempt++) {
+                    try {
+                        resized = TextureResizer.resizeTexture(
+                                "minecraft",
+                                "textures/gui/title/titlesplash.png",
+                                sw, sh,
+                                "ts_res",
+                                false
+                        );
+                        if (resized != null) {
+                            break;
+                        }
+                    } catch (Exception e) {
+                        LOGGER.warn("Attempt #{} to resize splash texture failed", attempt, e);
+                    }
+                }
+
+                if (resized != null) {
+                    splashRes = resized;
+                } else {
+                    LOGGER.warn("All resize attempts failed—using vanilla splash texture");
+                    splashRes = Identifier.of("minecraft", "textures/gui/title/titlesplash.png");
+                }
             }
-            ctx.drawTexture(splashRes, w / 2 - sw / 2, 0, 0, 0, sw, sh, sw, sh);
+
+            // only draw if we have a non-null Identifier
+            if (splashRes != null) {
+                ctx.drawTexture(
+                        splashRes,
+                        w / 2 - sw / 2, 0,
+                        0, 0,
+                        sw, sh, sw, sh
+                );
+            }
         }
 
-        smoothZoom += (targetZoom - smoothZoom) * 0.15f;
+        smoothZoom  += (targetZoom  - smoothZoom ) * 0.15f;
         smoothSpeed += (targetSpeed - smoothSpeed) * 0.15f;
         CelestialBodyRendererPanorama.setRotationX(rotX);
         CelestialBodyRendererPanorama.setRotationY(rotY);
@@ -103,7 +137,8 @@ public abstract class TitleScreenMixin extends net.minecraft.client.gui.screen.S
         CelestialBodyRendererPanorama.setPlanetZ(0);
         CelestialBodyRendererPanorama.render(ctx, w, h, backgroundAlpha, d, solarView ? selected : null);
 
-        hovered = null;
+
+    hovered = null;
         for (var e : CelestialBodyRendererPanorama.getScreenPositions().entrySet()) {
             float dx = mx - e.getValue().x, dy = my - e.getValue().y;
             if (dx * dx + dy * dy < 100) { hovered = e.getKey(); break; }

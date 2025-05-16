@@ -11,6 +11,7 @@ import net.minecraft.util.Identifier;
 import net.minecraft.registry.Registries;
 import org.copycraftDev.new_horizons.NewHorizonsMain;
 
+
 @LibyAutoRegister(method = "initialize")
 public class ModEntities {
     public static final EntityType<SeatEntity> SEAT_ENTITY = Registry.register(
@@ -35,6 +36,8 @@ public class ModEntities {
     public static void registerAttributes() {
         FabricDefaultAttributeRegistry.register(BLOCK_COLLIDER, BlockColliderEntity.createAttributes());
     }
+
+
 
 
     public static void initialize() {}

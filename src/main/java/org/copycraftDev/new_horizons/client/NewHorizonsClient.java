@@ -50,7 +50,7 @@ public class NewHorizonsClient implements ClientModInitializer {
         PhysicsRenderer.register();
         org.copycraftDev.new_horizons.physics.PhysicsRenderer.register();
 
-        StickDashHandler.register();
+
         CelestialBodyRenderer.register();
         LazuliRenderingRegistry.registerLazuliRenderPhases();
 

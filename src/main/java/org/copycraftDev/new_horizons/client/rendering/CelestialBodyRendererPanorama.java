@@ -9,6 +9,7 @@ import net.minecraft.client.render.*;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Vec3d;
+import org.copycraftDev.new_horizons.NewHorizonsMain;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.AxisAngle4f;
@@ -145,8 +146,34 @@ public class CelestialBodyRendererPanorama {
         q.set(new AxisAngle4f(0,0,1,(float)Math.toRadians(rotationZ))); ms.multiply(q);
     }
 
-    public static Vec3d getPlanetLocation(String name){
-        return CelestialBodyRegistry.getAllPlanets().values().stream()
-                .filter(b->b.name.equals(name)).findAny().map(b->b.center).orElse(null);
+    public static Vec3d getPlanetLocation(String planetName) {
+        if (planetName == null || planetName.isEmpty()) {
+            // Defensive fallback, return zero vector if input invalid
+            return Vec3d.ZERO;
+        }
+
+        // Convert the planet name to lowercase (registry keys are lowercase)
+        String key = planetName.toLowerCase();
+
+        Identifier planetId = Identifier.of(NewHorizonsMain.MOD_ID, key);
+
+        // Retrieve planet data from the registry
+        CelestialBodyRegistry.CelestialBodyData planetData = CelestialBodyRegistry.getPlanet(planetId);
+
+        if (planetData == null) {
+            // Planet not found, print error or warning
+            System.err.println("Planet '" + planetName + "' not found in registry!");
+            // Return a fallback location so no null pointer exceptions
+            return Vec3d.ZERO;
+        }
+
+        // Return the center location vector (should never be null if data is valid)
+        if (planetData.center == null) {
+            System.err.println("Planet '" + planetName + "' has no center location defined!");
+            return Vec3d.ZERO;
+        }
+
+        return planetData.center;
     }
+
 }
