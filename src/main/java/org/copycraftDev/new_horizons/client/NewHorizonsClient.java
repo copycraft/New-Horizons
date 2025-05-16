@@ -9,10 +9,10 @@ import net.fabricmc.fabric.api.client.particle.v1.ParticleFactoryRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.option.GameOptions;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.util.math.Vec3d;
+import org.copycraftDev.new_horizons.client.misc.StickDashHandler;
 import org.copycraftDev.new_horizons.client.particle.ModParticlesClient;
 import org.copycraftDev.new_horizons.client.rendering.CelestialBodyRenderer;
 import org.copycraftDev.new_horizons.client.rendering.CelestialBodySkyRenderer;
@@ -26,7 +26,6 @@ import org.copycraftDev.new_horizons.core.blocks.ModBlocks;
 import org.copycraftDev.new_horizons.lazuli_snnipets.LazuliRenderingRegistry;
 import org.lwjgl.glfw.GLFW;
 
-import static qouteall.imm_ptl.core.render.MyRenderHelper.client;
 
 public class NewHorizonsClient implements ClientModInitializer {
     // Static field to store the current tick delta
@@ -42,7 +41,6 @@ public class NewHorizonsClient implements ClientModInitializer {
     public static KeyBinding ARROW_DOWN;
     public static KeyBinding ARROW_LEFT;
     public static KeyBinding ARROW_RIGHT;
-    private static final GameOptions options = client.options;
     private static Vec3d movementDirection = Vec3d.ZERO;
 
 

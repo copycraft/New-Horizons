@@ -1,4 +1,4 @@
-package org.copycraftDev.new_horizons.client;
+package org.copycraftDev.new_horizons.client.misc;
 
 public class FogSettings {
     private static float fogStart = 0.0F;

@@ -12,7 +12,8 @@
     "client.GameRendererMixin",
     //"TitleScreenMixin",
     "NoVoidDamageInSpaceLivingEntityMixin",
-    "NoCloudsMixin"
+    "NoCloudsMixin",
+    "ClientPlayNetworkHandlerMixin"
   ],
   "injectors": {
     "defaultRequire": 1

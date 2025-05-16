@@ -10,8 +10,6 @@ import net.minecraft.registry.Registry;
 import net.minecraft.util.Identifier;
 import net.minecraft.registry.Registries;
 import org.copycraftDev.new_horizons.NewHorizonsMain;
-import org.copycraftDev.new_horizons.core.portal.TeleportPortal;
-import qouteall.imm_ptl.core.portal.Portal;
 
 @LibyAutoRegister(method = "initialize")
 public class ModEntities {
@@ -24,16 +22,6 @@ public class ModEntities {
                     .trackedUpdateRate(1)  // Important for data syncing
                     .build()
     );
-    public static final EntityType<TeleportPortal> TELEPORT_PORTAL = Registry.register(
-            Registries.ENTITY_TYPE,
-            Identifier.of(NewHorizonsMain.MOD_ID, "teleport_portal"),
-            FabricEntityTypeBuilder.<TeleportPortal>create(SpawnGroup.MISC, TeleportPortal::new)
-                    .dimensions(EntityDimensions.fixed(1.0f, 2.0f))
-                    .trackRangeBlocks(10)
-                    .trackedUpdateRate(1)
-                    .build()
-    );
-
 
     public static void initialize() {}
 }

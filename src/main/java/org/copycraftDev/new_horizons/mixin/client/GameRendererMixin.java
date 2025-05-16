@@ -1,7 +1,7 @@
 package org.copycraftDev.new_horizons.mixin.client;
 
 import net.minecraft.client.render.BackgroundRenderer;
-import org.copycraftDev.new_horizons.client.FogSettings;
+import org.copycraftDev.new_horizons.client.misc.FogSettings;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.render.Camera;

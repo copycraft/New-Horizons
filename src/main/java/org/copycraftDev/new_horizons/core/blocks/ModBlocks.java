@@ -26,14 +26,6 @@ public class ModBlocks {
     public static final Block GOLD_FLOWER_LAMP = register("gold_flower_lamp", new GoldFlowerLampBlock());
     public static final Block PRIVACY_GLASS = register("privacy_glass", new PrivacyGlassBlock());
     public static final Block ASSEMBLER_BLOCK = register("assembler_block.json", new AssemblerBlock());
-    public static final Block PORTAL_BLOCK = register(
-            "teleport_portal_block",
-            new PortalBlock(
-                    AbstractBlock.Settings.create()
-                            .noCollision()
-                            .strength(-1.0f)
-            )
-    );
     public static final Block REDWOOD_LOGS = register("redwood_logs", new WoodBlock());
     public static final Block REDWOOD_PLANKS = register("redwood_planks", new WoodBlock());
     public static final Block REDWOOD_LOG_STRIPPED = register("redwood_logs_stripped", new WoodBlock());
@@ -61,7 +53,6 @@ public class ModBlocks {
             entries.add(GOLD_TILE_LAMP.asItem());
             entries.add(GOLD_FLOWER_LAMP.asItem());
             entries.add(PRIVACY_GLASS.asItem());
-            entries.add(PORTAL_BLOCK.asItem());
             entries.add(REDWOOD_LOGS.asItem());
             entries.add(REDWOOD_PLANKS.asItem());
             entries.add(REDWOOD_LOG_STRIPPED.asItem());

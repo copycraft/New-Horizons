@@ -1,7 +1,6 @@
-package org.copycraftDev.new_horizons.client;
+package org.copycraftDev.new_horizons.client.misc;
 
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.item.Items;
 import net.minecraft.util.math.Vec3d;
 

@@ -15,12 +15,5 @@ public class ModBlockEntities {
     public static BlockEntityType<PortalBlockEntity> PORTAL_BE;
 
     public static void register() {
-        PORTAL_BE = Registry.register(
-                Registries.BLOCK_ENTITY_TYPE,
-                Identifier.of(NewHorizonsMain.MOD_ID, "portal_be"),
-                FabricBlockEntityTypeBuilder
-                        .create(PortalBlockEntity::new, ModBlocks.PORTAL_BLOCK)
-                        .build(null)
-        );
     }
 }

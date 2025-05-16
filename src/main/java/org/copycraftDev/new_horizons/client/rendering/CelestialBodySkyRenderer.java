@@ -14,6 +14,8 @@ import org.copycraftDev.new_horizons.lazuli_snnipets.LazuliShaderRegistry;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
+import static org.copycraftDev.new_horizons.core.misc.SpaceSpawnManager.SPACE_DIMENSION;
+
 public class CelestialBodySkyRenderer {
     public static boolean shouldRender = true;
     public static void setShouldRender(boolean flag) { shouldRender = flag; }
@@ -26,12 +28,15 @@ public class CelestialBodySkyRenderer {
             RENDER_TYPE_STAR_AURA;
 
     private static final float ORBIT_RADIUS = 300f;
-    private static final float SCALE = 0.5f;
+    private static final float SCALE = 0.3f;
     private static final AtomicReference<Float> time = new AtomicReference<>(0f);
 
     public static void register() {
         LazuliRenderingRegistry.register((context, viewProjMatrix, tickDelta) -> {
-            if (!shouldRender) return;
+            // don't render in the space dimension
+            if (context.world().getRegistryKey() == SPACE_DIMENSION) {
+                return;
+            }
 
             Tessellator tessellator = Tessellator.getInstance();
             float dt = context.tickCounter().getTickDelta(true);
@@ -118,4 +123,5 @@ public class CelestialBodySkyRenderer {
             LapisRenderer.cleanupRenderSystem();
         });
     }
+
 }
