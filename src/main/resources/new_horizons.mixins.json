@@ -12,7 +12,7 @@
     "client.CameraMixin",
     "CameraRotationMixin",
     "client.GameRendererMixin",
-    //"TitleScreenMixin",
+    //"TitleScreenMixin"a,
     "NoVoidDamageInSpaceLivingEntityMixin",
     "NoCloudsMixin",
     "ClientPlayNetworkHandlerMixin"
