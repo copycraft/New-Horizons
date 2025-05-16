@@ -12,6 +12,7 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.util.math.Vec3d;
+import org.copycraftDev.new_horizons.client.misc.StickDashHandler;
 import org.copycraftDev.new_horizons.client.particle.ModParticlesClient;
 import org.copycraftDev.new_horizons.client.rendering.CelestialBodyRenderer;
 import org.copycraftDev.new_horizons.core.bigbang.BigBangClientManager;
@@ -26,7 +27,6 @@ import org.copycraftDev.new_horizons.lazuli_snnipets.LazuliRenderingRegistry;
 import org.copycraftDev.new_horizons.physics.PhysicsRenderer;
 import org.lwjgl.glfw.GLFW;
 
-import static org.copycraftDev.new_horizons.client.Preloader.init;
 
 public class NewHorizonsClient implements ClientModInitializer {
     private static float currentTickDelta = 0.0F;

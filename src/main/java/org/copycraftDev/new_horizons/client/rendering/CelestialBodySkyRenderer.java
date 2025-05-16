@@ -1,6 +1,7 @@
 package org.copycraftDev.new_horizons.client.rendering;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import nazario.liby.api.registry.auto.LibyAutoRegister;
 import net.minecraft.client.gl.ShaderProgram;
 import net.minecraft.client.render.*;
 import net.minecraft.util.Identifier;
@@ -16,6 +17,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import static org.copycraftDev.new_horizons.core.misc.SpaceSpawnManager.SPACE_DIMENSION;
 
+@LibyAutoRegister(method = "register")
 public class CelestialBodySkyRenderer {
     public static boolean shouldRender = true;
     public static void setShouldRender(boolean flag) { shouldRender = flag; }
@@ -75,10 +77,9 @@ public class CelestialBodySkyRenderer {
 
                 Vec3d pos = new Vec3d(x, y, z);
 
-                // Rotation and resolution
+                // Rotation and fixed resolution of 64 sides
                 float rot = (float) (planet.rotationSpeed * time.get());
-                double distance = camPos.distanceTo(pos);
-                int resolution = Math.min(Math.max((int)(150 - 0.1 * (distance - planet.radius)), 10), 200);
+                int resolution = 64;  // fixed resolution
 
                 // Bind textures
                 RenderSystem.setShaderTexture(0, planet.surfaceTexture);
