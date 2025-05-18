@@ -1,0 +1,281 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="98d4082c-d487-4920-b26a-61a5027f7d6f" name="Changes" comment="stuff">
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/LICENSE.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/build.gradle" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/gradle.properties" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/settings.gradle" beforeDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ExternalProjectsData">
+    <projectState path="$PROJECT_DIR$">
+      <ProjectState />
+    </projectState>
+  </component>
+  <component name="ExternalProjectsManager">
+    <system id="GRADLE">
+      <state>
+        <task path="$PROJECT_DIR$">
+          <activation />
+        </task>
+        <projects_view>
+          <tree_state>
+            <expand>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="New-Horizons" type="f1a62948:ProjectNode" />
+              </path>
+            </expand>
+            <select />
+          </tree_state>
+        </projects_view>
+      </state>
+    </system>
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Class" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="977b78050d5c9bd07ac672f2f3c8c930c23720e4" />
+      </map>
+    </option>
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+    <option name="RESET_MODE" value="HARD" />
+  </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;Neomoon6153official&quot;
+  }
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/copycraft/New-Horizons.git&quot;,
+    &quot;accountId&quot;: &quot;40789803-feaf-4dbf-ba57-837fad9a29ca&quot;
+  }
+}</component>
+  <component name="ProblemsViewState">
+    <option name="selectedTabId" value="CurrentFile" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 2
+}</component>
+  <component name="ProjectId" id="2vxRKYpj5XnMTHcZzKud840itSN" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true">
+    <ConfirmationsSetting value="1" id="Add" />
+  </component>
+  <component name="ProjectViewState">
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Gradle.New-Horizons [:net.fabricmc.devlaunchinjector.Main.main()].executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.new-horizons [build].executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.new-horizons [clean].executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.new-horizons.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;D:/codemc/Fog-Of-War&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;reference.settingsdialog.IDE.editor.colors&quot;
+  }
+}</component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="D:\codemc\New-Horizons" />
+      <recent name="D:\codemc\New-Horizons\src\main\java\org\copycraftDev\new_horizons\extrastuff\noise" />
+      <recent name="D:\codemc\New-Horizons\src\main\resources\assets\minecraft\textures\gui\sprites\widget" />
+      <recent name="D:\codemc\New-Horizons\src\main\resources\assets\new_horizons\sounds" />
+      <recent name="D:\codemc\New-Horizons\src\main\resources\assets\new_horizons\models\item" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="D:\codemc\New-Horizons\src\main\resources\assets\new_horizons\sounds" />
+    </key>
+    <key name="ExtractSuperBase.RECENT_KEYS">
+      <recent name="org.copycraftDev.new_horizons.blackhole" />
+    </key>
+  </component>
+  <component name="RunManager" selected="Application.Minecraft Client">
+    <configuration name="new-horizons [build]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+      <ExternalSystemSettings>
+        <option name="executionName" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="scriptParameters" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list>
+            <option value="build" />
+          </list>
+        </option>
+        <option name="vmOptions" />
+      </ExternalSystemSettings>
+      <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
+      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
+      <DebugAllEnabled>false</DebugAllEnabled>
+      <RunAsTest>false</RunAsTest>
+      <method v="2" />
+    </configuration>
+    <configuration name="new-horizons [clean]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+      <ExternalSystemSettings>
+        <option name="executionName" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="scriptParameters" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list>
+            <option value="clean" />
+          </list>
+        </option>
+        <option name="vmOptions" />
+      </ExternalSystemSettings>
+      <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
+      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
+      <DebugAllEnabled>false</DebugAllEnabled>
+      <RunAsTest>false</RunAsTest>
+      <method v="2" />
+    </configuration>
+    <list>
+      <item itemvalue="Gradle.new-horizons [build]" />
+      <item itemvalue="Gradle.new-horizons [clean]" />
+      <item itemvalue="Application.Minecraft Client" />
+      <item itemvalue="Application.Minecraft Server" />
+    </list>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Gradle.new-horizons [build]" />
+        <item itemvalue="Gradle.new-horizons [clean]" />
+        <item itemvalue="Gradle.new-horizons [clean]" />
+        <item itemvalue="Gradle.new-horizons [build]" />
+        <item itemvalue="Gradle.new-horizons [clean]" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="98d4082c-d487-4920-b26a-61a5027f7d6f" name="Changes" comment="" />
+      <created>1745084675692</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1745084675692</updated>
+    </task>
+    <task id="LOCAL-00001" summary="titles screen revamp, and physics engine base">
+      <option name="closed" value="true" />
+      <created>1746267679699</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1746267679699</updated>
+    </task>
+    <task id="LOCAL-00002" summary="titlescreen revamp part 2 XD&#10;physics improvements (not really)">
+      <option name="closed" value="true" />
+      <created>1746351762247</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1746351762247</updated>
+    </task>
+    <task id="LOCAL-00003" summary="titlescreen revamp part 2 XD&#10;physics improvements (not really)">
+      <option name="closed" value="true" />
+      <created>1746352296662</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1746352296662</updated>
+    </task>
+    <task id="LOCAL-00004" summary="titlescreen revamp part 2 XD&#10;physics improvements (not really)">
+      <option name="closed" value="true" />
+      <created>1746352645596</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1746352645596</updated>
+    </task>
+    <task id="LOCAL-00005" summary="merge">
+      <option name="closed" value="true" />
+      <created>1746473174356</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1746473174356</updated>
+    </task>
+    <task id="LOCAL-00006" summary="stuff">
+      <option name="closed" value="true" />
+      <created>1747409259564</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1747409259564</updated>
+    </task>
+    <task id="LOCAL-00007" summary="stuff">
+      <option name="closed" value="true" />
+      <created>1747409306486</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1747409306486</updated>
+    </task>
+    <task id="LOCAL-00008" summary="stuff">
+      <option name="closed" value="true" />
+      <created>1747415853655</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1747415853655</updated>
+    </task>
+    <task id="LOCAL-00009" summary="stuff">
+      <option name="closed" value="true" />
+      <created>1747416124845</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1747416124845</updated>
+    </task>
+    <option name="localTasksCounter" value="10" />
+    <servers />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="titles screen revamp, and physics engine base" />
+    <MESSAGE value="titlescreen revamp part 2 XD&#10;physics improvements (not really)" />
+    <MESSAGE value="merge" />
+    <MESSAGE value="Merge remote-tracking branch 'origin/main'&#10;&#10;# Conflicts:&#10;#&#9;src/main/java/org/copycraftDev/new_horizons/NewHorizonsMain.java&#10;#&#9;src/main/java/org/copycraftDev/new_horizons/mixin/NoVoidDamageInSpaceLivingEntityMixin.java&#10;#&#9;src/main/java/org/copycraftDev/new_horizons/mixin/PanoramaConfig.java&#10;#&#9;src/main/resources/assets/new_horizons/sounds/engine_ambiance.ogg&#10;#&#9;src/main/resources/new_horizons.mixins.json" />
+    <MESSAGE value="texture resizer util and main menu improvements" />
+    <MESSAGE value="stuff" />
+    <option name="LAST_COMMIT_MESSAGE" value="stuff" />
+  </component>
+</project>

@@ -1,0 +1,578 @@
+Index: src/main/java/org/copycraftDev/new_horizons/mixin/TitleScreenMixin.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package org.copycraftDev.new_horizons.mixin;\r\n\r\nimport foundry.veil.api.client.render.MatrixStack;\r\nimport net.fabricmc.api.EnvType;\r\nimport net.fabricmc.api.Environment;\r\nimport net.minecraft.client.MinecraftClient;\r\nimport net.minecraft.client.font.TextRenderer;\r\nimport net.minecraft.client.gui.DrawContext;\r\nimport net.minecraft.client.gui.Element;\r\nimport net.minecraft.client.gui.ParentElement;\r\nimport net.minecraft.client.gui.screen.Screen;\r\nimport net.minecraft.client.gui.screen.SplashTextRenderer;\r\nimport net.minecraft.client.gui.screen.TitleScreen;\r\nimport net.minecraft.client.gui.widget.ClickableWidget;\r\nimport net.minecraft.client.util.InputUtil;\r\nimport net.minecraft.text.Text;\r\nimport org.copycraftDev.new_horizons.client.rendering.CelestialBodyRendererPanorama;\r\nimport org.jetbrains.annotations.Nullable;\r\nimport org.slf4j.Logger;\r\nimport org.spongepowered.asm.mixin.Final;\r\nimport org.spongepowered.asm.mixin.Mixin;\r\nimport org.spongepowered.asm.mixin.Shadow;\r\nimport org.spongepowered.asm.mixin.Unique;\r\nimport org.spongepowered.asm.mixin.injection.At;\r\nimport org.spongepowered.asm.mixin.injection.Inject;\r\nimport org.spongepowered.asm.mixin.injection.Redirect;\r\nimport org.spongepowered.asm.mixin.injection.callback.CallbackInfo;\r\n\r\nimport org.lwjgl.glfw.GLFW;\r\nimport org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;\r\n\r\nimport java.util.List;\r\n\r\n\r\n@Environment(EnvType.CLIENT)\r\n@Mixin(TitleScreen.class)\r\npublic abstract class TitleScreenMixin extends Screen {\r\n\r\n    @Unique\r\n    private boolean solarView = false;\r\n    @Unique\r\n    private boolean draggingSlider = false;\r\n    @Unique\r\n    private boolean draggingSlider2 = false;\r\n    @Unique\r\n    private boolean isDraggingPan = false;\r\n    @Unique\r\n    private boolean isDraggingOrbit = false;\r\n\r\n    @Unique\r\n    private float targetZoom = 0.115f;\r\n    @Unique\r\n    private float targetspeed = 1f;\r\n    @Unique\r\n    private float smoothZoom = 0.115f;\r\n    @Unique\r\n    private float smoothspeed = 1f;\r\n\r\n    @Unique\r\n    private float panX = 0f, panY = 0f;\r\n    @Unique\r\n    private float lastMouseX = 0f, lastMouseY = 0f;\r\n\r\n    @Unique\r\n    private float rotationX = 0f;\r\n    @Unique\r\n    private float rotationY = 90f;\r\n    @Unique\r\n    private float rotationZ = 45f;\r\n    @Unique\r\n    private float scale = 0.113f;\r\n\r\n    @Unique\r\n    private float cameraX = 0f, cameraY = 0f, cameraZ = 0f;\r\n    @Unique\r\n    private float planetZ = 0f;\r\n\r\n    protected TitleScreenMixin(Text title) {\r\n        super(title);\r\n    }\r\n\r\n\r\n    @Shadow\r\n    private float backgroundAlpha;\r\n    @Shadow\r\n    @Final\r\n    private static Logger LOGGER;\r\n\r\n\r\n\r\n    @Inject(method = \"renderBackground(Lnet/minecraft/client/gui/DrawContext;IIF)V\", at = @At(\"HEAD\"))\r\n    public void renderSolar(DrawContext ctx, int mouseX, int mouseY, float delta, CallbackInfo ci) {\r\n        if (solarView) {\r\n            this.clearChildren();\r\n            \r\n        }\r\n\r\n        int screenWidth = ctx.getScaledWindowWidth();\r\n        int screenHeight = ctx.getScaledWindowHeight();\r\n\r\n        if (!solarView) {\r\n            this.init(client, screenWidth, screenHeight);\r\n            SplashTextRenderer.HAPPY_NEW_YEAR_.render(ctx, screenWidth, textRenderer, 100);\r\n        }\r\n\r\n\r\n        smoothZoom += (targetZoom - smoothZoom) * 0.15f;\r\n        smoothspeed += (targetspeed - smoothspeed) * 0.15f;\r\n\r\n\r\n        int sliderY = screenHeight / 2 - 100;\r\n        int sliderH = 200;\r\n        int sliderW = 8;\r\n\r\n        int slider1X = screenWidth - 30;\r\n        int slider2X = 20;\r\n\r\n        int backX = screenWidth / 2 - 30;\r\n        int backY = screenHeight - 30;\r\n        int backW = 60;\r\n        int backH = 20;\r\n\r\n        int backX2 = screenWidth / 2 - 30;\r\n        int backY2 = screenHeight - 30;\r\n        int backW2 = 60;\r\n        int backH2 = 20;\r\n\r\n        float aspectScale = smoothZoom;\r\n\r\n        CelestialBodyRendererPanorama.setRotationX(rotationX);\r\n        CelestialBodyRendererPanorama.setRotationY(rotationY);\r\n        CelestialBodyRendererPanorama.setRotationZ(rotationZ);\r\n        CelestialBodyRendererPanorama.setScale(aspectScale);\r\n        CelestialBodyRendererPanorama.setCameraOffset(panX, panY, cameraZ);\r\n        CelestialBodyRendererPanorama.setPlanetZ(planetZ);\r\n        CelestialBodyRendererPanorama.render(ctx, screenWidth, screenHeight, this.backgroundAlpha, delta);\r\n\r\n        if (!solarView) {\r\n            ctx.fill(backX2, backY2, backX2 + backW2, backY2 + backH2, 0xAA000000);\r\n            ctx.drawText(MinecraftClient.getInstance().textRenderer, \"Start\", screenWidth / 2 - 15, backY2 + 6, 0xFFFFFF, false);\r\n        } else {\r\n            ctx.fill(backX, backY, backX + backW, backY + backH, 0xAA000000);\r\n            ctx.drawText(MinecraftClient.getInstance().textRenderer, \"Back\", screenWidth / 2 - 14, backY + 6, 0xFFFFFF, false);\r\n\r\n            ctx.fill(slider1X, sliderY, slider1X + sliderW, sliderY + sliderH, 0xAA333333);\r\n            ctx.fill(slider2X, sliderY, slider2X + sliderW, sliderY + sliderH, 0xAA333333);\r\n\r\n            float zoomRatio = (targetZoom - 0.01f) / (10f - 0.01f);\r\n            int zoomHandleY = sliderY + (int) ((1f - zoomRatio) * (sliderH - 10));\r\n            ctx.fill(slider1X - 2, zoomHandleY, slider1X + sliderW + 2, zoomHandleY + 10, 0xFFAAAAAA);\r\n\r\n            float speedRatio = (targetspeed - 0.01f) / (5f - 0.01f);\r\n            int speedHandleY = sliderY + (int) ((1f - speedRatio) * (sliderH - 10));\r\n            ctx.fill(slider2X - 2, speedHandleY, slider2X + sliderW + 2, speedHandleY + 10, 0xFF55FF55);\r\n        }\r\n    }\r\n\r\n    @Inject(method = \"renderBackground(Lnet/minecraft/client/gui/DrawContext;IIF)V\", at = @At(\"TAIL\"))\r\n    private void handleDragging(DrawContext ctx, int mouseX, int mouseY, float delta, CallbackInfo ci) {\r\n        if (!solarView) return;\r\n\r\n        final long handle = MinecraftClient.getInstance().getWindow().getHandle();\r\n\r\n        int screenWidth = ctx.getScaledWindowWidth();\r\n        int screenHeight = ctx.getScaledWindowHeight();\r\n\r\n        int sliderY = screenHeight / 2 - 100;\r\n        int sliderH = 200;\r\n        int sliderW = 8;\r\n\r\n        int slider1X = screenWidth - 30;\r\n        int slider2X = 20;\r\n\r\n        if (draggingSlider) {\r\n            int clamped = Math.min(Math.max(mouseY, sliderY), sliderY + sliderH - 10);\r\n            float t = 1f - (float) (clamped - sliderY) / (sliderH - 10);\r\n            targetZoom = 0.01f + t * (10f - 0.01f);\r\n        }\r\n        if (draggingSlider2) {\r\n            int clamped = Math.min(Math.max(mouseY, sliderY), sliderY + sliderH - 10);\r\n            float t = 1f - (float) (clamped - sliderY) / (sliderH - 10);\r\n            targetspeed = 0.01f + t * (5f - 0.01f);\r\n        }\r\n\r\n        // Calculate mouse deltas\r\n        float dx = mouseX - lastMouseX;\r\n        float dy = mouseY - lastMouseY;\r\n\r\n        if (isDraggingPan) {\r\n            panX += dx;\r\n            panY += dy;\r\n        }\r\n\r\n        if (isDraggingOrbit) {\r\n            rotationY += dx * 0.4f;\r\n            rotationX += dy * 0.4f;\r\n            rotationX = Math.max(-90f, Math.min(90f, rotationX));\r\n        }\r\n\r\n        lastMouseX = mouseX;\r\n        lastMouseY = mouseY;\r\n\r\n        // Update dragging states based on current input\r\n        if (!InputUtil.isKeyPressed(handle, GLFW.GLFW_MOUSE_BUTTON_LEFT)) {\r\n            draggingSlider = false;\r\n            draggingSlider2 = false;\r\n            isDraggingOrbit = false;\r\n        }\r\n        if (!InputUtil.isKeyPressed(handle, GLFW.GLFW_MOUSE_BUTTON_RIGHT)) {\r\n            isDraggingPan = false;\r\n        }\r\n    }\r\n\r\n    // Add this method to start dragging from mouse click handler\r\n    @Inject(method = \"mouseClicked\", at = @At(\"HEAD\"), cancellable = true)\r\n    private void onMouseClick(double mouseX, double mouseY, int button, CallbackInfoReturnable<Boolean> cir) {\r\n\r\n        int screenWidth = MinecraftClient.getInstance().getWindow().getScaledWidth();\r\n        int screenHeight = MinecraftClient.getInstance().getWindow().getScaledHeight();\r\n\r\n        int sliderY = screenHeight / 2 - 100;\r\n        int sliderH = 200;\r\n        int sliderW = 8;\r\n\r\n        int slider1X = screenWidth - 30;\r\n        int slider2X = 20;\r\n\r\n        int backX = screenWidth / 2 - 30;\r\n        int backY = screenHeight - 30;\r\n        int backW = 60;\r\n        int backH = 20;\r\n\r\n        int backX2 = screenWidth / 2 - 30;\r\n        int backY2 = screenHeight - 30;\r\n        int backW2 = 60;\r\n        int backH2 = 20;\r\n\r\n        if (!solarView) {\r\n            if (mouseX >= backX2 && mouseX <= backX2 + backW2 && mouseY >= backY2 && mouseY <= backY2 + backH2) {\r\n                solarView = true;\r\n                cir.setReturnValue(true); // Cancel further processing\r\n            }\r\n        } else {\r\n\r\n            if (mouseX >= backX && mouseX <= backX + backW && mouseY >= backY && mouseY <= backY + backH) {\r\n                solarView = false;\r\n                cir.setReturnValue(true); // Cancel further processing\r\n            }\r\n            if (button == GLFW.GLFW_MOUSE_BUTTON_LEFT) {\r\n                if (mouseX >= slider1X && mouseX <= slider1X + sliderW && mouseY >= sliderY && mouseY <= sliderY + sliderH) {\r\n                    draggingSlider = true;\r\n                    cir.cancel();\r\n                } else if (mouseX >= slider2X && mouseX <= slider2X + sliderW && mouseY >= sliderY && mouseY <= sliderY + sliderH) {\r\n                    draggingSlider2 = true;\r\n                    cir.cancel();\r\n                } else {\r\n                    isDraggingOrbit = true;\r\n                }\r\n            }\r\n\r\n            if (button == GLFW.GLFW_MOUSE_BUTTON_RIGHT) {\r\n                isDraggingPan = true;\r\n            }\r\n\r\n            lastMouseX = (float) mouseX;\r\n            lastMouseY = (float) mouseY;\r\n        }\r\n    }\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/org/copycraftDev/new_horizons/mixin/TitleScreenMixin.java b/src/main/java/org/copycraftDev/new_horizons/mixin/TitleScreenMixin.java
+--- a/src/main/java/org/copycraftDev/new_horizons/mixin/TitleScreenMixin.java	(revision 467144adc17a2f347ab9e6676f6a137aaeb922e5)
++++ b/src/main/java/org/copycraftDev/new_horizons/mixin/TitleScreenMixin.java	(date 1746353936000)
+@@ -4,18 +4,12 @@
+ import net.fabricmc.api.EnvType;
+ import net.fabricmc.api.Environment;
+ import net.minecraft.client.MinecraftClient;
+-import net.minecraft.client.font.TextRenderer;
+ import net.minecraft.client.gui.DrawContext;
+-import net.minecraft.client.gui.Element;
+-import net.minecraft.client.gui.ParentElement;
+ import net.minecraft.client.gui.screen.Screen;
+ import net.minecraft.client.gui.screen.SplashTextRenderer;
+ import net.minecraft.client.gui.screen.TitleScreen;
+-import net.minecraft.client.gui.widget.ClickableWidget;
+-import net.minecraft.client.util.InputUtil;
+ import net.minecraft.text.Text;
+ import org.copycraftDev.new_horizons.client.rendering.CelestialBodyRendererPanorama;
+-import org.jetbrains.annotations.Nullable;
+ import org.slf4j.Logger;
+ import org.spongepowered.asm.mixin.Final;
+ import org.spongepowered.asm.mixin.Mixin;
+@@ -23,135 +17,83 @@
+ import org.spongepowered.asm.mixin.Unique;
+ import org.spongepowered.asm.mixin.injection.At;
+ import org.spongepowered.asm.mixin.injection.Inject;
+-import org.spongepowered.asm.mixin.injection.Redirect;
+ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+-
+-import org.lwjgl.glfw.GLFW;
+ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+ 
+-import java.util.List;
+-
++import static org.copycraftDev.new_horizons.client.NewHorizonsClient.isLeftClicking;
++import static org.copycraftDev.new_horizons.client.NewHorizonsClient.isRightClicking;
+ 
+ @Environment(EnvType.CLIENT)
+ @Mixin(TitleScreen.class)
+ public abstract class TitleScreenMixin extends Screen {
+-
+-    @Unique
+-    private boolean solarView = false;
+-    @Unique
+-    private boolean draggingSlider = false;
+-    @Unique
+-    private boolean draggingSlider2 = false;
+-    @Unique
+-    private boolean isDraggingPan = false;
+-    @Unique
+-    private boolean isDraggingOrbit = false;
+-
+-    @Unique
+-    private float targetZoom = 0.115f;
+-    @Unique
+-    private float targetspeed = 1f;
+-    @Unique
+-    private float smoothZoom = 0.115f;
+-    @Unique
+-    private float smoothspeed = 1f;
+-
+-    @Unique
+-    private float panX = 0f, panY = 0f;
+-    @Unique
+-    private float lastMouseX = 0f, lastMouseY = 0f;
++    @Unique private boolean solarView = false;
++    @Unique private boolean draggingSlider = false;
++    @Unique private boolean draggingSlider2 = false;
++    @Unique private boolean isDraggingPan = false;
++    @Unique private boolean isDraggingOrbit = false;
+ 
+-    @Unique
+-    private float rotationX = 0f;
+-    @Unique
+-    private float rotationY = 90f;
+-    @Unique
+-    private float rotationZ = 45f;
+-    @Unique
+-    private float scale = 0.113f;
++    @Unique private float targetZoom = 0.115f;
++    @Unique private float targetspeed = 1f;
++    @Unique private float smoothZoom = 0.115f;
++    @Unique private float smoothspeed = 1f;
+ 
+-    @Unique
+-    private float cameraX = 0f, cameraY = 0f, cameraZ = 0f;
+-    @Unique
+-    private float planetZ = 0f;
++    @Unique private float panX = 0f, panY = 0f;
++    @Unique private float lastMouseX = 0f, lastMouseY = 0f;
+ 
+-    protected TitleScreenMixin(Text title) {
+-        super(title);
+-    }
++    @Unique private float rotationX = 0f;
++    @Unique private float rotationY = 90f;
++    @Unique private float rotationZ = 45f;
+ 
++    @Unique private float cameraX = 0f, cameraY = 0f, cameraZ = 0f;
++    @Unique private float planetZ = 0f;
+ 
+-    @Shadow
+-    private float backgroundAlpha;
+-    @Shadow
+-    @Final
+-    private static Logger LOGGER;
++    protected TitleScreenMixin(Text title) { super(title); }
+ 
+-
++    @Shadow private float backgroundAlpha;
++    @Shadow @Final private static Logger LOGGER;
+ 
+     @Inject(method = "renderBackground(Lnet/minecraft/client/gui/DrawContext;IIF)V", at = @At("HEAD"))
+     public void renderSolar(DrawContext ctx, int mouseX, int mouseY, float delta, CallbackInfo ci) {
+-        if (solarView) {
+-            this.clearChildren();
+-            
+-        }
++        if (solarView) this.clearChildren();
+ 
+-        int screenWidth = ctx.getScaledWindowWidth();
+-        int screenHeight = ctx.getScaledWindowHeight();
+-
++        int w = ctx.getScaledWindowWidth(), h = ctx.getScaledWindowHeight();
+         if (!solarView) {
+-            this.init(client, screenWidth, screenHeight);
+-            SplashTextRenderer.HAPPY_NEW_YEAR_.render(ctx, screenWidth, textRenderer, 100);
++            this.init(client, w, h);
++            SplashTextRenderer.HAPPY_NEW_YEAR_.render(ctx, w, textRenderer, 100);
+         }
+-
+ 
+         smoothZoom += (targetZoom - smoothZoom) * 0.15f;
+         smoothspeed += (targetspeed - smoothspeed) * 0.15f;
+ 
+-
+-        int sliderY = screenHeight / 2 - 100;
+-        int sliderH = 200;
+-        int sliderW = 8;
+-
+-        int slider1X = screenWidth - 30;
+-        int slider2X = 20;
+-
+-        int backX = screenWidth / 2 - 30;
+-        int backY = screenHeight - 30;
+-        int backW = 60;
+-        int backH = 20;
+-
+-        int backX2 = screenWidth / 2 - 30;
+-        int backY2 = screenHeight - 30;
+-        int backW2 = 60;
+-        int backH2 = 20;
+-
+-        float aspectScale = smoothZoom;
++        int sliderY = h/2 - 100, sliderH = 200, sliderW = 8;
++        int slider1X = w - 30, slider2X = 20;
++        int backX = w/2 - 30, backY = h - 30, backW = 60, backH = 20;
+ 
+         CelestialBodyRendererPanorama.setRotationX(rotationX);
+         CelestialBodyRendererPanorama.setRotationY(rotationY);
+         CelestialBodyRendererPanorama.setRotationZ(rotationZ);
+-        CelestialBodyRendererPanorama.setScale(aspectScale);
++        CelestialBodyRendererPanorama.setScale(smoothZoom);
+         CelestialBodyRendererPanorama.setCameraOffset(panX, panY, cameraZ);
+         CelestialBodyRendererPanorama.setPlanetZ(planetZ);
+-        CelestialBodyRendererPanorama.render(ctx, screenWidth, screenHeight, this.backgroundAlpha, delta);
++        CelestialBodyRendererPanorama.render(ctx, w, h, backgroundAlpha, delta);
+ 
+         if (!solarView) {
+-            ctx.fill(backX2, backY2, backX2 + backW2, backY2 + backH2, 0xAA000000);
+-            ctx.drawText(MinecraftClient.getInstance().textRenderer, "Start", screenWidth / 2 - 15, backY2 + 6, 0xFFFFFF, false);
++            ctx.fill(backX, backY, backX+backW, backY+backH, 0xAA000000);
++            ctx.drawText(MinecraftClient.getInstance().textRenderer, "Start", w/2-15, backY+6, 0xFFFFFF, false);
+         } else {
+-            ctx.fill(backX, backY, backX + backW, backY + backH, 0xAA000000);
+-            ctx.drawText(MinecraftClient.getInstance().textRenderer, "Back", screenWidth / 2 - 14, backY + 6, 0xFFFFFF, false);
++            ctx.fill(backX, backY, backX+backW, backY+backH, 0xAA000000);
++            ctx.drawText(MinecraftClient.getInstance().textRenderer, "Back", w/2-14, backY+6, 0xFFFFFF, false);
+ 
+-            ctx.fill(slider1X, sliderY, slider1X + sliderW, sliderY + sliderH, 0xAA333333);
+-            ctx.fill(slider2X, sliderY, slider2X + sliderW, sliderY + sliderH, 0xAA333333);
++            ctx.fill(slider1X, sliderY, slider1X+sliderW, sliderY+sliderH, 0xAA333333);
++            ctx.fill(slider2X, sliderY, slider2X+sliderW, sliderY+sliderH, 0xAA333333);
+ 
+-            float zoomRatio = (targetZoom - 0.01f) / (10f - 0.01f);
+-            int zoomHandleY = sliderY + (int) ((1f - zoomRatio) * (sliderH - 10));
+-            ctx.fill(slider1X - 2, zoomHandleY, slider1X + sliderW + 2, zoomHandleY + 10, 0xFFAAAAAA);
++            float zr = (targetZoom - .01f)/(10f-.01f);
++            int zy = sliderY + (int)((1f-zr)*(sliderH-10));
++            ctx.fill(slider1X-2, zy, slider1X+sliderW+2, zy+10, 0xFFAAAAAA);
+ 
+-            float speedRatio = (targetspeed - 0.01f) / (5f - 0.01f);
+-            int speedHandleY = sliderY + (int) ((1f - speedRatio) * (sliderH - 10));
+-            ctx.fill(slider2X - 2, speedHandleY, slider2X + sliderW + 2, speedHandleY + 10, 0xFF55FF55);
++            float sr = (targetspeed - .01f)/(5f-.01f);
++            int sy = sliderY + (int)((1f-sr)*(sliderH-10));
++            ctx.fill(slider2X-2, sy, slider2X+sliderW+2, sy+10, 0xFF55FF55);
+         }
+     }
+ 
+@@ -159,111 +101,70 @@
+     private void handleDragging(DrawContext ctx, int mouseX, int mouseY, float delta, CallbackInfo ci) {
+         if (!solarView) return;
+ 
+-        final long handle = MinecraftClient.getInstance().getWindow().getHandle();
+-
+-        int screenWidth = ctx.getScaledWindowWidth();
+-        int screenHeight = ctx.getScaledWindowHeight();
+-
+-        int sliderY = screenHeight / 2 - 100;
+-        int sliderH = 200;
+-        int sliderW = 8;
+-
+-        int slider1X = screenWidth - 30;
+-        int slider2X = 20;
++        int w = ctx.getScaledWindowWidth(), h = ctx.getScaledWindowHeight();
++        int sliderY = h/2 - 100, sliderH = 200;
+ 
+-        if (draggingSlider) {
+-            int clamped = Math.min(Math.max(mouseY, sliderY), sliderY + sliderH - 10);
+-            float t = 1f - (float) (clamped - sliderY) / (sliderH - 10);
+-            targetZoom = 0.01f + t * (10f - 0.01f);
++        // zoom slider
++        if (draggingSlider && isLeftClicking) {
++            int c = Math.min(Math.max(mouseY, sliderY), sliderY+sliderH-10);
++            float t = 1f - (c - sliderY)/(float)(sliderH-10);
++            targetZoom = .01f + t*(10f-.01f);
+         }
+-        if (draggingSlider2) {
+-            int clamped = Math.min(Math.max(mouseY, sliderY), sliderY + sliderH - 10);
+-            float t = 1f - (float) (clamped - sliderY) / (sliderH - 10);
+-            targetspeed = 0.01f + t * (5f - 0.01f);
++        // speed slider
++        if (draggingSlider2 && isLeftClicking) {
++            int c = Math.min(Math.max(mouseY, sliderY), sliderY+sliderH-10);
++            float t = 1f - (c - sliderY)/(float)(sliderH-10);
++            targetspeed = .01f + t*(5f-.01f);
+         }
+ 
+-        // Calculate mouse deltas
+-        float dx = mouseX - lastMouseX;
+-        float dy = mouseY - lastMouseY;
+-
+-        if (isDraggingPan) {
+-            panX += dx;
+-            panY += dy;
+-        }
+-
+-        if (isDraggingOrbit) {
+-            rotationY += dx * 0.4f;
+-            rotationX += dy * 0.4f;
++        float dx = mouseX - lastMouseX, dy = mouseY - lastMouseY;
++        if (isDraggingPan    && isRightClicking) { panX += dx; panY += dy; }
++        if (isDraggingOrbit  && isLeftClicking)  {
++            rotationY += dx*0.4f;
++            rotationX += dy*0.4f;
+             rotationX = Math.max(-90f, Math.min(90f, rotationX));
+         }
+ 
+-        lastMouseX = mouseX;
+-        lastMouseY = mouseY;
++        lastMouseX = mouseX; lastMouseY = mouseY;
+ 
+-        // Update dragging states based on current input
+-        if (!InputUtil.isKeyPressed(handle, GLFW.GLFW_MOUSE_BUTTON_LEFT)) {
+-            draggingSlider = false;
+-            draggingSlider2 = false;
+-            isDraggingOrbit = false;
+-        }
+-        if (!InputUtil.isKeyPressed(handle, GLFW.GLFW_MOUSE_BUTTON_RIGHT)) {
+-            isDraggingPan = false;
+-        }
++        // stop dragging when release
++        if (!isLeftClicking)  { draggingSlider=false; draggingSlider2=false; isDraggingOrbit=false; }
++        if (!isRightClicking) { isDraggingPan=false; }
+     }
+ 
+-    // Add this method to start dragging from mouse click handler
+     @Inject(method = "mouseClicked", at = @At("HEAD"), cancellable = true)
+     private void onMouseClick(double mouseX, double mouseY, int button, CallbackInfoReturnable<Boolean> cir) {
+-
+-        int screenWidth = MinecraftClient.getInstance().getWindow().getScaledWidth();
+-        int screenHeight = MinecraftClient.getInstance().getWindow().getScaledHeight();
+-
+-        int sliderY = screenHeight / 2 - 100;
+-        int sliderH = 200;
+-        int sliderW = 8;
+-
+-        int slider1X = screenWidth - 30;
+-        int slider2X = 20;
++        int w = MinecraftClient.getInstance().getWindow().getScaledWidth();
++        int h = MinecraftClient.getInstance().getWindow().getScaledHeight();
+ 
+-        int backX = screenWidth / 2 - 30;
+-        int backY = screenHeight - 30;
+-        int backW = 60;
+-        int backH = 20;
+-
+-        int backX2 = screenWidth / 2 - 30;
+-        int backY2 = screenHeight - 30;
+-        int backW2 = 60;
+-        int backH2 = 20;
++        int sliderY = h/2 -100, sliderW=8;
++        int slider1X=w-30, slider2X=20;
++        int backX=w/2-30, backY=h-30, backW=60, backH=20;
+ 
+         if (!solarView) {
+-            if (mouseX >= backX2 && mouseX <= backX2 + backW2 && mouseY >= backY2 && mouseY <= backY2 + backH2) {
++            if (mouseX>=backX && mouseX<=backX+backW && mouseY>=backY && mouseY<=backY+backH) {
+                 solarView = true;
+-                cir.setReturnValue(true); // Cancel further processing
++                cir.setReturnValue(true);
+             }
+         } else {
+-
+-            if (mouseX >= backX && mouseX <= backX + backW && mouseY >= backY && mouseY <= backY + backH) {
++            if (mouseX>=backX && mouseX<=backX+backW && mouseY>=backY && mouseY<=backY+backH) {
+                 solarView = false;
+-                cir.setReturnValue(true); // Cancel further processing
++                cir.setReturnValue(true);
+             }
+-            if (button == GLFW.GLFW_MOUSE_BUTTON_LEFT) {
+-                if (mouseX >= slider1X && mouseX <= slider1X + sliderW && mouseY >= sliderY && mouseY <= sliderY + sliderH) {
+-                    draggingSlider = true;
+-                    cir.cancel();
+-                } else if (mouseX >= slider2X && mouseX <= slider2X + sliderW && mouseY >= sliderY && mouseY <= sliderY + sliderH) {
+-                    draggingSlider2 = true;
+-                    cir.cancel();
++            // slider & drag start
++            if (isLeftClicking) {
++                if (mouseX>=slider1X && mouseX<=slider1X+sliderW && mouseY>=sliderY && mouseY<=sliderY+200) {
++                    draggingSlider = true; cir.cancel();
++                } else if (mouseX>=slider2X && mouseX<=slider2X+sliderW && mouseY>=sliderY && mouseY<=sliderY+200) {
++                    draggingSlider2 = true; cir.cancel();
+                 } else {
+                     isDraggingOrbit = true;
+                 }
+             }
+-
+-            if (button == GLFW.GLFW_MOUSE_BUTTON_RIGHT) {
++            if (isRightClicking) {
+                 isDraggingPan = true;
+             }
+-
+-            lastMouseX = (float) mouseX;
+-            lastMouseY = (float) mouseY;
++            lastMouseX = (float)mouseX; lastMouseY=(float)mouseY;
+         }
+     }
+ }
+Index: src/main/java/org/copycraftDev/new_horizons/core/ModRecipies.java
+===================================================================
+diff --git a/src/main/java/org/copycraftDev/new_horizons/core/ModRecipies.java b/src/main/java/org/copycraftDev/new_horizons/core/ModRecipies.java
+new file mode 100644
+--- /dev/null	(date 1746352844000)
++++ b/src/main/java/org/copycraftDev/new_horizons/core/ModRecipies.java	(date 1746352844000)
+@@ -0,0 +1,19 @@
++package org.copycraftDev.new_horizons.core;
++
++import nazario.liby.api.registry.auto.LibyAutoRegister;
++import nazario.liby.api.registry.runtime.recipe.LibyIngredient;
++import nazario.liby.api.registry.runtime.recipe.LibyRecipeRegistry;
++import nazario.liby.api.registry.runtime.recipe.types.LibyShapedCraftingRecipe;
++import nazario.liby.api.registry.runtime.recipe.types.LibyShapelessCraftingRecipe;
++import net.minecraft.block.Blocks;
++import net.minecraft.item.Items;
++import net.minecraft.util.Identifier;
++import org.copycraftDev.new_horizons.NewHorizonsMain;
++import org.copycraftDev.new_horizons.core.blocks.ModBlocks;
++
++import static org.copycraftDev.new_horizons.NewHorizonsMain.MOD_ID;
++
++@LibyAutoRegister(method = "createRecipes")
++public class ModRecipies {
++
++}
+\ No newline at end of file
+Index: src/main/java/org/copycraftDev/new_horizons/NewHorizonsMain.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package org.copycraftDev.new_horizons;\r\n\r\nimport com.mojang.brigadier.CommandDispatcher;\r\nimport foundry.veil.Veil;\r\nimport foundry.veil.api.client.render.shader.program.ShaderProgram;\r\nimport foundry.veil.platform.VeilEventPlatform;\r\nimport nazario.liby.api.registry.auto.LibyEntrypoints;\r\nimport nazario.liby.api.registry.auto.LibyRegistryLoader;\r\nimport net.fabricmc.api.ModInitializer;\r\nimport net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;\r\nimport net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;\r\nimport net.fabricmc.fabric.api.event.player.UseBlockCallback;\r\nimport net.minecraft.block.BlockState;\r\nimport net.minecraft.item.ItemPlacementContext;\r\nimport net.minecraft.item.ItemUsageContext;\r\nimport net.minecraft.server.MinecraftServer;\r\nimport net.minecraft.server.command.ServerCommandSource;\r\nimport net.minecraft.server.network.ServerPlayerEntity;\r\nimport net.minecraft.util.ActionResult;\r\nimport net.minecraft.util.Identifier;\r\nimport net.minecraft.util.math.BlockPos;\r\nimport net.minecraft.util.math.Vec3d;\r\nimport net.minecraft.util.math.Vec3i;\r\nimport org.copycraftDev.new_horizons.client.planets.MeteorCommand;\r\nimport org.copycraftDev.new_horizons.client.planets.MeteorScheduler;\r\nimport org.copycraftDev.new_horizons.core.bigbang.BigBangCutsceneManager;\r\nimport org.copycraftDev.new_horizons.core.entity.ModEntities;\r\nimport org.copycraftDev.new_horizons.core.items.ModItems;\r\nimport org.copycraftDev.new_horizons.physics.PhysicsMain;\r\nimport org.copycraftDev.new_horizons.physics.PhysicsRenderer;\r\nimport org.slf4j.Logger;\r\nimport org.slf4j.LoggerFactory;\r\nimport org.copycraftDev.new_horizons.core.world.biome.ModBiomes;\r\n\r\npublic class NewHorizonsMain implements ModInitializer {\r\n\r\n    public static final String MOD_ID = \"new_horizons\";\r\n    public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);\r\n    private static final Identifier CUSTOM_POST_PIPELINE = Identifier.of(MOD_ID,\"planet\");\r\n    private static final Identifier CUSTOM_POST_SHADER = Identifier.of(MOD_ID,\"planet\");\r\n\r\n\r\n    @Override\r\n    public void onInitialize() {\r\n        LibyRegistryLoader.load(\"org.copycraftDev.new_horizons\", LOGGER, LibyEntrypoints.MAIN);\r\n        Veil.init();\r\n        ServerTickEvents.END_SERVER_TICK.register(MeteorScheduler::onServerTick);\r\n        ServerTickEvents.END_SERVER_TICK.register(PhysicsMain.PhysicsManager::tickAll);\r\n        PhysicsRenderer.register();\r\n        ServerLifecycleEvents.SERVER_STARTED.register(server -> {\r\n            CommandDispatcher<ServerCommandSource> dispatcher = server.getCommandManager().getDispatcher();\r\n            MeteorCommand.register(dispatcher);  // Register the custom command\r\n        });\r\n        ServerLifecycleEvents.SERVER_STARTED.register(server -> {\r\n            server.execute(() -> {\r\n                for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {\r\n                    BigBangCutsceneManager.execute(player);\r\n                }\r\n            });\r\n        });\r\n        UseBlockCallback.EVENT.register((player, world, hand, hit) -> {\r\n            if (world.isClient) return ActionResult.PASS;\r\n\r\n            // the exact click‐position as a Vec3d\r\n            Vec3d clickPos = hit.getPos();\r\n\r\n            for (PhysicsMain.PhysicsObject obj : PhysicsMain.PHYSICS_MANAGER.getAllObjects()) {\r\n                // is the click on the surface of this moving object?\r\n                if (obj.getWorldBounds().expand(1e-6).contains(clickPos)) {\r\n                    // wrap the usage into a placement context\r\n                    ItemUsageContext usageCtx = new ItemUsageContext(player, hand, hit);\r\n                    ItemPlacementContext placeCtx = new ItemPlacementContext(usageCtx);\r\n\r\n                    // ask the context what BlockState it would place\r\n                    BlockState toPlace = placeCtx.getWorld().getBlockState(BlockPos.ofFloored(clickPos));\r\n                    if (toPlace != null) {\r\n                        // compute local coordinate relative to this object's origin\r\n                        BlockPos base = new BlockPos(\r\n                                (int)Math.floor(obj.getPosition().x),\r\n                                (int)Math.floor(obj.getPosition().y),\r\n                                (int)Math.floor(obj.getPosition().z)\r\n                        );\r\n                        BlockPos local = hit.getBlockPos().subtract(base);\r\n\r\n                        // attach into the physics object\r\n                        obj.addBlock(local, toPlace, null);\r\n\r\n                        // consume one item if not in creative\r\n                        if (!player.isCreative()) {\r\n                            player.getStackInHand(hand).decrement(1);\r\n                        }\r\n                        return ActionResult.SUCCESS;\r\n                    }\r\n                }\r\n            }\r\n\r\n            return ActionResult.PASS;\r\n        });\r\n    }\r\n\r\n\r\n\r\n    public static Identifier id(String name){\r\n        return Identifier.of(MOD_ID, name);\r\n    }\r\n}\r\n\r\n\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/org/copycraftDev/new_horizons/NewHorizonsMain.java b/src/main/java/org/copycraftDev/new_horizons/NewHorizonsMain.java
+--- a/src/main/java/org/copycraftDev/new_horizons/NewHorizonsMain.java	(revision 467144adc17a2f347ab9e6676f6a137aaeb922e5)
++++ b/src/main/java/org/copycraftDev/new_horizons/NewHorizonsMain.java	(date 1746353544000)
+@@ -6,28 +6,26 @@
+ import foundry.veil.platform.VeilEventPlatform;
+ import nazario.liby.api.registry.auto.LibyEntrypoints;
+ import nazario.liby.api.registry.auto.LibyRegistryLoader;
++import nazario.liby.api.registry.runtime.recipe.LibyIngredient;
++import nazario.liby.api.registry.runtime.recipe.LibyRecipeRegistry;
++import nazario.liby.api.registry.runtime.recipe.types.LibyShapelessCraftingRecipe;
+ import net.fabricmc.api.ModInitializer;
++import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
+ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
+-import net.fabricmc.fabric.api.event.player.UseBlockCallback;
+-import net.minecraft.block.BlockState;
+-import net.minecraft.item.ItemPlacementContext;
+-import net.minecraft.item.ItemUsageContext;
++import net.minecraft.registry.Registries;
++import net.minecraft.registry.Registry;
+ import net.minecraft.server.MinecraftServer;
+ import net.minecraft.server.command.ServerCommandSource;
+ import net.minecraft.server.network.ServerPlayerEntity;
+-import net.minecraft.util.ActionResult;
++import net.minecraft.sound.SoundEvent;
+ import net.minecraft.util.Identifier;
+-import net.minecraft.util.math.BlockPos;
+-import net.minecraft.util.math.Vec3d;
+-import net.minecraft.util.math.Vec3i;
+ import org.copycraftDev.new_horizons.client.planets.MeteorCommand;
+ import org.copycraftDev.new_horizons.client.planets.MeteorScheduler;
+ import org.copycraftDev.new_horizons.core.bigbang.BigBangCutsceneManager;
++import org.copycraftDev.new_horizons.core.blocks.ModBlocks;
+ import org.copycraftDev.new_horizons.core.entity.ModEntities;
+ import org.copycraftDev.new_horizons.core.items.ModItems;
+-import org.copycraftDev.new_horizons.physics.PhysicsMain;
+-import org.copycraftDev.new_horizons.physics.PhysicsRenderer;
+ import org.slf4j.Logger;
+ import org.slf4j.LoggerFactory;
+ import org.copycraftDev.new_horizons.core.world.biome.ModBiomes;
+@@ -38,6 +36,15 @@
+     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
+     private static final Identifier CUSTOM_POST_PIPELINE = Identifier.of(MOD_ID,"planet");
+     private static final Identifier CUSTOM_POST_SHADER = Identifier.of(MOD_ID,"planet");
++    public static final SoundEvent ENGINE_AMBIANCE = register("engine_ambiance");
++    public static final SoundEvent ENGINE_BROKEN   = register("engine_broken");
++    public static final SoundEvent ENGINE_POWERUP  = register("engine_powerup");
++
++
++    private static SoundEvent register(String name) {
++        Identifier id = Identifier.of("new_horizons", name);
++        return Registry.register(Registries.SOUND_EVENT, id, SoundEvent.of(id));
++    }
+ 
+ 
+     @Override
+@@ -45,8 +52,9 @@
+         LibyRegistryLoader.load("org.copycraftDev.new_horizons", LOGGER, LibyEntrypoints.MAIN);
+         Veil.init();
+         ServerTickEvents.END_SERVER_TICK.register(MeteorScheduler::onServerTick);
+-        ServerTickEvents.END_SERVER_TICK.register(PhysicsMain.PhysicsManager::tickAll);
+-        PhysicsRenderer.register();
++
++
++
+         ServerLifecycleEvents.SERVER_STARTED.register(server -> {
+             CommandDispatcher<ServerCommandSource> dispatcher = server.getCommandManager().getDispatcher();
+             MeteorCommand.register(dispatcher);  // Register the custom command
+@@ -58,46 +66,22 @@
+                 }
+             });
+         });
+-        UseBlockCallback.EVENT.register((player, world, hand, hit) -> {
+-            if (world.isClient) return ActionResult.PASS;
+-
+-            // the exact click‐position as a Vec3d
+-            Vec3d clickPos = hit.getPos();
+-
+-            for (PhysicsMain.PhysicsObject obj : PhysicsMain.PHYSICS_MANAGER.getAllObjects()) {
+-                // is the click on the surface of this moving object?
+-                if (obj.getWorldBounds().expand(1e-6).contains(clickPos)) {
+-                    // wrap the usage into a placement context
+-                    ItemUsageContext usageCtx = new ItemUsageContext(player, hand, hit);
+-                    ItemPlacementContext placeCtx = new ItemPlacementContext(usageCtx);
+-
+-                    // ask the context what BlockState it would place
+-                    BlockState toPlace = placeCtx.getWorld().getBlockState(BlockPos.ofFloored(clickPos));
+-                    if (toPlace != null) {
+-                        // compute local coordinate relative to this object's origin
+-                        BlockPos base = new BlockPos(
+-                                (int)Math.floor(obj.getPosition().x),
+-                                (int)Math.floor(obj.getPosition().y),
+-                                (int)Math.floor(obj.getPosition().z)
+-                        );
+-                        BlockPos local = hit.getBlockPos().subtract(base);
++        createRecipes();
+ 
+-                        // attach into the physics object
+-                        obj.addBlock(local, toPlace, null);
+-
+-                        // consume one item if not in creative
+-                        if (!player.isCreative()) {
+-                            player.getStackInHand(hand).decrement(1);
+-                        }
+-                        return ActionResult.SUCCESS;
+-                    }
+-                }
+-            }
+-
+-            return ActionResult.PASS;
+-        });
++    }
++    public void createRecipes() {
++        LibyRecipeRegistry.addRecipe(
++                new LibyShapelessCraftingRecipe(
++                        Identifier.of(MOD_ID, "wood_top_planks"),
++                        new LibyIngredient[]{
++                                LibyIngredient.createItem(ModBlocks.REDWOOD_LOGS)
++                        },
++                        ModBlocks.REDWOOD_PLANKS.liby$getId(),
++                        4
++                )
++        );
+     }
+-
++    // In your client entrypoint class:
+ 
+ 
+     public static Identifier id(String name){
+@@ -105,4 +89,3 @@
+     }
+ }
+ 
+-
+Index: src/main/java/org/copycraftDev/new_horizons/core/blocks/ModBlocks.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package org.copycraftDev.new_horizons.core.blocks;\r\n\r\nimport nazario.liby.api.registry.auto.LibyAutoRegister;\r\nimport net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;\r\nimport net.minecraft.block.Block;\r\nimport net.minecraft.block.AbstractBlock;\r\nimport net.minecraft.item.BlockItem;\r\nimport net.minecraft.item.Item;\r\nimport net.minecraft.item.ItemGroup;\r\nimport net.minecraft.registry.Registries;\r\nimport net.minecraft.registry.Registry;\r\nimport net.minecraft.registry.RegistryKey;\r\nimport net.minecraft.util.Identifier;\r\nimport org.copycraftDev.new_horizons.NewHorizonsMain;\r\nimport org.copycraftDev.new_horizons.core.blocks.custom.*;\r\nimport org.copycraftDev.new_horizons.physics.block.AssemblerBlock;\r\n\r\n@LibyAutoRegister(method = \"initialize\")\r\npublic class ModBlocks {\r\n    private ModBlocks() {}\r\n\r\n    // Instances of our new blocks\r\n    public static final Block CAPTAINS_CHAIR = register(\"captains_chair\", new CaptainsChairBlock(AbstractBlock.Settings.create()));\r\n    public static final Block GOLD_LAMP = register(\"gold_lamp\", new GoldLampBlock());\r\n    public static final Block GOLD_TILE_LAMP = register(\"gold_tile_lamp\", new GoldTileLampBlock());\r\n    public static final Block GOLD_FLOWER_LAMP = register(\"gold_flower_lamp\", new GoldFlowerLampBlock());\r\n    public static final Block PRIVACY_GLASS = register(\"privacy_glass\", new PrivacyGlassBlock());\r\n    public static final Block ASSEMBLER_BLOCK = register(\"assembler_block.json\", new AssemblerBlock());\r\n    public static final Block PORTAL_BLOCK = register(\r\n            \"teleport_portal_block\",\r\n            new PortalBlock(\r\n                    AbstractBlock.Settings.create()\r\n                            .noCollision()\r\n                            .strength(-1.0f)\r\n            )\r\n    );\r\n    public static final Block REDWOOD_LOG = register(\"redwood_logs\", new WoodBlock());\r\n    public static final Block REDWOOD_PLANKS = register(\"redwood_planks\", new WoodBlock());\r\n    public static final Block REDWOOD_LOG_STRIPPED = register(\"redwood_logs_stripped\", new WoodBlock());\r\n\r\n    private static Block register(String path, Block block) {\r\n        Identifier id = Identifier.of(NewHorizonsMain.MOD_ID, path);\r\n        // register the Block\r\n        Registry.register(Registries.BLOCK, id, block);\r\n        // register the BlockItem without grouping\r\n        Registry.register(\r\n                Registries.ITEM,\r\n                id,\r\n                new BlockItem(block, new Item.Settings())\r\n        );\r\n        return block;\r\n    }\r\n\r\n    public static void initialize() {\r\n        // Inject our blocks into the custom ItemGroup after registration\r\n        Identifier groupId = Identifier.of(NewHorizonsMain.MOD_ID, \"new_horizons_group\");\r\n        RegistryKey<ItemGroup> groupKey = RegistryKey.of(Registries.ITEM_GROUP.getKey(), groupId);\r\n        ItemGroupEvents.modifyEntriesEvent(groupKey).register(entries -> {\r\n            entries.add(CAPTAINS_CHAIR.asItem());\r\n            entries.add(GOLD_LAMP.asItem());\r\n            entries.add(GOLD_TILE_LAMP.asItem());\r\n            entries.add(GOLD_FLOWER_LAMP.asItem());\r\n            entries.add(PRIVACY_GLASS.asItem());\r\n            entries.add(PORTAL_BLOCK.asItem());\r\n            entries.add(REDWOOD_LOG.asItem());\r\n            entries.add(REDWOOD_PLANKS.asItem());\r\n            entries.add(REDWOOD_LOG_STRIPPED.asItem());\r\n            entries.add(ASSEMBLER_BLOCK.asItem());\r\n        });\r\n    }\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/org/copycraftDev/new_horizons/core/blocks/ModBlocks.java b/src/main/java/org/copycraftDev/new_horizons/core/blocks/ModBlocks.java
+--- a/src/main/java/org/copycraftDev/new_horizons/core/blocks/ModBlocks.java	(revision 467144adc17a2f347ab9e6676f6a137aaeb922e5)
++++ b/src/main/java/org/copycraftDev/new_horizons/core/blocks/ModBlocks.java	(date 1746352876000)
+@@ -34,7 +34,7 @@
+                             .strength(-1.0f)
+             )
+     );
+-    public static final Block REDWOOD_LOG = register("redwood_logs", new WoodBlock());
++    public static final Block REDWOOD_LOGS = register("redwood_logs", new WoodBlock());
+     public static final Block REDWOOD_PLANKS = register("redwood_planks", new WoodBlock());
+     public static final Block REDWOOD_LOG_STRIPPED = register("redwood_logs_stripped", new WoodBlock());
+ 
+@@ -62,7 +62,7 @@
+             entries.add(GOLD_FLOWER_LAMP.asItem());
+             entries.add(PRIVACY_GLASS.asItem());
+             entries.add(PORTAL_BLOCK.asItem());
+-            entries.add(REDWOOD_LOG.asItem());
++            entries.add(REDWOOD_LOGS.asItem());
+             entries.add(REDWOOD_PLANKS.asItem());
+             entries.add(REDWOOD_LOG_STRIPPED.asItem());
+             entries.add(ASSEMBLER_BLOCK.asItem());
+Index: src/main/resources/assets/new_horizons/sounds/sounds.json
+===================================================================
+diff --git a/src/main/resources/assets/new_horizons/sounds/sounds.json b/src/main/resources/assets/new_horizons/sounds/sounds.json
+new file mode 100644
+--- /dev/null	(date 1746352936000)
++++ b/src/main/resources/assets/new_horizons/sounds/sounds.json	(date 1746352936000)
+@@ -0,0 +1,17 @@
++{
++  "engine_ambiance": {
++    "sounds": [
++      { "name": "new_horizons:engine_ambiance", "stream": true }
++    ]
++  },
++  "engine_broken": {
++    "sounds": [
++      { "name": "new_horizons:engine_broken", "volume": 1.0, "pitch": 1.0 }
++    ]
++  },
++  "engine_powerup": {
++    "sounds": [
++      { "name": "new_horizons:engine_powerup", "volume": 1.0, "pitch": 1.2 }
++    ]
++  }
++}
+\ No newline at end of file

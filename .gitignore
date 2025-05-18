@@ -1,6 +1,5 @@
 # User-specific stuff
-.idea/
-noise/
+../New-Horizons/.idea/
 *.iml
 *.ipr
 *.iws
