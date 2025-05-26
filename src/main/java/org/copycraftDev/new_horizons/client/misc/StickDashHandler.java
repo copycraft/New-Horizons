@@ -9,7 +9,7 @@ public class StickDashHandler {
     public static void register() {
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             if (client.player != null && client.player.getMainHandStack().isOf(Items.STICK)) {
-                Vec3d forward = client.player.getRotationVecClient().multiply(10);
+                Vec3d forward = client.player.getRotationVecClient().multiply(109);
                 client.player.updatePosition(
                         client.player.getX() + forward.x,
                         client.player.getY() + forward.y,

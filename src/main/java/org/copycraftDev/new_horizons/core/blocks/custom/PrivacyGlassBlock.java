@@ -80,7 +80,7 @@ public class PrivacyGlassBlock extends TransparentBlock {
                         5, 0.2, 0.2, 0.2, 0.01);
 
                 // Propagate
-                int delay = 1 + world.getRandom().nextInt(3);
+                int delay = 1;// + world.getRandom().nextInt(3);
                 world.scheduleBlockTick(neighborPos, this, delay);
             }
         }

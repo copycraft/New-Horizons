@@ -63,8 +63,8 @@ public class CelestialBodyRegistry {
         p.name = "Mercury";
         p.center = new Vec3d(0, 100, -390);
         p.radius = 50;
-        p.rotationSpeed = 0.001;
-        p.orbitSpeed = 0.004;
+        p.rotationSpeed = 0.0000512;
+        p.orbitSpeed = 0.00833;
         p.hasAtmosphere = false;
         p.isStar = false;
         p.atmosphereColor1 = null;
@@ -84,8 +84,8 @@ public class CelestialBodyRegistry {
         p.name = "Venus";
         p.center = new Vec3d(10, 100, -720);
         p.radius = 80;
-        p.rotationSpeed = 0.001;
-        p.orbitSpeed = 0.004;
+        p.rotationSpeed = 0.0000123;
+        p.orbitSpeed = 0.00323;
         p.hasAtmosphere = false;
         p.isStar = false;
         p.atmosphereColor1 = null;
@@ -128,8 +128,8 @@ public class CelestialBodyRegistry {
         p.name = "Mars";
         p.center = new Vec3d(30, 100, -1520);
         p.radius = 80;
-        p.rotationSpeed = 0.001;
-        p.orbitSpeed = 0.004;
+        p.rotationSpeed = 0.00291;
+        p.orbitSpeed = 0.00106;
         p.hasAtmosphere = false;
         p.isStar = false;
         p.atmosphereColor1 = null;
@@ -149,8 +149,8 @@ public class CelestialBodyRegistry {
         p.name = "Jupiter";
         p.center = new Vec3d(40, 100, -5200);
         p.radius = 110;
-        p.rotationSpeed = 0.001;
-        p.orbitSpeed = 0.004;
+        p.rotationSpeed = 0.00732;
+        p.orbitSpeed = 0.000169;
         p.hasAtmosphere = true;
         p.isStar = true;
         p.atmosphereColor1 = null;
@@ -170,8 +170,8 @@ public class CelestialBodyRegistry {
         p.name = "Saturn";
         p.center = new Vec3d(50, 100, -9540);
         p.radius = 110;
-        p.rotationSpeed = 0.001;
-        p.orbitSpeed = 0.004;
+        p.rotationSpeed = 0.00667;
+        p.orbitSpeed = 0.0000679;
         p.hasAtmosphere = false;
         p.isStar = true;
         p.atmosphereColor1 = null;
@@ -193,8 +193,8 @@ public class CelestialBodyRegistry {
         p.name = "Uranus";
         p.center = new Vec3d(50, 100, -19200);
         p.radius = 120;
-        p.rotationSpeed = 0.001;
-        p.orbitSpeed = 0.004;
+        p.rotationSpeed = 0.00417;
+        p.orbitSpeed = 0.0000238;
         p.hasAtmosphere = false;
         p.isStar = true;
         p.atmosphereColor1 = null;
@@ -214,8 +214,8 @@ public class CelestialBodyRegistry {
         p.name = "Neptune";
         p.center = new Vec3d(60, 100, -30006);
         p.radius = 130;
-        p.rotationSpeed = 0.001;
-        p.orbitSpeed = 0.004;
+        p.rotationSpeed = 0.00448;
+        p.orbitSpeed = 0.0000121;
         p.hasAtmosphere = true;
         p.isStar = true;
         p.atmosphereColor1 = null;
@@ -266,6 +266,13 @@ public class CelestialBodyRegistry {
                     "textures/generated/" + key + "/" + key + "_normal.png",
                     4096,2048, key + "_nrm_resized", false
             );
+        } else {
+            planet.surfaceTexture    = planet.surfaceTexturePath    != null ? NewHorizonsMain.id(planet.surfaceTexturePath)    : null;
+            planet.cloudsTexture     = planet.cloudsTexturePath     != null ? NewHorizonsMain.id(planet.cloudsTexturePath)     : null;
+            planet.atmosphereTexture = planet.atmosphereTexturePath != null ? NewHorizonsMain.id(planet.atmosphereTexturePath) : null;
+            planet.darkAlbedoMap     = planet.darkAlbedoMapPath     != null ? NewHorizonsMain.id(planet.darkAlbedoMapPath)     : null;
+            planet.heightMap         = planet.heightMapPath         != null ? NewHorizonsMain.id(planet.heightMapPath)         : null;
+            planet.normalMap         = planet.normalMapPath         != null ? NewHorizonsMain.id(planet.normalMapPath)         : null;
         }
 
         // handle rings if present

@@ -72,15 +72,24 @@ public class CelestialBodyRenderer {
             for (var entry : planets.entrySet()) {
 
                 Vec3d orig=entry.getValue().center;
-                float ang= (float) (time.get()*entry.getValue().orbitSpeed);
+                float ang= (float) ((time.get())*entry.getValue().orbitSpeed * 0);
                 double cos=Math.cos(ang), sin=Math.sin(ang);
                 Vec3d orb=new Vec3d(orig.x*cos - orig.z*sin, orig.y, orig.x*sin + orig.z*cos);
 
                 var planet = entry.getValue();
                 float angle = (float) planet.rotationSpeed * time.get();
-                double distance = planet.center.subtract(camera.getPos())
-.distanceTo(camera.getPos());
-                int resolution = Math.min(Math.max((int)( 300 - 0.1*( distance - planet.radius )),32),500);
+                double distance = planet.center.subtract(camera.getPos()).distanceTo(camera.getPos());
+
+
+                int resolution;
+
+                if (distance > 200) {
+                    resolution = 25;
+                } else if (distance > 40 + planet.radius) {
+                    resolution = 160;
+                } else {
+                    resolution = 300;
+                }
 
                 RenderSystem.setShaderFogColor(0,0,0,0);
 
@@ -129,6 +138,7 @@ public class CelestialBodyRenderer {
                         LapisRenderer.drawAndReset(bb, tessellator);
 
                     } else {
+                        float lightRoll = (float) (Math.atan2(orb.z,orb.x) + (Math.PI / 2));
                         // planet surface (day/night)
                         if (planet.hasDarkAlbedoMap) {
                             LapisRenderer.setShaderTexture(3, planet.darkAlbedoMap);
@@ -136,13 +146,14 @@ public class CelestialBodyRenderer {
                         } else {
                             LapisRenderer.setShader(RENDER_TYPE_PLANET);
                         }
-                        LazuliGeometryBuilder.buildTexturedSphere(
+                        LazuliGeometryBuilder.buildTexturedSphereRotatedNormal(
                                 resolution,
                                 (float) planet.radius, // scale down
                                 orb,
                                 new Vec3d(0, 1, 0),
                                 angle,
                                 false,
+                                lightRoll,
                                 camera,
                                 viewProjMatrix,
                                 bb
@@ -156,18 +167,17 @@ public class CelestialBodyRenderer {
                             LapisRenderer.setShaderTexture(0, planet.darkAlbedoMap);
                             LapisRenderer.setShader(RENDER_TYPE_ATMOSPHERE);
                             LapisRenderer.enableCull();
-                            LazuliGeometryBuilder.buildTexturedSphere(
-                                    resolution / 2,
+                            LazuliGeometryBuilder.buildTexturedSphereWithCameraRelativeNormals(
+                                    resolution,
                                     (float) planet.atmosphereRadius,
-                                    planet.center,
-                                    new Vec3d(0,1,0),
-                                    0,
-                                    true,
+                                    orb,
+                                    0f,
+                                    false,
                                     camera,
                                     viewProjMatrix,
                                     bb
                             );
-                            bb = LapisRenderer.drawAndReset(bb, tessellator);
+                            LapisRenderer.drawAndReset(bb, tessellator);
 
                             RenderSystem.disableBlend();
                         }
