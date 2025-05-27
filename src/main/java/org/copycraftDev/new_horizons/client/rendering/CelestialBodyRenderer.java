@@ -167,12 +167,14 @@ public class CelestialBodyRenderer {
                             LapisRenderer.setShaderTexture(0, planet.darkAlbedoMap);
                             LapisRenderer.setShader(RENDER_TYPE_ATMOSPHERE);
                             LapisRenderer.enableCull();
-                            LazuliGeometryBuilder.buildTexturedSphereWithCameraRelativeNormals(
+                            LazuliGeometryBuilder.buildTexturedSphereRotatedNormal(
                                     resolution,
                                     (float) planet.atmosphereRadius,
                                     orb,
-                                    0f,
-                                    false,
+                                    new Vec3d(0,1,0),
+                                    0,
+                                    true,
+                                    lightRoll,
                                     camera,
                                     viewProjMatrix,
                                     bb
