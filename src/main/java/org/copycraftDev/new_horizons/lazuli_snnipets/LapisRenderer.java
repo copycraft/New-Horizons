@@ -4,8 +4,9 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gl.ShaderProgram;
 import net.minecraft.client.render.*;
 import net.minecraft.util.Identifier;
-
+import java.sql.Array;
 import java.util.function.Supplier;
+import java.util.List;
 
 public class LapisRenderer {
 
@@ -21,9 +22,10 @@ public class LapisRenderer {
         RenderSystem.disableBlend();
     }
 
-    public static void setShaderColor(float r, float g, float b, float a) {
-        RenderSystem.setShaderColor(r, g, b, a);
-    }
+    //overloaded method
+    public static void setShaderColor(float r, float g, float b, float a) {RenderSystem.setShaderColor(r, g, b, a);}
+    public static void setShaderColor(List<Integer> color) {RenderSystem.setShaderColor(color.get(0) / 255f, color.get(1) / 255f, color.get(2) / 255f, color.get(3) / 255f);}
+    public static void setShaderColor(int[] color) {RenderSystem.setShaderColor(color[0] / 255f, color[1] / 255f, color[2] / 255f, color[3] / 255f);}
 
     public static void depthMask(boolean flag) {
         RenderSystem.depthMask(flag);

@@ -165,6 +165,7 @@ public class CelestialBodyRenderer {
                         if (planet.hasAtmosphere) {
                             RenderSystem.enableBlend();
                             LapisRenderer.setShaderTexture(0, planet.darkAlbedoMap);
+                            LapisRenderer.setShaderColor(planet.atmosphereColor);
                             LapisRenderer.setShader(RENDER_TYPE_ATMOSPHERE);
                             LapisRenderer.enableCull();
                             LazuliGeometryBuilder.buildTexturedSphereRotatedNormal(

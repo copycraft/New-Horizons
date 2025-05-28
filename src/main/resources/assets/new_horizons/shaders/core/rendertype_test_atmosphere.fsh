@@ -40,7 +40,7 @@ void main() {
     float d = dist - 0.9;
 
     // Calculate a base color similar to the original design.
-    vec4 baseColor = vec4(0.3 + d, 0.35 + d, 1.0 + d, d);
+    vec4 baseColor = ColorModulator + vec4(d * 1.6);
 
     // Compute a simple scattering term: the dot product between the normalized normal and light direction.
     // Raising it to a power creates a soft glow effect on surfaces facing the light.
@@ -52,7 +52,7 @@ void main() {
 	float shadow = max(dot(normal, lightDir2)+0.2, 0.00)*1.4;
 
     // Apply a subtle color tint based on scattering. Tweak the vector values to adjust the tint.
-    vec3 scatteredColor = baseColor.rgb + scatter * vec3(0.2, 0.15, 0.1);
+    vec3 scatteredColor = baseColor.rgb + scatter * vec3(1.0);
 
     // Compute colored bloom: areas with brightness above bloomThreshold will be tinted.
     vec3 bloom = computeBloom(scatteredColor, bloomThreshold, bloomIntensity, bloomColor);
@@ -61,4 +61,24 @@ void main() {
     vec3 finalColor = scatteredColor + bloom;
 
     fragColor = vec4((2.0 * finalColor * shadow) - scatter, length(scatteredColor)*shadow*dist) * ColorModulator;
+	fragColor = vec4(max(0.0,fragColor.r),max(0.0,fragColor.g),max(0.0,fragColor.b),max(0.0,fragColor.a));
+	fragColor.a = (fragColor.a + (ColorModulator.a*0.1)) * (1.2 * length(fragColor.rgb));
+
+	if (fragColor.a < 0.01){
+		return;
+	}
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -46,8 +46,7 @@ public class CelestialBodyRegistry {
         p.orbitSpeed = 0.0;
         p.hasAtmosphere = false;
         p.isStar = true;
-        p.atmosphereColor1 = null;
-        p.atmosphereColor2 = null;
+        p.atmosphereColor = null;
         p.atmosphereRadius = 10;
         p.hasDarkAlbedoMap = false;
         p.usesGeneratedTexture = false;
@@ -67,8 +66,7 @@ public class CelestialBodyRegistry {
         p.orbitSpeed = 0.00833;
         p.hasAtmosphere = false;
         p.isStar = false;
-        p.atmosphereColor1 = null;
-        p.atmosphereColor2 = null;
+        p.atmosphereColor = null;
         p.atmosphereRadius = 0;
         p.hasDarkAlbedoMap = false;
         p.usesGeneratedTexture = false;
@@ -88,8 +86,7 @@ public class CelestialBodyRegistry {
         p.orbitSpeed = 0.00323;
         p.hasAtmosphere = false;
         p.isStar = false;
-        p.atmosphereColor1 = null;
-        p.atmosphereColor2 = null;
+        p.atmosphereColor = null;
         p.atmosphereRadius = 0;
         p.hasDarkAlbedoMap = false;
         p.usesGeneratedTexture = false;
@@ -109,9 +106,8 @@ public class CelestialBodyRegistry {
         p.orbitSpeed = 0.002;
         p.hasAtmosphere = true;
         p.isStar = false;
-        p.atmosphereColor1 = null;
-        p.atmosphereColor2 = null;
-        p.atmosphereRadius = 105;
+        p.atmosphereColor = new int[]{20, 30, 255, 50};
+        p.atmosphereRadius = 110;
         p.hasDarkAlbedoMap = true;
         p.usesGeneratedTexture = false;
         p.surfaceTexturePath    = "textures/test_textures/earth_texture.png";
@@ -132,8 +128,7 @@ public class CelestialBodyRegistry {
         p.orbitSpeed = 0.00106;
         p.hasAtmosphere = false;
         p.isStar = false;
-        p.atmosphereColor1 = null;
-        p.atmosphereColor2 = null;
+        p.atmosphereColor = null;
         p.atmosphereRadius = 0;
         p.hasDarkAlbedoMap = false;
         p.usesGeneratedTexture = false;
@@ -153,8 +148,7 @@ public class CelestialBodyRegistry {
         p.orbitSpeed = 0.000169;
         p.hasAtmosphere = true;
         p.isStar = true;
-        p.atmosphereColor1 = null;
-        p.atmosphereColor2 = null;
+        p.atmosphereColor = null;
         p.atmosphereRadius = 115;
         p.hasDarkAlbedoMap = false;
         p.usesGeneratedTexture = false;
@@ -174,8 +168,7 @@ public class CelestialBodyRegistry {
         p.orbitSpeed = 0.0000679;
         p.hasAtmosphere = false;
         p.isStar = true;
-        p.atmosphereColor1 = null;
-        p.atmosphereColor2 = null;
+        p.atmosphereColor = null;
         p.atmosphereRadius = 0;
         p.hasDarkAlbedoMap = false;
         p.usesGeneratedTexture = false;
@@ -197,8 +190,7 @@ public class CelestialBodyRegistry {
         p.orbitSpeed = 0.0000238;
         p.hasAtmosphere = false;
         p.isStar = true;
-        p.atmosphereColor1 = null;
-        p.atmosphereColor2 = null;
+        p.atmosphereColor = null;
         p.atmosphereRadius = 0;
         p.hasDarkAlbedoMap = false;
         p.usesGeneratedTexture = false;
@@ -218,8 +210,7 @@ public class CelestialBodyRegistry {
         p.orbitSpeed = 0.0000121;
         p.hasAtmosphere = true;
         p.isStar = true;
-        p.atmosphereColor1 = null;
-        p.atmosphereColor2 = null;
+        p.atmosphereColor = null;
         p.atmosphereRadius = 135;
         p.hasDarkAlbedoMap = false;
         p.usesGeneratedTexture = false;
@@ -323,6 +314,7 @@ public class CelestialBodyRegistry {
         public transient Identifier heightMap;
         public transient Identifier normalMap;
 
+
         public transient Identifier ringsTexture;
         public float ringsInnerRadius;
         public float ringsOuterRadius;
@@ -330,8 +322,7 @@ public class CelestialBodyRegistry {
         public double orbitSpeed;
         public boolean hasAtmosphere;
         public boolean isStar;
-        public int[] atmosphereColor1;
-        public int[] atmosphereColor2;
+        public int[] atmosphereColor;
         public double atmosphereRadius;
         public boolean hasDarkAlbedoMap;
         String surfaceTexturePath, cloudsTexturePath, atmosphereTexturePath;
