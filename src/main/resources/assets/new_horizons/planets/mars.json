@@ -13,17 +13,12 @@
   "normalMapPath": "textures/test_textures/mars_normal.jpg",
 
 
-  "hasAtmosphere": false,
+  "hasAtmosphere": true,
   "isStar": false,
   "atmosphereColor1": null,
   "atmosphereColor2": null,
-  "atmosphereRadius": 0,
-
+  "atmosphereRadius": 85,
   "hasDarkAlbedoMap": null,
-
-  "ringsTexturePath": null,
-  "ringsInnerRadius": 0,
-  "ringsOuterRadius": 0,
 
   "usesGeneratedTexture": true
 }

@@ -18,7 +18,6 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public class CelestialBodyRenderer {
 
-    // toggle this to turn rendering on/off each frame
     public static boolean shouldRender = true;
     public static void setShouldRender(boolean flag) {
         shouldRender = flag;
@@ -42,7 +41,6 @@ public class CelestialBodyRenderer {
 
     public static void register() {
         LazuliRenderingRegistry.register((context, viewProjMatrix, tickDelta) -> {
-            // *** early-out if rendering is disabled ***
             if (!shouldRender) return;
 
             Tessellator tessellator = Tessellator.getInstance();
@@ -51,7 +49,6 @@ public class CelestialBodyRenderer {
 
             LapisRenderer.farAwayRendering();
 
-            // load shaders
             RENDER_TYPE_PLANET = LazuliShaderRegistry.getShader(ModShaders.RENDER_TYPE_PLANET);
             RENDER_TYPE_PLANET_WITH_NIGHT = LazuliShaderRegistry.getShader(ModShaders.RENDER_TYPE_PLANET_WITH_NIGHT);
             RENDER_TYPE_ATMOSPHERE = LazuliShaderRegistry.getShader(ModShaders.RENDER_TYPE_ATMOSPHERE);
@@ -61,7 +58,6 @@ public class CelestialBodyRenderer {
 
             if (RENDER_TYPE_PLANET == null) return;
 
-            // expire old explosion
             if (time.get() - explosionStartingTime > 200f) {
                 explodingPlanet = null;
             }
@@ -71,15 +67,14 @@ public class CelestialBodyRenderer {
 
             for (var entry : planets.entrySet()) {
 
-                Vec3d orig=entry.getValue().center;
-                float ang= (float) ((time.get())*entry.getValue().orbitSpeed * 0);
-                double cos=Math.cos(ang), sin=Math.sin(ang);
-                Vec3d orb=new Vec3d(orig.x*cos - orig.z*sin, orig.y, orig.x*sin + orig.z*cos);
+                Vec3d orig = entry.getValue().center;
+                float ang = (float) (time.get() * entry.getValue().orbitSpeed * 0);
+                double cos = Math.cos(ang), sin = Math.sin(ang);
+                Vec3d orb = new Vec3d(orig.x * cos - orig.z * sin, orig.y, orig.x * sin + orig.z * cos);
 
                 var planet = entry.getValue();
                 float angle = (float) planet.rotationSpeed * time.get();
                 double distance = planet.center.subtract(camera.getPos()).distanceTo(camera.getPos());
-
 
                 int resolution;
 
@@ -91,10 +86,8 @@ public class CelestialBodyRenderer {
                     resolution = 300;
                 }
 
-                RenderSystem.setShaderFogColor(0,0,0,0);
+                RenderSystem.setShaderFogColor(0, 0, 0, 0);
 
-
-                // bind textures
                 RenderSystem.setShaderTexture(0, planet.surfaceTexture);
                 RenderSystem.setShaderTexture(1, planet.heightMap);
                 RenderSystem.setShaderTexture(2, planet.normalMap);
@@ -103,11 +96,10 @@ public class CelestialBodyRenderer {
 
                 if (!explodedPlanets.contains(planet.name)) {
                     if (planet.isStar) {
-                        // star core
                         LapisRenderer.setShader(RENDER_TYPE_STAR);
                         LazuliGeometryBuilder.buildTexturedSphere(
                                 resolution,
-                                (float) planet.radius, // scale down
+                                (float) planet.radius,
                                 orb,
                                 new Vec3d(0, 1, 0),
                                 angle,
@@ -119,7 +111,6 @@ public class CelestialBodyRenderer {
 
                         bb = LapisRenderer.drawAndReset(bb, tessellator);
 
-                        // star aura
                         LapisRenderer.setShaderTexture(0, planet.surfaceTexture);
                         LapisRenderer.setShader(RENDER_TYPE_STAR_AURA);
                         LapisRenderer.enableCull();
@@ -138,8 +129,7 @@ public class CelestialBodyRenderer {
                         LapisRenderer.drawAndReset(bb, tessellator);
 
                     } else {
-                        float lightRoll = (float) (Math.atan2(orb.z,orb.x) + (Math.PI / 2));
-                        // planet surface (day/night)
+                        float lightRoll = (float) (Math.atan2(orb.z, orb.x) + (Math.PI / 2));
                         if (planet.hasDarkAlbedoMap) {
                             LapisRenderer.setShaderTexture(3, planet.darkAlbedoMap);
                             LapisRenderer.setShader(RENDER_TYPE_PLANET_WITH_NIGHT);
@@ -148,7 +138,7 @@ public class CelestialBodyRenderer {
                         }
                         LazuliGeometryBuilder.buildTexturedSphereRotatedNormal(
                                 resolution,
-                                (float) planet.radius, // scale down
+                                (float) planet.radius,
                                 orb,
                                 new Vec3d(0, 1, 0),
                                 angle,
@@ -161,7 +151,6 @@ public class CelestialBodyRenderer {
 
                         bb = LapisRenderer.drawAndReset(bb, tessellator);
 
-                        // atmosphere
                         if (planet.hasAtmosphere) {
                             RenderSystem.enableBlend();
                             LapisRenderer.setShaderTexture(0, planet.darkAlbedoMap);
@@ -172,7 +161,7 @@ public class CelestialBodyRenderer {
                                     resolution,
                                     (float) planet.atmosphereRadius,
                                     orb,
-                                    new Vec3d(0,1,0),
+                                    new Vec3d(0, 1, 0),
                                     0,
                                     true,
                                     lightRoll,
@@ -181,21 +170,20 @@ public class CelestialBodyRenderer {
                                     bb
                             );
                             LapisRenderer.drawAndReset(bb, tessellator);
-
                             RenderSystem.disableBlend();
+
+                            // ✅ Reset shader color so it doesn't leak to other planets
+                            RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
                         }
                     }
                 }
 
-                // explosion effect (unchanged) …
                 if (planet.name.equals(explodingPlanet)) {
                     float progress = time.get() - explosionStartingTime;
-                    // … inner glow, outer flash, ring
-                    // (same as your original code)
+                    // TODO: Explosion rendering logic
                 }
             }
 
-            // cleanup
             LapisRenderer.cleanupRenderSystem();
         });
     }
@@ -210,9 +198,6 @@ public class CelestialBodyRenderer {
         explodedPlanets.clear();
         explodingPlanet = null;
     }
-
-
-
 
     public static Vec3d getPlanetLocation(String planetName) {
         for (var body : CelestialBodyRegistry.getAllPlanets().values()) {

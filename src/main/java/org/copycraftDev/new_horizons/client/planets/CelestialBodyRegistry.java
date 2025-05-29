@@ -44,10 +44,10 @@ public class CelestialBodyRegistry {
         p.radius = 140;
         p.rotationSpeed = 0.001;
         p.orbitSpeed = 0.0;
-        p.hasAtmosphere = false;
+        p.hasAtmosphere = true;
+        p.atmosphereColor = new int[]{255, 180, 80, 80};
         p.isStar = true;
-        p.atmosphereColor = null;
-        p.atmosphereRadius = 10;
+        p.atmosphereRadius = 150;
         p.hasDarkAlbedoMap = false;
         p.usesGeneratedTexture = false;
         p.surfaceTexturePath = "textures/test_textures/8k_sun.jpg";
@@ -84,15 +84,17 @@ public class CelestialBodyRegistry {
         p.radius = 80;
         p.rotationSpeed = 0.0000123;
         p.orbitSpeed = 0.00323;
-        p.hasAtmosphere = false;
         p.isStar = false;
-        p.atmosphereColor = null;
-        p.atmosphereRadius = 0;
-        p.hasDarkAlbedoMap = false;
+        p.hasAtmosphere = true;
+        p.atmosphereColor = new int[]{255, 180, 80, 80};
+        p.atmosphereRadius = 90;
+        p.atmosphereTexturePath = "textures/test_textures/8k_earth_clouds.jpg";
+        p.hasDarkAlbedoMap = true;
         p.usesGeneratedTexture = false;
         p.surfaceTexturePath    = "textures/test_textures/8k_venus_surface.jpg";
         p.heightMapPath         = "textures/test_textures/venus_height_map.jpg";
         p.normalMapPath         = "textures/test_textures/venus_normal_map.jpg";
+        p.darkAlbedoMapPath     = "textures/test_textures/8k_venus_surface.jpg";
 
         return p;
     }
@@ -106,7 +108,7 @@ public class CelestialBodyRegistry {
         p.orbitSpeed = 0.002;
         p.hasAtmosphere = true;
         p.isStar = false;
-        p.atmosphereColor = new int[]{20, 30, 255, 50};
+        p.atmosphereColor = new int[]{20, 30, 255, 70};
         p.atmosphereRadius = 110;
         p.hasDarkAlbedoMap = true;
         p.usesGeneratedTexture = false;
@@ -128,8 +130,8 @@ public class CelestialBodyRegistry {
         p.orbitSpeed = 0.00106;
         p.hasAtmosphere = false;
         p.isStar = false;
-        p.atmosphereColor = null;
-        p.atmosphereRadius = 0;
+        p.atmosphereColor = new int[]{255, 30, 0, 70};
+        p.atmosphereRadius = 90;
         p.hasDarkAlbedoMap = false;
         p.usesGeneratedTexture = false;
         p.surfaceTexturePath    = "textures/test_textures/8k_mars.jpg";
@@ -146,7 +148,7 @@ public class CelestialBodyRegistry {
         p.radius = 110;
         p.rotationSpeed = 0.00732;
         p.orbitSpeed = 0.000169;
-        p.hasAtmosphere = true;
+        p.hasAtmosphere = false;
         p.isStar = true;
         p.atmosphereColor = null;
         p.atmosphereRadius = 115;
@@ -169,7 +171,7 @@ public class CelestialBodyRegistry {
         p.hasAtmosphere = false;
         p.isStar = true;
         p.atmosphereColor = null;
-        p.atmosphereRadius = 0;
+        p.atmosphereRadius = 115;
         p.hasDarkAlbedoMap = false;
         p.usesGeneratedTexture = false;
         p.surfaceTexturePath    = "textures/test_textures/8k_saturn.jpg";
