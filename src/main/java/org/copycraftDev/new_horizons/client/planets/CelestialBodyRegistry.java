@@ -44,8 +44,8 @@ public class CelestialBodyRegistry {
         p.radius = 140;
         p.rotationSpeed = 0.001;
         p.orbitSpeed = 0.0;
-        p.hasAtmosphere = true;
-        p.atmosphereColor = new int[]{255, 180, 80, 80};
+        p.hasAtmosphere = false;
+        p.atmosphereColor = null;
         p.isStar = true;
         p.atmosphereRadius = 150;
         p.hasDarkAlbedoMap = false;
@@ -212,7 +212,7 @@ public class CelestialBodyRegistry {
         p.orbitSpeed = 0.0000121;
         p.hasAtmosphere = true;
         p.isStar = true;
-        p.atmosphereColor = null;
+        p.atmosphereColor = new int[]{20, 30, 255, 70};
         p.atmosphereRadius = 135;
         p.hasDarkAlbedoMap = false;
         p.usesGeneratedTexture = false;
