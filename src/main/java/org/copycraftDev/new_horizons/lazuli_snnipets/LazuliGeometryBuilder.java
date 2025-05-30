@@ -4,6 +4,9 @@ import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.Camera;
 import net.minecraft.util.math.Vec3d;
 import org.joml.Matrix4f;
+import org.joml.Quaterniond;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
 
 import static java.lang.Math.*;
 import static java.lang.Math.sin;
@@ -443,4 +446,33 @@ public class LazuliGeometryBuilder {
         yaw = yawDis;
         roll = rollDis;
     }
+
+
+    public static boolean checkIfVisible(Vec3d pos, double radius, Camera camera) {
+
+        Vec3d camPos = camera.getPos();
+        Vec3d toObject = pos.subtract(camPos);
+
+        double distSq = toObject.lengthSquared();
+        if (distSq < 1e-4) return true; // Too close, visible by default
+
+        // Camera forward vector in world space
+        Vector3f camDir = new Vector3f(0, 0, -1);
+        camDir.rotate(camera.getRotation());
+
+        // Dot product between camera direction and object vector
+        double dot = camDir.x * toObject.x + camDir.y * toObject.y + camDir.z * toObject.z;
+
+        // Skip objects behind the camera
+        if (dot <= 0) return false;
+
+        // Avoid acos: use angle cosine directly
+        // Assume FOV is 90 degrees -> cos(45°) = ~0.707
+        // Slightly expand with radius consideration
+        double visibilityThreshold = 0.5 - radius / Math.sqrt(distSq);
+        double dotNorm = dot / Math.sqrt(distSq); // cos(theta)
+
+        return dotNorm > visibilityThreshold;
+    }
+
 }

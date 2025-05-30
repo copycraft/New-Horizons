@@ -10,6 +10,7 @@ import org.copycraftDev.new_horizons.lazuli_snnipets.LapisRenderer;
 import org.copycraftDev.new_horizons.lazuli_snnipets.LazuliGeometryBuilder;
 import org.copycraftDev.new_horizons.lazuli_snnipets.LazuliRenderingRegistry;
 import org.copycraftDev.new_horizons.lazuli_snnipets.LazuliShaderRegistry;
+import org.joml.Matrix4f;
 
 import java.util.HashSet;
 import java.util.Map;
@@ -19,9 +20,7 @@ import java.util.concurrent.atomic.AtomicReference;
 public class CelestialBodyRenderer {
 
     public static boolean shouldRender = true;
-    public static void setShouldRender(boolean flag) {
-        shouldRender = flag;
-    }
+    public static void setShouldRender(boolean flag) { shouldRender = flag; }
 
     private static ShaderProgram
             RENDER_TYPE_PLANET,
@@ -36,161 +35,119 @@ public class CelestialBodyRenderer {
     public static float explosionStartingTime;
     public static AtomicReference<Float> time = new AtomicReference<>(0f);
 
-    public static final Identifier CELESTIAL_SYNC =
-            Identifier.of("new_horizons", "celestial_sync");
+    public static final Identifier CELESTIAL_SYNC = Identifier.of("new_horizons", "celestial_sync");
 
     public static void register() {
         LazuliRenderingRegistry.register((context, viewProjMatrix, tickDelta) -> {
             if (!shouldRender) return;
-
-            Tessellator tessellator = Tessellator.getInstance();
-            time.updateAndGet(v -> v + context.tickCounter().getTickDelta(true));
             Camera camera = context.camera();
+            time.updateAndGet(v -> v + context.tickCounter().getTickDelta(true));
 
-            LapisRenderer.farAwayRendering();
-            LapisRenderer.enableCull();
-            RenderSystem.setShaderFogColor(0, 0, 0, 0);
-
-            RENDER_TYPE_PLANET = LazuliShaderRegistry.getShader(ModShaders.RENDER_TYPE_PLANET);
-            RENDER_TYPE_PLANET_WITH_NIGHT = LazuliShaderRegistry.getShader(ModShaders.RENDER_TYPE_PLANET_WITH_NIGHT);
-            RENDER_TYPE_ATMOSPHERE = LazuliShaderRegistry.getShader(ModShaders.RENDER_TYPE_ATMOSPHERE);
-            RENDER_TYPE_STAR = LazuliShaderRegistry.getShader(ModShaders.RENDER_TYPE_STAR);
-            RENDER_TYPE_STAR_AURA = LazuliShaderRegistry.getShader(ModShaders.RENDER_TYPE_STAR_AURA);
-            RENDERTYPE_KABOOM_OOHHHHHHHHHHHH_SHINY_1 = LazuliShaderRegistry.getShader(ModShaders.RENDERTYPE_KABOOM_OOHHHHHHHHHHHH_SHINY_1);
-
+            initRenderSystem();
+            updateShaders();
             if (RENDER_TYPE_PLANET == null) return;
 
-            if (time.get() - explosionStartingTime > 200f) {
-                explodingPlanet = null;
-            }
+            if (time.get() - explosionStartingTime > 200f) explodingPlanet = null;
+            Map<Identifier, CelestialBodyRegistry.CelestialBodyData> planets = CelestialBodyRegistry.getAllPlanets();
 
-            Map<Identifier, CelestialBodyRegistry.CelestialBodyData> planets =
-                    CelestialBodyRegistry.getAllPlanets();
-
-            for (var entry : planets.entrySet()) { //Render all planets (without atmosphere)
-
-                Vec3d orig = entry.getValue().center;
-                float ang = (float) (time.get() * entry.getValue().orbitSpeed * 0);
-                double cos = Math.cos(ang), sin = Math.sin(ang);
-                Vec3d orb = new Vec3d(orig.x * cos - orig.z * sin, orig.y, orig.x * sin + orig.z * cos);
-
-                var planet = entry.getValue();
-                float angle = (float) planet.rotationSpeed * time.get();
-                double distance = planet.center.subtract(camera.getPos()).distanceTo(camera.getPos());
-
-                int resolution;
-
-                if (distance > 200) {
-                    resolution = 25;
-                } else if (distance > 40 + planet.radius) {
-                    resolution = 160;
-                } else {
-                    resolution = 300;
-                }
-
-                RenderSystem.setShaderTexture(0, planet.surfaceTexture);
-                RenderSystem.setShaderTexture(1, planet.heightMap);
-                RenderSystem.setShaderTexture(2, planet.normalMap);
-
-                BufferBuilder bb = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR_NORMAL);
-
-                if (!explodedPlanets.contains(planet.name)) {
-                    if (planet.isStar) {
-                        LapisRenderer.setShader(RENDER_TYPE_STAR);
-                        LazuliGeometryBuilder.buildTexturedSphere(
-                                resolution,
-                                (float) planet.radius,
-                                orb,
-                                new Vec3d(0, 1, 0),
-                                angle,
-                                false,
-                                camera,
-                                viewProjMatrix,
-                                bb
-                        );
-                        bb = LapisRenderer.drawAndReset(bb, tessellator);
-                    } else {
-                        float lightRoll = (float) (Math.atan2(orb.z, orb.x) + (Math.PI / 2));
-                        if (planet.hasDarkAlbedoMap) {
-                            //set shader to RENDER_TYPE_PLANET_WITH_NIGHT if planet has dark side lights (like earth)
-                            LapisRenderer.setShaderTexture(3, planet.darkAlbedoMap);
-                            LapisRenderer.setShader(RENDER_TYPE_PLANET_WITH_NIGHT);
-                        } else {
-                            //else  shader to RENDER_TYPE_PLANET
-                            LapisRenderer.setShader(RENDER_TYPE_PLANET);
-                        }
-
-                        //actually drawn the planet
-                        LazuliGeometryBuilder.buildTexturedSphereRotatedNormal(
-                                resolution,
-                                (float) planet.radius,
-                                orb,
-                                new Vec3d(0, 1, 0),
-                                angle,
-                                false,
-                                lightRoll,
-                                camera,
-                                viewProjMatrix,
-                                bb
-                        );
-
-                        bb = LapisRenderer.drawAndReset(bb, tessellator);
-                        }
-                    }
-                }
-
-                RenderSystem.enableBlend();
-                for (var entry : planets.entrySet()) { //Render only atmospheres
-
-                    Vec3d orig = entry.getValue().center;
-                    float ang = (float) (time.get() * entry.getValue().orbitSpeed * 0);
-                    double cos = Math.cos(ang), sin = Math.sin(ang);
-                    Vec3d orb = new Vec3d(orig.x * cos - orig.z * sin, orig.y, orig.x * sin + orig.z * cos);
-
-                    var planet = entry.getValue();
-                    float angle = (float) planet.rotationSpeed * time.get();
-                    double distance = planet.center.subtract(camera.getPos()).distanceTo(camera.getPos());
-
-                    int resolution;
-
-                    if (distance > 200) {
-                        resolution = 25;
-                    } else if (distance > 40 + planet.radius) {
-                        resolution = 160;
-                    } else {
-                        resolution = 300;
-                    }
-                    RenderSystem.setShaderTexture(0, planet.surfaceTexture);
-                    RenderSystem.setShaderTexture(1, planet.heightMap);
-                    RenderSystem.setShaderTexture(2, planet.normalMap);
-
-                    BufferBuilder bb = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR_NORMAL);
-
-                    if (!explodedPlanets.contains(planet.name)) {
-                            float lightRoll = (float) (Math.atan2(orb.z, orb.x) + (Math.PI / 2));
-                            if (planet.hasAtmosphere) {
-
-                                //Render atmosphere
-                                LapisRenderer.setShaderColor(planet.atmosphereColor);
-                                LapisRenderer.setShader(RENDER_TYPE_ATMOSPHERE);
-                                LazuliGeometryBuilder.buildTexturedSphereRotatedNormal(
-                                        resolution,
-                                        (float) planet.atmosphereRadius,
-                                        orb,
-                                        new Vec3d(0, 1, 0),
-                                        0,
-                                        true,
-                                        lightRoll,
-                                        camera,
-                                        viewProjMatrix,
-                                        bb
-                                );
-                                LapisRenderer.drawAndReset(bb, tessellator);
-                        }
-                    }
-            }
+            renderPlanets(planets, camera, viewProjMatrix);
+            renderAtmospheres(planets, camera, viewProjMatrix);
             LapisRenderer.cleanupRenderSystem();
         });
+    }
+
+    private static void initRenderSystem() {
+        LapisRenderer.farAwayRendering();
+        LapisRenderer.enableCull();
+        RenderSystem.setShaderFogColor(0, 0, 0, 0);
+    }
+
+    private static void updateShaders() {
+        RENDER_TYPE_PLANET = LazuliShaderRegistry.getShader(ModShaders.RENDER_TYPE_PLANET);
+        RENDER_TYPE_PLANET_WITH_NIGHT = LazuliShaderRegistry.getShader(ModShaders.RENDER_TYPE_PLANET_WITH_NIGHT);
+        RENDER_TYPE_ATMOSPHERE = LazuliShaderRegistry.getShader(ModShaders.RENDER_TYPE_ATMOSPHERE);
+        RENDER_TYPE_STAR = LazuliShaderRegistry.getShader(ModShaders.RENDER_TYPE_STAR);
+        RENDER_TYPE_STAR_AURA = LazuliShaderRegistry.getShader(ModShaders.RENDER_TYPE_STAR_AURA);
+        RENDERTYPE_KABOOM_OOHHHHHHHHHHHH_SHINY_1 = LazuliShaderRegistry.getShader(ModShaders.RENDERTYPE_KABOOM_OOHHHHHHHHHHHH_SHINY_1);
+    }
+
+    private static void renderPlanets(Map<Identifier, CelestialBodyRegistry.CelestialBodyData> planets, Camera camera, Matrix4f viewProjMatrix) {
+        Tessellator tessellator = Tessellator.getInstance();
+
+        for (var entry : planets.entrySet()) {
+            CelestialBodyRegistry.CelestialBodyData planet = entry.getValue();
+            if (explodedPlanets.contains(planet.name)) continue;
+
+
+            if (LazuliGeometryBuilder.checkIfVisible(planet.center, planet.radius, camera)){
+                Vec3d position = calculateOrbitalPosition(planet);
+                float angle = (float) planet.rotationSpeed * time.get();
+                double distance = planet.center.subtract(camera.getPos()).length();
+                int resolution = calculateResolution(distance, planet.radius);
+                setPlanetTextures(planet);
+                BufferBuilder bb = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR_NORMAL);
+
+                if (planet.isStar) {
+                    LapisRenderer.setShader(RENDER_TYPE_STAR);
+                    LazuliGeometryBuilder.buildTexturedSphere(resolution, (float) planet.radius, position, new Vec3d(0, 1, 0), angle, false, camera, viewProjMatrix, bb);
+                } else {
+                    float lightRoll = (float) (Math.atan2(position.z, position.x) + (Math.PI / 2));
+                    if (planet.hasDarkAlbedoMap) {
+                        LapisRenderer.setShaderTexture(3, planet.darkAlbedoMap);
+                        LapisRenderer.setShader(RENDER_TYPE_PLANET_WITH_NIGHT);
+                    } else {
+                        LapisRenderer.setShader(RENDER_TYPE_PLANET);
+                    }
+                    LazuliGeometryBuilder.buildTexturedSphereRotatedNormal(resolution, (float) planet.radius, position, new Vec3d(0, 1, 0), angle, false, lightRoll, camera, viewProjMatrix, bb);
+                }
+
+                LapisRenderer.drawAndReset(bb, tessellator);
+            }
+        }
+    }
+
+    private static void renderAtmospheres(Map<Identifier, CelestialBodyRegistry.CelestialBodyData> planets, Camera camera, Matrix4f viewProjMatrix) {
+        Tessellator tessellator = Tessellator.getInstance();
+        RenderSystem.enableBlend();
+
+        for (var entry : planets.entrySet()) {
+            CelestialBodyRegistry.CelestialBodyData planet = entry.getValue();
+            if (!planet.hasAtmosphere || explodedPlanets.contains(planet.name)) continue;
+                if (LazuliGeometryBuilder.checkIfVisible(planet.center, planet.atmosphereRadius, camera)) {
+
+                    Vec3d position = calculateOrbitalPosition(planet);
+                    float lightRoll = (float) (Math.atan2(position.z, position.x) + (Math.PI / 2));
+                    double distance = planet.center.subtract(camera.getPos()).length();
+                    int resolution = 20;
+
+                    setPlanetTextures(planet);
+                    BufferBuilder bb = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR_NORMAL);
+
+                    LapisRenderer.setShaderColor(planet.atmosphereColor);
+                    LapisRenderer.setShader(RENDER_TYPE_ATMOSPHERE);
+                    LazuliGeometryBuilder.buildTexturedSphereRotatedNormal(resolution, (float) planet.atmosphereRadius, position, new Vec3d(0, 1, 0), 0, true, lightRoll, camera, viewProjMatrix, bb);
+                    LapisRenderer.drawAndReset(bb, tessellator);
+                }
+        }
+    }
+
+    private static Vec3d calculateOrbitalPosition(CelestialBodyRegistry.CelestialBodyData planet) {
+        Vec3d orig = planet.center;
+        float ang = (float) (time.get() * planet.orbitSpeed * 0);
+        double cos = Math.cos(ang), sin = Math.sin(ang);
+        return new Vec3d(orig.x * cos - orig.z * sin, orig.y, orig.x * sin + orig.z * cos);
+    }
+
+    private static void setPlanetTextures(CelestialBodyRegistry.CelestialBodyData planet) {
+        RenderSystem.setShaderTexture(0, planet.surfaceTexture);
+        RenderSystem.setShaderTexture(1, planet.heightMap);
+        RenderSystem.setShaderTexture(2, planet.normalMap);
+    }
+
+    private static int calculateResolution(double distance, double radius) {
+        if (distance > 200 + radius) return 15;
+        if (distance > 40 + radius) return 140;
+        return 230;
     }
 
     public static void kaboom(String planetName) {
@@ -202,14 +159,5 @@ public class CelestialBodyRenderer {
     public static void restore() {
         explodedPlanets.clear();
         explodingPlanet = null;
-    }
-
-    public static Vec3d getPlanetLocation(String planetName) {
-        for (var body : CelestialBodyRegistry.getAllPlanets().values()) {
-            if (body.name.equals(planetName)) {
-                return body.center;
-            }
-        }
-        return null;
     }
 }
