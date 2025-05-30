@@ -85,8 +85,9 @@ public class LazuliGeometryBuilder {
 
 
                 //Equatorial texture coordinates
-                double U1 = ((angle - roll) / PI) / 2;
-                double U2 = ((angle - roll) / PI) / 2 + (0.5 / res);
+                double U1 = (angle - roll) / (2 * PI);
+                double U2 = (angle + (PI / res) - roll) / (2 * PI);
+
                 //Longitudinal texture coordinates
                 double V1 = angle2 / PI;
                 double V2 = nextAngle2 / PI;
@@ -165,8 +166,8 @@ public class LazuliGeometryBuilder {
 
 
                 //Equatorial texture coordinates
-                double U1 = ((angle - roll) / PI) / 2;
-                double U2 = ((angle - roll) / PI) / 2 + (0.5 / res);
+                double U1 = (angle - roll - (PI / res)) / (2 * PI);
+                double U2 = (angle - roll) / (2 * PI);
                 //Longitudinal texture coordinates
                 double V1 = angle2 / PI;
                 double V2 = nextAngle2 / PI;
@@ -287,8 +288,9 @@ public class LazuliGeometryBuilder {
 
 
                 //Equatorial texture coordinates
-                double U1 = ((angle - roll) / PI) / 2;
-                double U2 = ((angle - roll) / PI) / 2 + (0.5 / res);
+                double U1 = (angle - roll) / (2 * PI);
+                double U2 = (angle + (PI / res) - roll) / (2 * PI);
+
                 //Longitudinal texture coordinates
                 double V1 = angle2 / PI;
                 double V2 = nextAngle2 / PI;

@@ -41,7 +41,7 @@ public class CelestialBodyRenderer {
         LazuliRenderingRegistry.register((context, viewProjMatrix, tickDelta) -> {
             if (!shouldRender) return;
             Camera camera = context.camera();
-            time.updateAndGet(v -> v + context.tickCounter().getTickDelta(true));
+            time.updateAndGet(v -> v + context.tickCounter().getLastFrameDuration());
 
             initRenderSystem();
             updateShaders();
@@ -98,7 +98,16 @@ public class CelestialBodyRenderer {
                     } else {
                         LapisRenderer.setShader(RENDER_TYPE_PLANET);
                     }
-                    LazuliGeometryBuilder.buildTexturedSphereRotatedNormal(resolution, (float) planet.radius, position, new Vec3d(0, 1, 0), angle, false, lightRoll, camera, viewProjMatrix, bb);
+                    LazuliGeometryBuilder.buildTexturedSphereRotatedNormal(resolution,
+                            (float) planet.radius,
+                            position,
+                            new Vec3d(0, 1, 0),
+                            angle,
+                            false,
+                            lightRoll,
+                            camera,
+                            viewProjMatrix,
+                            bb);
                 }
 
                 LapisRenderer.drawAndReset(bb, tessellator);
@@ -125,7 +134,16 @@ public class CelestialBodyRenderer {
 
                     LapisRenderer.setShaderColor(planet.atmosphereColor);
                     LapisRenderer.setShader(RENDER_TYPE_ATMOSPHERE);
-                    LazuliGeometryBuilder.buildTexturedSphereRotatedNormal(resolution, (float) planet.atmosphereRadius, position, new Vec3d(0, 1, 0), 0, true, lightRoll, camera, viewProjMatrix, bb);
+                    LazuliGeometryBuilder.buildTexturedSphereRotatedNormal(resolution,
+                            (float) planet.atmosphereRadius,
+                            position,
+                            new Vec3d(0, 1, 0),
+                            0,
+                            true,
+                            lightRoll,
+                            camera,
+                            viewProjMatrix,
+                            bb);
                     LapisRenderer.drawAndReset(bb, tessellator);
                 }
         }
