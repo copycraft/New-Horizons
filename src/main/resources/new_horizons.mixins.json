@@ -16,10 +16,12 @@
     "NoVoidDamageInSpaceLivingEntityMixin",
     "TitleScreenMixin",
     "client.CameraMixin",
+    "client.FreezeInventoryMixin",
     "client.FrustumMixin",
     "client.GameRendererMixin",
     "client.InstantDimensionClientMixin",
-    "client.InstantDimensionNetworkMixin"
+    "client.InstantDimensionNetworkMixin",
+    "client.PlayerFreezeMixin"
   ],
   "injectors": {
     "defaultRequire": 1

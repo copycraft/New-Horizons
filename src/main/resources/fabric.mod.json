@@ -11,6 +11,7 @@
   "environment": "*",
   "entrypoints": {
     "client": [
+      "org.copycraftDev.new_horizons.Lidar.LidarPointRenderer",
       "org.copycraftDev.new_horizons.client.NewHorizonsClient"
     ],
     "main": [
