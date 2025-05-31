@@ -410,9 +410,6 @@ public class LazuliGeometryBuilder {
         Vec3d pos2 = pos.add(mainDisplacement).rotateZ((float) yaw).rotateX((float) roll).rotateY((float) pitch);
         Vec3d normal2 = normal.rotateZ((float) yaw).rotateX((float) roll).rotateY((float) pitch);
 
-        if (pos2.length()>clampDist) {
-            pos2 = pos2.normalize().multiply(clampDist+(0.01*(pos2.length()-clampDist)));
-        }
         bufferBuilder.vertex(matrix4f2, (float) pos2.x, (float) pos2.y, (float) pos2.z)
                 .texture((float) u, (float) v)
                 .color(0, 0, 0, 1)

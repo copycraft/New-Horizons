@@ -4,19 +4,24 @@
   "package": "org.copycraftDev.new_horizons.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
-    "client.SpaceSkyboxMixin",
     "AbstractBlockCollisionMixin",
-    "AbstractBlockMixin"
+    "AbstractBlockMixin",
+    "client.SpaceSkyboxMixin"
   ],
   "client": [
-    "client.CameraMixin",
+    "CameraAccessor",
     "CameraRotationMixin",
-    "client.GameRendererMixin",
-    // "TitleScreenMixin",
-    "NoVoidDamageInSpaceLivingEntityMixin",
-    "NoCloudsMixin",
     "ClientPlayNetworkHandlerMixin",
-    "LazuliPostProcessingRegistryMixin"
+    "NoCloudsMixin",
+    "NoVoidDamageInSpaceLivingEntityMixin",
+    "TitleScreenMixin",
+    "client.CameraMixin",
+    "client.FreezeInventoryMixin",
+    "client.FrustumMixin",
+    "client.GameRendererMixin",
+    "client.InstantDimensionClientMixin",
+    "client.InstantDimensionNetworkMixin",
+    "client.PlayerFreezeMixin"
   ],
   "injectors": {
     "defaultRequire": 1

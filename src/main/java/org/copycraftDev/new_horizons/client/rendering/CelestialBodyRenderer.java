@@ -47,9 +47,12 @@ public class CelestialBodyRenderer {
             updateShaders();
             if (RENDER_TYPE_PLANET == null) return;
 
-            if (time.get() - explosionStartingTime > 200f) explodingPlanet = null;
-            Map<Identifier, CelestialBodyRegistry.CelestialBodyData> planets = CelestialBodyRegistry.getAllPlanets();
+            // Clear “exploding” flag after ~200 ticks
+            if (time.get() - explosionStartingTime > 200f) {
+                explodingPlanet = null;
+            }
 
+            Map<Identifier, CelestialBodyRegistry.CelestialBodyData> planets = CelestialBodyRegistry.getAllPlanets();
             renderPlanets(planets, camera, viewProjMatrix);
             renderAtmospheres(planets, camera, viewProjMatrix);
             LapisRenderer.cleanupRenderSystem();
@@ -78,21 +81,33 @@ public class CelestialBodyRenderer {
             CelestialBodyRegistry.CelestialBodyData planet = entry.getValue();
             if (explodedPlanets.contains(planet.name)) continue;
 
-
-            if (LazuliGeometryBuilder.checkIfVisible(planet.center, planet.radius, camera)){
+            if (LazuliGeometryBuilder.checkIfVisible(planet.center, planet.radius, camera)) {
                 Vec3d position = calculateOrbitalPosition(planet);
                 float angle = (float) planet.rotationSpeed * time.get();
                 double distance = planet.center.subtract(camera.getPos()).length();
                 int resolution = calculateResolution(distance, planet.radius);
-                setPlanetTextures(planet);
-                BufferBuilder bb = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR_NORMAL);
 
+                // Bind only non-null textures
+                setPlanetTextures(planet);
+
+                BufferBuilder bb = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR_NORMAL);
                 if (planet.isStar) {
                     LapisRenderer.setShader(RENDER_TYPE_STAR);
-                    LazuliGeometryBuilder.buildTexturedSphere(resolution, (float) planet.radius, position, new Vec3d(0, 1, 0), angle, false, camera, viewProjMatrix, bb);
+                    LazuliGeometryBuilder.buildTexturedSphere(
+                            resolution,
+                            (float) planet.radius,
+                            position,
+                            new Vec3d(0, 1, 0),
+                            angle,
+                            false,
+                            camera,
+                            viewProjMatrix,
+                            bb
+                    );
                 } else {
                     float lightRoll = (float) (Math.atan2(position.z, position.x) + (Math.PI / 2));
-                    if (planet.hasDarkAlbedoMap) {
+                    if (planet.hasDarkAlbedoMap && planet.darkAlbedoMap != null) {
+                        // Only bind index 3 if darkAlbedoMap is non-null
                         LapisRenderer.setShaderTexture(3, planet.darkAlbedoMap);
                         LapisRenderer.setShader(RENDER_TYPE_PLANET_WITH_NIGHT);
                         setPlanetUniforms(planet, RENDER_TYPE_PLANET_WITH_NIGHT);
@@ -100,7 +115,8 @@ public class CelestialBodyRenderer {
                         LapisRenderer.setShader(RENDER_TYPE_PLANET);
                         setPlanetUniforms(planet, RENDER_TYPE_PLANET);
                     }
-                    LazuliGeometryBuilder.buildTexturedSphereRotatedNormal(resolution,
+                    LazuliGeometryBuilder.buildTexturedSphereRotatedNormal(
+                            resolution,
                             (float) planet.radius,
                             position,
                             new Vec3d(0, 1, 0),
@@ -109,9 +125,9 @@ public class CelestialBodyRenderer {
                             lightRoll,
                             camera,
                             viewProjMatrix,
-                            bb);
+                            bb
+                    );
                 }
-
                 LapisRenderer.drawAndReset(bb, tessellator);
             }
         }
@@ -124,30 +140,52 @@ public class CelestialBodyRenderer {
         for (var entry : planets.entrySet()) {
             CelestialBodyRegistry.CelestialBodyData planet = entry.getValue();
             if (!planet.hasAtmosphere || explodedPlanets.contains(planet.name)) continue;
-                if (LazuliGeometryBuilder.checkIfVisible(planet.center, planet.atmosphereRadius, camera)) {
 
-                    Vec3d position = calculateOrbitalPosition(planet);
-                    float lightRoll = (float) (Math.atan2(position.z, position.x) + (Math.PI / 2));
-                    double distance = planet.center.subtract(camera.getPos()).length();
-                    int resolution = 20;
+            if (LazuliGeometryBuilder.checkIfVisible(planet.center, planet.atmosphereRadius, camera)) {
+                Vec3d position = calculateOrbitalPosition(planet);
+                float lightRoll = (float) (Math.atan2(position.z, position.x) + (Math.PI / 2));
+                int resolution = 20;
 
-                    setPlanetTextures(planet);
-                    BufferBuilder bb = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR_NORMAL);
-
-                    LapisRenderer.setShaderColor(planet.atmosphereColor);
-                    LapisRenderer.setShader(RENDER_TYPE_ATMOSPHERE);
-                    LazuliGeometryBuilder.buildTexturedSphereRotatedNormal(resolution,
-                            (float) planet.atmosphereRadius,
-                            position,
-                            new Vec3d(0, 1, 0),
-                            0,
-                            true,
-                            lightRoll,
-                            camera,
-                            viewProjMatrix,
-                            bb);
-                    LapisRenderer.drawAndReset(bb, tessellator);
+                // If atmosphereColor is null, fall back to a soft default:
+                int[] colorToUse = planet.atmosphereColor;
+                if (colorToUse == null) {
+                    colorToUse = new int[]{200, 200, 255, 30};
                 }
+                LapisRenderer.setShaderColor(colorToUse);
+
+                // We still bind surface/height/normal maps—even though it’s an atmosphere pass,
+                // so do the same null-checked binding:
+                setPlanetTextures(planet);
+
+                BufferBuilder bb = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR_NORMAL);
+                LapisRenderer.setShader(RENDER_TYPE_ATMOSPHERE);
+                LazuliGeometryBuilder.buildTexturedSphereRotatedNormal(
+                        resolution,
+                        (float) planet.atmosphereRadius,
+                        position,
+                        new Vec3d(0, 1, 0),
+                        0,
+                        true,
+                        lightRoll,
+                        camera,
+                        viewProjMatrix,
+                        bb
+                );
+                LapisRenderer.drawAndReset(bb, tessellator);
+            }
+        }
+    }
+
+    // Null-safe texture binding:
+    private static void setPlanetTextures(CelestialBodyRegistry.CelestialBodyData planet) {
+        if (planet.surfaceTexture != null) {
+            RenderSystem.setShaderTexture(0, planet.surfaceTexture);
+        }
+        if (planet.heightMap != null) {
+            RenderSystem.setShaderTexture(1, planet.heightMap);
+        }
+        if (planet.normalMap != null) {
+            RenderSystem.setShaderTexture(2, planet.normalMap);
         }
     }
 
@@ -155,13 +193,11 @@ public class CelestialBodyRenderer {
         Vec3d orig = planet.center;
         float ang = (float) (time.get() * planet.orbitSpeed * 0);
         double cos = Math.cos(ang), sin = Math.sin(ang);
-        return new Vec3d(orig.x * cos - orig.z * sin, orig.y, orig.x * sin + orig.z * cos);
-    }
-
-    private static void setPlanetTextures(CelestialBodyRegistry.CelestialBodyData planet) {
-        RenderSystem.setShaderTexture(0, planet.surfaceTexture);
-        RenderSystem.setShaderTexture(1, planet.heightMap);
-        RenderSystem.setShaderTexture(2, planet.normalMap);
+        return new Vec3d(
+                orig.x * cos - orig.z * sin,
+                orig.y,
+                orig.x * sin + orig.z * cos
+        );
     }
 
     private static void setPlanetUniforms(CelestialBodyRegistry.CelestialBodyData planet, ShaderProgram shaderProgram) {

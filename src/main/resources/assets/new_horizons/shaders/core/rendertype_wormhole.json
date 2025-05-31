@@ -1,0 +1,31 @@
+{
+  "format": "POSITION",              
+  "mode": "QUADS",                   
+  "bufferSize": "TRANSIENT",         
+  "sort": true,                     
+  "affectsCrumbling": false,          
+  "outline": false,                 
+  "layers": [
+    {
+      "type": "veil:shader",
+      "name": "new_horizons:rendertype_wormhole"
+    },
+    {
+      "type": "minecraft:transparency",
+      "mode": "translucent"
+    },
+    {
+      "type": "minecraft:depth_test",
+      "mode": "always"
+    },
+    {
+      "type": "minecraft:cull",
+      "face": "none"
+    },
+    {
+      "type": "minecraft:write_mask",
+      "color": true,
+      "depth": false
+    }
+  ]
+}

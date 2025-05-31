@@ -111,7 +111,6 @@ public class CelestialBodySkyRenderer {
 
                     if (planet.hasAtmosphere) {
                         RenderSystem.enableBlend();
-                        RenderSystem.setShaderTexture(0, planet.darkAlbedoMap);
                         LapisRenderer.setShader(RENDER_TYPE_ATMOSPHERE);
                         LapisRenderer.enableCull();
                         LazuliGeometryBuilder.buildTexturedSphere(resolution/2, (float) (planet.atmosphereRadius * SCALE), pos, new Vec3d(0,1,0), 0, true, camera, viewProjMatrix, bb);

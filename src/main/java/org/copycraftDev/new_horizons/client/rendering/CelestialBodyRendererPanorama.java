@@ -1,4 +1,3 @@
-
 package org.copycraftDev.new_horizons.client.rendering;
 
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -94,11 +93,10 @@ public class CelestialBodyRendererPanorama {
         Camera cam = MinecraftClient.getInstance().gameRenderer.getCamera();
 
         // Loop through each celestial body and render it
-        for (var e : CelestialBodyRegistry.getAllPlanets().entrySet()) {
-            var body = e.getValue();
+        for (var p : CelestialBodyRegistry.getAllPlanets().values()) {
 
-            Vec3d orig = body.center;
-            float ang = (float) (time.get() * body.orbitSpeed * simulationSpeed);
+            Vec3d orig = p.center;
+            float ang = (float) (time.get() * p.orbitSpeed * simulationSpeed);
             double cos = Math.cos(ang), sin = Math.sin(ang);
             Vec3d orb = new Vec3d(orig.x * cos - orig.z * sin, orig.y, orig.x * sin + orig.z * cos);
 
@@ -107,11 +105,16 @@ public class CelestialBodyRendererPanorama {
             if (v.w > 0) {
                 float sx = (v.x / v.w * 0.5f + 0.5f) * w;
                 float sy = (-v.y / v.w * 0.5f + 0.5f) * h;
-                screenPositions.put(body.name, new ScreenPos(sx, sy));
+                screenPositions.put(p.name, new ScreenPos(sx, sy));
             }
 
 
-            ShaderProgram sh = body.isStar ? S_STAR : (body.hasDarkAlbedoMap ? S_PLANET_NIGHT : S_PLANET);
+            // Bind the main surface (albedo) texture to texture unit 0
+            if (p.surfaceTexture != null) {
+                RenderSystem.setShaderTexture(0, p.surfaceTexture);
+            }
+
+            ShaderProgram sh = p.isStar ? S_STAR : (p.hasDarkAlbedoMap ? S_PLANET_NIGHT : S_PLANET);
             RenderSystem.setShader(() -> sh);
             RenderSystem.setShaderFogStart(Float.MAX_VALUE);
             RenderSystem.setShaderFogEnd(Float.MAX_VALUE);
@@ -122,12 +125,15 @@ public class CelestialBodyRendererPanorama {
             // Begin rendering the body
             BufferBuilder bb = tess.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR_NORMAL);
             Vec3d sceneCenter = new Vec3d((float) orb.z, (float) orb.y, planetZ + (float) orb.x);
-            float roll = (float) (body.rotationSpeed * time.get());
-            if (body.hasDarkAlbedoMap) {
-                LapisRenderer.setShaderTexture(3, body.darkAlbedoMap);
+            float roll = (float) (p.rotationSpeed * time.get());
+
+            // If there is a dark albedo map, bind it to texture unit 3
+            if (p.hasDarkAlbedoMap && p.darkAlbedoMap != null) {
+                LapisRenderer.setShaderTexture(3, p.darkAlbedoMap);
             }
+
             LapisRenderer.setShader(sh);
-            LazuliGeometryBuilder.buildTexturedSphere(64, (float) body.radius, sceneCenter, new Vec3d(0, 1, 0), roll, false, cam, mvp, bb);
+            LazuliGeometryBuilder.buildTexturedSphere(64, (float) p.radius, sceneCenter, new Vec3d(0, 1, 0), roll, false, cam, mvp, bb);
             BufferRenderer.drawWithGlobalProgram(bb.end());
         }
 
@@ -177,3 +183,4 @@ public class CelestialBodyRendererPanorama {
     }
 
 }
+

@@ -110,7 +110,7 @@ public abstract class TitleScreenMixin extends net.minecraft.client.gui.screen.S
                     splashRes = resized;
                 } else {
                     LOGGER.warn("All resize attempts failed—using vanilla splash texture");
-                    splashRes = Identifier.of("minecraft", "textures/gui/title/titlesplash.png");
+                    splashRes = Identifier.of("minecraft/textures/gui/title/titlesplash.png");
                 }
             }
 
