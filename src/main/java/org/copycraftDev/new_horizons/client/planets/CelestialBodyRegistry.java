@@ -44,7 +44,7 @@ public class CelestialBodyRegistry {
         p.radius = 140;
         p.rotationSpeed = 0.001;
         p.orbitSpeed = 0.0;
-        p.hasAtmosphere = false;
+        p.hasAtmosphere = true;                      // Changed to true
         p.atmosphereColor = null;
         p.isStar = true;
         p.atmosphereRadius = 150;
@@ -64,15 +64,15 @@ public class CelestialBodyRegistry {
         p.radius = 50;
         p.rotationSpeed = 0.0000512;
         p.orbitSpeed = 0.00833;
-        p.hasAtmosphere = false;
+        p.hasAtmosphere = true;                      // Changed to true
         p.isStar = false;
         p.atmosphereColor = null;
         p.atmosphereRadius = 0;
         p.hasDarkAlbedoMap = false;
         p.usesGeneratedTexture = false;
         p.surfaceTexturePath    = "textures/test_textures/8k_mercury.jpg";
-        p.heightMapPath         = "textures/test_textures/mercury_height_map.jpg";
-        p.normalMapPath         = "textures/test_textures/mercury_normal_map.jpg";
+        p.heightMapPath         = "textures/test_textures/mercury_height.jpg";
+        p.normalMapPath         = "textures/test_textures/mercury_normal.jpg";
 
         return p;
     }
@@ -128,7 +128,7 @@ public class CelestialBodyRegistry {
         p.radius = 80;
         p.rotationSpeed = 0.00291;
         p.orbitSpeed = 0.00106;
-        p.hasAtmosphere = false;
+        p.hasAtmosphere = true;                      // Changed to true
         p.isStar = false;
         p.atmosphereColor = new int[]{255, 30, 0, 70};
         p.atmosphereRadius = 90;
@@ -148,7 +148,7 @@ public class CelestialBodyRegistry {
         p.radius = 110;
         p.rotationSpeed = 0.00732;
         p.orbitSpeed = 0.000169;
-        p.hasAtmosphere = false;
+        p.hasAtmosphere = true;                      // Changed to true
         p.isStar = true;
         p.atmosphereColor = null;
         p.atmosphereRadius = 115;
@@ -168,7 +168,7 @@ public class CelestialBodyRegistry {
         p.radius = 110;
         p.rotationSpeed = 0.00667;
         p.orbitSpeed = 0.0000679;
-        p.hasAtmosphere = false;
+        p.hasAtmosphere = true;                      // Changed to true
         p.isStar = true;
         p.atmosphereColor = null;
         p.atmosphereRadius = 115;
@@ -190,10 +190,10 @@ public class CelestialBodyRegistry {
         p.radius = 120;
         p.rotationSpeed = 0.00417;
         p.orbitSpeed = 0.0000238;
-        p.hasAtmosphere = false;
+        p.hasAtmosphere = true;                      // Changed to true
         p.isStar = true;
         p.atmosphereColor = null;
-        p.atmosphereRadius = 0;
+        p.atmosphereRadius = 0;                      // Kept as 0
         p.hasDarkAlbedoMap = false;
         p.usesGeneratedTexture = false;
         p.surfaceTexturePath    = "textures/test_textures/2k_uranus.jpg";
@@ -315,7 +315,6 @@ public class CelestialBodyRegistry {
         public transient Identifier darkAlbedoMap;
         public transient Identifier heightMap;
         public transient Identifier normalMap;
-
 
         public transient Identifier ringsTexture;
         public float ringsInnerRadius;
