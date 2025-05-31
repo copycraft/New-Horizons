@@ -9,11 +9,14 @@ import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.*;
 import net.minecraft.world.World;
 import org.copycraftDev.new_horizons.physics.PhysicsMain;
+import org.copycraftDev.new_horizons.core.entity.BlockColliderEntity;
+import org.copycraftDev.new_horizons.core.entity.ModEntities;
 
 import java.util.*;
 
 public class AssemblerBlock extends Block {
     public static int maxRange = 10;
+
     public AssemblerBlock() {
         super(AbstractBlock.Settings.copy(Blocks.NETHERITE_BLOCK).strength(4.0f));
     }
@@ -26,16 +29,29 @@ public class AssemblerBlock extends Block {
         Set<BlockPos> collected = floodFill(w, pos);
         if (collected.isEmpty()) return ActionResult.SUCCESS;
 
-        // create at center, record origin grid‑pos
+        // Create physics object at center, record origin grid‑pos
         PhysicsMain.PhysicsObject obj =
                 PhysicsMain.PHYSICS_MANAGER.create(w, Vec3d.ofCenter(pos), pos);
 
         for (BlockPos bpos : collected) {
             BlockState bs = w.getBlockState(bpos);
             BlockEntity be = w.getBlockEntity(bpos);
-            obj.addBlock(bpos.subtract(pos), bs, be);
+
+            // Add block to physics object
+            BlockPos local = bpos.subtract(pos);
+            obj.addBlock(local, bs, be);
+
+            // Remove from world
             w.setBlockState(bpos, Blocks.AIR.getDefaultState());
+
+            // Spawn collider entity
+            Vec3d offset = new Vec3d(local.getX(), local.getY(), local.getZ());
+            BlockColliderEntity collider = new BlockColliderEntity(ModEntities.BLOCK_COLLIDER, w);
+            collider.init(obj, offset);
+            collider.setMimicBlockState(bs);
+            w.spawnEntity(collider);
         }
+
         return ActionResult.SUCCESS;
     }
 
@@ -53,6 +69,7 @@ public class AssemblerBlock extends Block {
                 seen.add(n); q.add(n);
             }
         }
+
         return seen;
     }
 }

@@ -7,6 +7,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.*;
+import net.minecraft.world.World;
 import net.minecraft.world.WorldAccess;
 import org.copycraftDev.new_horizons.core.entity.BlockColliderEntity;
 import org.copycraftDev.new_horizons.core.entity.ModEntities;
@@ -19,25 +20,24 @@ public class PhysicsMain {
     public static class PhysicsManager {
         private static final List<PhysicsObject> activeObjects = new ArrayList<>();
 
-
-        /** create a new object at pos, remembering the block‑grid origin */
         public PhysicsObject create(ServerWorld world, Vec3d pos, BlockPos origin) {
             PhysicsObject obj = new PhysicsObject(pos, origin);
             activeObjects.add(obj);
             return obj;
         }
+
         public void removeObject(PhysicsObject object) {
             activeObjects.remove(object);
         }
+
         public List<PhysicsObject> getAllObjects() {
             return activeObjects;
         }
 
-        /** call once per tick on server */
-        public static void tickAll(MinecraftServer world) {
+        public static void tickAll(MinecraftServer server) {
+            ServerWorld world = server.getOverworld();
             for (PhysicsObject obj : new ArrayList<>(activeObjects)) {
-                obj.tick(world.getOverworld());
-                BlockAttachmentHandler.attachDetachedBlocks(world.getOverworld(), obj);
+                obj.tick(world);
             }
         }
     }
@@ -50,7 +50,7 @@ public class PhysicsMain {
         private Box localBounds = null;
 
         private final Map<BlockPos, BlockState> blocks = new HashMap<>();
-        final Map<BlockPos, BlockEntity> blockEntities = new HashMap<>();
+        private final Map<BlockPos, BlockEntity> blockEntities = new HashMap<>();
         private final List<BlockPos> previousGlobals = new ArrayList<>();
         private final Map<PhysicsObject, Map<Vec3d, BlockColliderEntity>> colliders = new IdentityHashMap<>();
 
@@ -59,19 +59,19 @@ public class PhysicsMain {
             this.origin = origin;
         }
 
-        /** easy control methods **/
         public void setVelocity(Vec3d v) { velocity = v; }
         public void addVelocity(Vec3d dv) { velocity = velocity.add(dv); }
         public void setRotation(Vec3d rotDegrees) { rotation = rotDegrees; }
         public void addRotation(Vec3d dRot) { rotation = rotation.add(dRot); }
+
         public BlockPos getOrigin() { return origin; }
         public Vec3d getPosition() { return position; }
         public Vec3d getVelocity() { return velocity; }
-        public Map<BlockPos, BlockEntity> getBlockEntities() {
-            return blockEntities;
-        }
+        public Vec3d getRotation() { return rotation; }
+        public boolean isAlive() { return true; }
 
         public Map<BlockPos, BlockState> getBlocks() { return blocks; }
+        public Map<BlockPos, BlockEntity> getBlockEntities() { return blockEntities; }
 
         public void addBlock(BlockPos localPos, BlockState state, BlockEntity be) {
             blocks.put(localPos, state);
@@ -96,11 +96,10 @@ public class PhysicsMain {
 
                 map.keySet().removeIf(off -> {
                     boolean gone = !obj.getBlocks().containsKey(off);
-                    if (gone) map.get(off).remove(Entity.RemovalReason.DISCARDED); // or .KILLED/.UNLOADED
+                    if (gone) map.get(off).remove(Entity.RemovalReason.DISCARDED);
                     return gone;
                 });
 
-                // These must be done for each object!
                 obj.applyGravity();
                 Vec3d attempted = obj.velocity;
                 Vec3d moved = obj.doMovement(world, attempted);
@@ -108,7 +107,6 @@ public class PhysicsMain {
                 obj.updateWorldBlocks(world);
             }
         }
-
 
         private void applyGravity() {
             velocity = velocity.add(0, PhysicsConfig.GRAVITY, 0);
@@ -121,18 +119,14 @@ public class PhysicsMain {
             Box bounds = getWorldBounds();
             Vec3d moved = attempted;
 
-            // X axis
             moved = tryMove(world, bounds, moved.x, 0, 0);
             bounds = bounds.offset(moved.x, 0, 0);
-            // Y axis
             double my = tryMove(world, bounds, 0, moved.y, 0).y;
             moved = new Vec3d(moved.x, my, moved.z);
             bounds = bounds.offset(0, my, 0);
-            // Z axis
             double mz = tryMove(world, bounds, 0, 0, moved.z).z;
             moved = new Vec3d(moved.x, moved.y, mz);
 
-            // bounce & friction
             if (moved.y != attempted.y) velocity = new Vec3d(velocity.x, -velocity.y * PhysicsConfig.BOUNCE_FACTOR, velocity.z);
             if (moved.x != attempted.x) velocity = new Vec3d(velocity.x * PhysicsConfig.FRICTION, velocity.y, velocity.z);
             if (moved.z != attempted.z) velocity = new Vec3d(velocity.x, velocity.y, velocity.z * PhysicsConfig.FRICTION);
@@ -146,11 +140,11 @@ public class PhysicsMain {
         }
 
         private boolean collides(WorldAccess world, Box box) {
-            // —————— 1) world collision (unchanged) ——————
             int minX = MathHelper.floor(box.minX), maxX = MathHelper.ceil(box.maxX);
             int minY = MathHelper.floor(box.minY), maxY = MathHelper.ceil(box.maxY);
             int minZ = MathHelper.floor(box.minZ), maxZ = MathHelper.ceil(box.maxZ);
             BlockPos.Mutable mpos = new BlockPos.Mutable();
+
             for (int x = minX; x < maxX; x++) {
                 for (int y = minY; y < maxY; y++) {
                     for (int z = minZ; z < maxZ; z++) {
@@ -164,11 +158,8 @@ public class PhysicsMain {
                 }
             }
 
-            // —————— 2) self‑collision: treat each stored block as collision shape ——————
-            Box worldBounds = getWorldBounds();
             Vec3d objPos = getPosition();
             for (BlockPos local : blocks.keySet()) {
-                // get that block’s AABB in world coords
                 Box bb = new Box(
                         objPos.x + local.getX(),
                         objPos.y + local.getY(),
@@ -177,23 +168,19 @@ public class PhysicsMain {
                         objPos.y + local.getY() + 1,
                         objPos.z + local.getZ() + 1
                 );
-                if (bb.intersects(box)) {
-                    return true;
-                }
-
+                if (bb.intersects(box)) return true;
             }
 
             return false;
         }
-
 
         private Box getLocalBounds() {
             if (localBounds != null) return localBounds;
             Box b = null;
             for (BlockPos p : blocks.keySet()) {
                 Box bb = new Box(p.getX(), p.getY(), p.getZ(),
-                        p.getX()+1, p.getY()+1, p.getZ()+1);
-                b = (b==null)? bb : b.union(bb);
+                        p.getX() + 1, p.getY() + 1, p.getZ() + 1);
+                b = (b == null) ? bb : b.union(bb);
             }
             localBounds = b;
             return b;
@@ -201,18 +188,15 @@ public class PhysicsMain {
 
         public Box getWorldBounds() {
             Box lb = getLocalBounds();
-            return new Box(lb.minX + position.x, lb.minY + position.y, lb.minZ + position.z,
-                    lb.maxX + position.x, lb.maxY + position.y, lb.maxZ + position.z);
+            return new Box(
+                    lb.minX + position.x, lb.minY + position.y, lb.minZ + position.z,
+                    lb.maxX + position.x, lb.maxY + position.y, lb.maxZ + position.z
+            );
         }
 
         private void updateWorldBlocks(ServerWorld world) {
-            // 1) remove last tick’s blocks from the world
-            for (BlockPos oldPos : previousGlobals) {
-                world.setBlockState(oldPos, Blocks.AIR.getDefaultState(), 3);
-            }
             previousGlobals.clear();
 
-            // 2) place this tick’s blocks with flag=3 (update listeners & collision)
             for (Map.Entry<BlockPos, BlockState> entry : blocks.entrySet()) {
                 BlockPos local = entry.getKey();
                 BlockState state = entry.getValue();
@@ -221,18 +205,9 @@ public class PhysicsMain {
                         (int) Math.floor(position.y) + local.getY(),
                         (int) Math.floor(position.z) + local.getZ()
                 );
-                world.setBlockState(global, state, 3);
                 previousGlobals.add(global);
+                // You may update blocks in the world here if needed
             }
-        }
-
-
-        public Vec3d getRotation() {
-            return rotation;
-        }
-
-        public boolean isAlive() {
-            return true;
         }
     }
 }

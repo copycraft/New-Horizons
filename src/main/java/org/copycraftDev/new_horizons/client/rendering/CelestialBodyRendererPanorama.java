@@ -94,8 +94,8 @@ public class CelestialBodyRendererPanorama {
         Camera cam = MinecraftClient.getInstance().gameRenderer.getCamera();
 
         // Loop through each celestial body and render it
-        for (var e : CelestialBodyRegistry.getAllPlanets().entrySet()) {
-            var body = e.getValue();
+        for (var e : CelestialBodyRegistry.getAllPlanets().values()) {
+            var body = e;
 
             Vec3d orig = body.center;
             float ang = (float) (time.get() * body.orbitSpeed * simulationSpeed);

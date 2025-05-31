@@ -11,8 +11,12 @@ import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
+import net.fabricmc.fabric.api.event.player.UseEntityCallback;
 import net.minecraft.block.BlockState;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.BlockItem;
 import net.minecraft.item.ItemPlacementContext;
+import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
@@ -20,9 +24,15 @@ import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.util.ActionResult;
+import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.hit.BlockHitResult;
+import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Box;
+import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.World;
 import org.copycraftDev.new_horizons.client.planets.MeteorCommand;
 import org.copycraftDev.new_horizons.client.planets.MeteorScheduler;
 import org.copycraftDev.new_horizons.core.bigbang.BigBangCutsceneManager;
@@ -50,12 +60,18 @@ public class NewHorizonsMain implements ModInitializer {
 
     @Override
     public void onInitialize() {
+        // Intercept placements on blocks adjacent to your collider
+        UseBlockCallback.EVENT.register(this::onUseBlock);
+
+        // Intercept right-click on the collider entity itself
+        UseEntityCallback.EVENT.register(this::onUseEntity);
         BlockColliderEntity.createAttributes();
         ModEntities.registerAttributes();
         LibyRegistryLoader.load("org.copycraftDev.new_horizons", LOGGER, LibyEntrypoints.MAIN);
         Veil.init();
         ServerTickEvents.END_SERVER_TICK.register(MeteorScheduler::onServerTick);
         ServerTickEvents.END_SERVER_TICK.register(PhysicsMain.PhysicsManager::tickAll);
+
         PhysicsRenderer.register();
         ServerLifecycleEvents.SERVER_STARTED.register(server -> {
             CommandDispatcher<ServerCommandSource> dispatcher = server.getCommandManager().getDispatcher();
@@ -122,7 +138,88 @@ public class NewHorizonsMain implements ModInitializer {
                 )
         );
     }
+    private ActionResult onUseBlock(
+            PlayerEntity player,
+            World world,
+            Hand hand,
+            BlockHitResult hit
+    ) {
+        if (world.isClient) return ActionResult.PASS;
 
+        // Find any collider one block out in the clicked direction
+        BlockPos clicked = hit.getBlockPos();
+        Direction face = hit.getSide();
+        Box checkBox = new Box(clicked.offset(face));
+        var list = world.getEntitiesByClass(BlockColliderEntity.class, checkBox, e -> true);
+        if (list.isEmpty()) return ActionResult.PASS;
+
+        return interceptPlacement(player, hand, world, list.get(0), face, clicked);
+    }
+
+    private ActionResult onUseEntity(
+            PlayerEntity player,
+            World world,
+            Hand hand,
+            net.minecraft.entity.Entity entity,
+            EntityHitResult hitResult
+    ) {
+        if (world.isClient) return ActionResult.PASS;
+        if (!(entity instanceof BlockColliderEntity collider)) return ActionResult.PASS;
+        if (hitResult == null) return ActionResult.PASS;
+
+        // Determine which face was clicked via the hit vector
+        Vec3d hitPos = hitResult.getPos();
+        Direction face = getClickedFace(collider.calculateBoundingBox(), hitPos);
+        BlockPos basePos = collider.getBlockPos();
+
+        return interceptPlacement(player, hand, world, collider, face, basePos);
+    }
+
+    private ActionResult interceptPlacement(
+            PlayerEntity player,
+            Hand hand,
+            World world,
+            BlockColliderEntity collider,
+            Direction face,
+            BlockPos basePos
+    ) {
+        ItemStack stack = player.getStackInHand(hand);
+        if (!(stack.getItem() instanceof BlockItem bi)) return ActionResult.PASS;
+
+        BlockState toPlace = bi.getBlock().getDefaultState();
+        BlockPos placePos = basePos.offset(face);
+
+        onBlockPlacementIntercepted(toPlace, placePos, player, world);
+        return ActionResult.SUCCESS;
+    }
+
+    private void onBlockPlacementIntercepted(
+            BlockState state,
+            BlockPos pos,
+            PlayerEntity player,
+            World world
+    ) {
+        // Your custom logic here:
+        System.out.println("Intercepted placement of "
+                + state.getBlock().getTranslationKey()
+                + " at " + pos
+        );
+    }
+
+    private static Direction getClickedFace(Box box, Vec3d hitVec) {
+        double x = hitVec.x, y = hitVec.y, z = hitVec.z;
+        double dxMin = Math.abs(x - box.minX), dxMax = Math.abs(x - box.maxX);
+        double dyMin = Math.abs(y - box.minY), dyMax = Math.abs(y - box.maxY);
+        double dzMin = Math.abs(z - box.minZ), dzMax = Math.abs(z - box.maxZ);
+
+        double min = dxMin; Direction face = Direction.WEST;
+        if (dxMax < min) { min = dxMax; face = Direction.EAST; }
+        if (dyMin < min) { min = dyMin; face = Direction.DOWN; }
+        if (dyMax < min) { min = dyMax; face = Direction.UP; }
+        if (dzMin < min) { min = dzMin; face = Direction.NORTH; }
+        if (dzMax < min) { face = Direction.SOUTH; }
+        return face;
+    }
 
 
     public static Identifier id(String name){
