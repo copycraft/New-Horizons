@@ -7,15 +7,15 @@ in vec3 Normal;
 uniform mat4 ModelViewMat;
 uniform mat4 ProjMat;
 uniform sampler2D Sampler1;
-uniform float GameTime;
+uniform float HeightMapIntensity;
 
 out vec2 texCoord0;
 out vec3 normal;
 
-#define HEIGHTMAP_MULTIPLIER 1
+
 void main() {
 
-    float height = texture(Sampler1, UV0).r * HEIGHTMAP_MULTIPLIER;
+    float height = texture(Sampler1, UV0).r * HeightMapIntensity;
 
     vec3 displacedPosition = Position + (Normal * height);
 

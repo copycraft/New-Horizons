@@ -15,7 +15,8 @@
     // "TitleScreenMixin",
     "NoVoidDamageInSpaceLivingEntityMixin",
     "NoCloudsMixin",
-    "ClientPlayNetworkHandlerMixin"
+    "ClientPlayNetworkHandlerMixin",
+    "LazuliPostProcessingRegistryMixin"
   ],
   "injectors": {
     "defaultRequire": 1

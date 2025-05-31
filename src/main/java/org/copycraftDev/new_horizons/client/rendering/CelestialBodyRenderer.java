@@ -95,8 +95,10 @@ public class CelestialBodyRenderer {
                     if (planet.hasDarkAlbedoMap) {
                         LapisRenderer.setShaderTexture(3, planet.darkAlbedoMap);
                         LapisRenderer.setShader(RENDER_TYPE_PLANET_WITH_NIGHT);
+                        setPlanetUniforms(planet, RENDER_TYPE_PLANET_WITH_NIGHT);
                     } else {
                         LapisRenderer.setShader(RENDER_TYPE_PLANET);
+                        setPlanetUniforms(planet, RENDER_TYPE_PLANET);
                     }
                     LazuliGeometryBuilder.buildTexturedSphereRotatedNormal(resolution,
                             (float) planet.radius,
@@ -160,6 +162,11 @@ public class CelestialBodyRenderer {
         RenderSystem.setShaderTexture(0, planet.surfaceTexture);
         RenderSystem.setShaderTexture(1, planet.heightMap);
         RenderSystem.setShaderTexture(2, planet.normalMap);
+    }
+
+    private static void setPlanetUniforms(CelestialBodyRegistry.CelestialBodyData planet, ShaderProgram shaderProgram) {
+        shaderProgram.getUniform("NormalMapIntensity").set(planet.normalMapIntensity);
+        shaderProgram.getUniform("HeightMapIntensity").set(planet.heightMapIntensity);
     }
 
     private static int calculateResolution(double distance, double radius) {

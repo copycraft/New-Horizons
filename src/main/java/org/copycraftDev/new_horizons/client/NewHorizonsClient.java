@@ -23,6 +23,7 @@ import org.copycraftDev.new_horizons.client.render.entity.SeatEntityRenderer;
 import org.copycraftDev.new_horizons.lazuli_snnipets.LazuliGeometryBuilder;
 import org.copycraftDev.new_horizons.core.blocks.ModBlocks;
 import org.copycraftDev.new_horizons.lazuli_snnipets.LazuliRenderingRegistry;
+import org.copycraftDev.new_horizons.lazuli_snnipets.LazuliShaderRegistry;
 import org.copycraftDev.new_horizons.physics.PhysicsRenderer;
 import org.lwjgl.glfw.GLFW;
 
@@ -53,6 +54,7 @@ public class NewHorizonsClient implements ClientModInitializer {
         CelestialBodyRenderer.register();
         Playground.register();
         LazuliRenderingRegistry.registerLazuliRenderPhases();
+        LazuliShaderRegistry.register();
 
         BlockRenderLayerMap.INSTANCE.putBlock(ModBlocks.PRIVACY_GLASS, RenderLayer.getTranslucent());
 

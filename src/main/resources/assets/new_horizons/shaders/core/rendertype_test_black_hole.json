@@ -1,0 +1,21 @@
+{
+  "vertex": "new_horizons:rendertype_test_black_hole",
+  "fragment": "new_horizons:rendertype_test_black_hole",
+
+    "blend": {
+    "func": "add",
+    "srcrgb": "srcalpha",
+    "dstrgb": "1-srcalpha"
+  },
+
+  "samplers": [
+    { "name": "Sampler0" },
+    { "name": "Sampler1" },
+    { "name": "DiffuseSampler" }
+  ],
+  "uniforms": [
+    { "name": "Test", "type": "float", "count": 1, "values": [ 0.5 ] }
+  ]
+}
+
+

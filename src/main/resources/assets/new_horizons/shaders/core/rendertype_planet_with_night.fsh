@@ -4,7 +4,7 @@ uniform sampler2D Sampler0;
 uniform sampler2D Sampler2;
 uniform sampler2D Sampler3;
 
-uniform vec4 ColorModulator;
+uniform float NormalMapIntensity;
 
 in vec2 texCoord0;
 in vec3 normal;
@@ -23,7 +23,7 @@ void main() {
 
     vec3 normalMap = vec3(texture(Sampler2, texCoord0).rg,0.5) * 2.0 - 1.0;
 
-    normalMap *= 2.;
+    normalMap *= NormalMapIntensity;
 
     vec3 tNormal = normalize(normal + normalMap);
 
@@ -32,6 +32,6 @@ void main() {
 
     color.rgb = (color.rgb * shadow + nightColor.rgb * nocturne_lights);
 
-    fragColor = color * ColorModulator;
+    fragColor = color;
 }
 

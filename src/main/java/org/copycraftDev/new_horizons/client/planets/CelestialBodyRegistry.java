@@ -53,6 +53,8 @@ public class CelestialBodyRegistry {
         p.surfaceTexturePath = "textures/test_textures/8k_sun.jpg";
         p.heightMapPath       = "textures/test_textures/sun_height_map.png";
         p.normalMapPath       = "textures/test_textures/sun_normal_map.png";
+        p.normalMapIntensity = 0.5F;
+        p.heightMapIntensity = 0.5F;
 
         return p;
     }
@@ -73,6 +75,8 @@ public class CelestialBodyRegistry {
         p.surfaceTexturePath    = "textures/test_textures/8k_mercury.jpg";
         p.heightMapPath         = "textures/test_textures/mercury_height_map.jpg";
         p.normalMapPath         = "textures/test_textures/mercury_normal_map.jpg";
+        p.normalMapIntensity = 1.5F;
+        p.heightMapIntensity = 1F;
 
         return p;
     }
@@ -82,19 +86,21 @@ public class CelestialBodyRegistry {
         p.name = "Venus";
         p.center = new Vec3d(10, 100, -720);
         p.radius = 80;
-        p.rotationSpeed = 0.0000123;
+        p.rotationSpeed = 0.000123;
         p.orbitSpeed = 0.00323;
         p.isStar = false;
         p.hasAtmosphere = true;
         p.atmosphereColor = new int[]{255, 180, 80, 80};
         p.atmosphereRadius = 90;
         p.atmosphereTexturePath = "textures/test_textures/8k_earth_clouds.jpg";
-        p.hasDarkAlbedoMap = true;
+        p.hasDarkAlbedoMap = false;
         p.usesGeneratedTexture = false;
         p.surfaceTexturePath    = "textures/test_textures/8k_venus_surface.jpg";
         p.heightMapPath         = "textures/test_textures/venus_height_map.jpg";
         p.normalMapPath         = "textures/test_textures/venus_normal_map.jpg";
         p.darkAlbedoMapPath     = "textures/test_textures/8k_venus_surface.jpg";
+        p.normalMapIntensity = 0.7F;
+        p.heightMapIntensity = 2F;
 
         return p;
     }
@@ -117,6 +123,8 @@ public class CelestialBodyRegistry {
         p.darkAlbedoMapPath     = "textures/test_textures/earth_night.png";
         p.heightMapPath         = "textures/test_textures/earth_height.png";
         p.normalMapPath         = "textures/test_textures/earth_normal.png";
+        p.normalMapIntensity = 0.3F;
+        p.heightMapIntensity = 0.5F;
 
         return p;
     }
@@ -137,6 +145,8 @@ public class CelestialBodyRegistry {
         p.surfaceTexturePath    = "textures/test_textures/8k_mars.jpg";
         p.heightMapPath         = "textures/test_textures/mars_height.jpg";
         p.normalMapPath         = "textures/test_textures/mars_normal.jpg";
+        p.normalMapIntensity = 0.5F;
+        p.heightMapIntensity = 0.2F;
 
         return p;
     }
@@ -157,6 +167,8 @@ public class CelestialBodyRegistry {
         p.surfaceTexturePath    = "textures/test_textures/8k_jupiter.jpg";
         p.heightMapPath         = "textures/test_textures/jupiter_height.jpg";
         p.normalMapPath         = "textures/test_textures/jupitertest.jpg";
+        p.normalMapIntensity = 0.5F;
+        p.heightMapIntensity = 0.5F;
 
         return p;
     }
@@ -180,6 +192,9 @@ public class CelestialBodyRegistry {
         p.ringsTexturePath      = "textures/test_textures/saturn_ring.jpg";
         p.ringsInnerRadius      = 100;
         p.ringsOuterRadius      = 100;
+        p.normalMapIntensity = 0.5F;
+        p.heightMapIntensity = 0.5F;
+
         return p;
     }
 
@@ -199,6 +214,8 @@ public class CelestialBodyRegistry {
         p.surfaceTexturePath    = "textures/test_textures/2k_uranus.jpg";
         p.heightMapPath         = "textures/test_textures/earth_height.png";
         p.normalMapPath         = "textures/test_textures/earth_normal.png";
+        p.normalMapIntensity = 0.5F;
+        p.heightMapIntensity = 0.5F;
 
         return p;
     }
@@ -219,6 +236,8 @@ public class CelestialBodyRegistry {
         p.surfaceTexturePath    = "textures/test_textures/2k_neptune.jpg";
         p.heightMapPath         = "textures/test_textures/neptune_height.jpg";
         p.normalMapPath         = "textures/test_textures/neptune_normal.jpg";
+        p.normalMapIntensity = 0.5F;
+        p.heightMapIntensity = 0.5F;
 
         return p;
     }
@@ -331,5 +350,8 @@ public class CelestialBodyRegistry {
         String darkAlbedoMapPath, normalMapPath, heightMapPath;
         String ringsTexturePath;
         public boolean usesGeneratedTexture;
+
+        public float heightMapIntensity;
+        public float normalMapIntensity;
     }
 }

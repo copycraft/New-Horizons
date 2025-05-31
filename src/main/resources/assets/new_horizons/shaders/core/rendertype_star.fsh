@@ -1,9 +1,6 @@
 #version 150
 
 uniform sampler2D Sampler0;
-uniform sampler2D Sampler2;
-
-uniform vec4 ColorModulator;
 
 in vec2 texCoord0;
 in vec3 normal;
