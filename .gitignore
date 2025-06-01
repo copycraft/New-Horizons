@@ -90,3 +90,10 @@ gradle-app.setting
 run/
 runs/
 
+/.gradle/
+/.idea/
+/.github/
+.idea/workspace.xml
+.gradle/buildOutputCleanup/outputFiles.bin
+.gradle/buildOutputCleanup/cache.properties
+.gradle/buildOutputCleanup/buildOutputCleanup.lock
