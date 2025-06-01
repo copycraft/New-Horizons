@@ -44,24 +44,18 @@ public class CelestialBodyRegistry {
         p.radius = 140;
         p.rotationSpeed = 0.001;
         p.orbitSpeed = 0.0;
-
-
-        p.hasAtmosphere = true;
-        p.atmosphereColor  = new int[]{255, 200, 100, 30};
-        p.atmosphereRadius = 154;
-
+        p.hasAtmosphere = false;
+        p.atmosphereColor = null;
         p.isStar = true;
+        p.atmosphereRadius = 150;
+        p.hasDarkAlbedoMap = false;
+        p.usesGeneratedTexture = false;
+        p.surfaceTexturePath = "textures/test_textures/8k_sun.jpg";
+        p.heightMapPath       = "textures/test_textures/sun_height_map.png";
+        p.normalMapPath       = "textures/test_textures/sun_normal_map.png";
+        p.normalMapIntensity = 0.5F;
+        p.heightMapIntensity = 0.5F;
 
-
-        p.seed = 1894723L;
-
-
-        p.usesGeneratedTexture     = false;
-        p.surfaceTexturePath       = "textures/test_textures/8k_sun.jpg";
-        p.heightMapPath            = "textures/test_textures/sun_height_map.png";
-        p.normalMapPath            = "textures/test_textures/sun_normal_map.png";
-
-        p.hasDarkAlbedoMap         = false;
         return p;
     }
 
@@ -72,19 +66,18 @@ public class CelestialBodyRegistry {
         p.radius = 50;
         p.rotationSpeed = 0.0000512;
         p.orbitSpeed = 0.00833;
-
-
-        p.hasAtmosphere = true;
-        p.atmosphereColor  = new int[]{200, 200, 200, 10};
-        p.atmosphereRadius = 55;
-
+        p.hasAtmosphere = false;
         p.isStar = false;
-        p.seed = 2938475L;
-        p.usesGeneratedTexture     = false;
-        p.surfaceTexturePath       = "textures/test_textures/8k_mercury.jpg";
-        p.heightMapPath            = "textures/test_textures/mercury_height_map.jpg";
-        p.normalMapPath            = "textures/test_textures/mercury_normal_map.jpg";
-        p.hasDarkAlbedoMap         = false;
+        p.atmosphereColor = null;
+        p.atmosphereRadius = 0;
+        p.hasDarkAlbedoMap = false;
+        p.usesGeneratedTexture = false;
+        p.surfaceTexturePath    = "textures/test_textures/8k_mercury.jpg";
+        p.heightMapPath         = "textures/test_textures/mercury_height_map.jpg";
+        p.normalMapPath         = "textures/test_textures/mercury_normal_map.jpg";
+        p.normalMapIntensity = 1.5F;
+        p.heightMapIntensity = 1F;
+
         return p;
     }
 
@@ -93,21 +86,22 @@ public class CelestialBodyRegistry {
         p.name = "Venus";
         p.center = new Vec3d(10, 100, -720);
         p.radius = 80;
-        p.rotationSpeed = 0.0000123;
+        p.rotationSpeed = 0.000123;
         p.orbitSpeed = 0.00323;
-
-
-        p.hasAtmosphere = true;
-        p.atmosphereColor  = new int[]{255, 243, 181, 80};
-        p.atmosphereRadius = 88;
-
         p.isStar = false;
-        p.seed = 3847561L;
-        p.usesGeneratedTexture     = false;
-        p.surfaceTexturePath       = "textures/test_textures/8k_venus_surface.jpg";
-        p.heightMapPath            = "textures/test_textures/venus_height_map.jpg";
-        p.normalMapPath            = "textures/test_textures/venus_normal_map.jpg";
-        p.hasDarkAlbedoMap         = false;
+        p.hasAtmosphere = true;
+        p.atmosphereColor = new int[]{255, 180, 80, 80};
+        p.atmosphereRadius = 90;
+        p.atmosphereTexturePath = "textures/test_textures/8k_earth_clouds.jpg";
+        p.hasDarkAlbedoMap = false;
+        p.usesGeneratedTexture = false;
+        p.surfaceTexturePath    = "textures/test_textures/8k_venus_surface.jpg";
+        p.heightMapPath         = "textures/test_textures/venus_height_map.jpg";
+        p.normalMapPath         = "textures/test_textures/venus_normal_map.jpg";
+        p.darkAlbedoMapPath     = "textures/test_textures/8k_venus_surface.jpg";
+        p.normalMapIntensity = 0.7F;
+        p.heightMapIntensity = 2F;
+
         return p;
     }
 
@@ -118,21 +112,20 @@ public class CelestialBodyRegistry {
         p.radius = 100;
         p.rotationSpeed = 0.003;
         p.orbitSpeed = 0.002;
-
-
         p.hasAtmosphere = true;
-        p.atmosphereColor  = new int[]{20, 30, 255, 50};
-        p.atmosphereRadius = 110;
-
         p.isStar = false;
-        p.seed = 4758291L;
-        p.usesGeneratedTexture     = false;
-        p.surfaceTexturePath       = "textures/test_textures/earth_texture.png";
-        p.atmosphereTexturePath    = "textures/test_textures/8k_earth_clouds.jpg";
-        p.darkAlbedoMapPath        = "textures/test_textures/earth_night.png";
-        p.heightMapPath            = "textures/test_textures/earth_height.png";
-        p.normalMapPath            = "textures/test_textures/earth_normal.png";
-        p.hasDarkAlbedoMap         = true;
+        p.atmosphereColor = new int[]{20, 30, 255, 70};
+        p.atmosphereRadius = 110;
+        p.hasDarkAlbedoMap = true;
+        p.usesGeneratedTexture = false;
+        p.surfaceTexturePath    = "textures/test_textures/earth_texture.png";
+        p.atmosphereTexturePath = "textures/test_textures/8k_earth_clouds.jpg";
+        p.darkAlbedoMapPath     = "textures/test_textures/earth_night.png";
+        p.heightMapPath         = "textures/test_textures/earth_height.png";
+        p.normalMapPath         = "textures/test_textures/earth_normal.png";
+        p.normalMapIntensity = 0.3F;
+        p.heightMapIntensity = 0.5F;
+
         return p;
     }
 
@@ -143,19 +136,18 @@ public class CelestialBodyRegistry {
         p.radius = 80;
         p.rotationSpeed = 0.00291;
         p.orbitSpeed = 0.00106;
-
-
-        p.hasAtmosphere = true;
-        p.atmosphereColor  = new int[]{255, 200, 160, 50};
-        p.atmosphereRadius = 88;
-
+        p.hasAtmosphere = false;
         p.isStar = false;
-        p.seed = 5928374L;
-        p.usesGeneratedTexture     = false;
-        p.surfaceTexturePath       = "textures/test_textures/8k_mars.jpg";
-        p.heightMapPath            = "textures/test_textures/mars_height.jpg";
-        p.normalMapPath            = "textures/test_textures/mars_normal.jpg";
-        p.hasDarkAlbedoMap         = false;
+        p.atmosphereColor = new int[]{255, 30, 0, 70};
+        p.atmosphereRadius = 90;
+        p.hasDarkAlbedoMap = false;
+        p.usesGeneratedTexture = false;
+        p.surfaceTexturePath    = "textures/test_textures/8k_mars.jpg";
+        p.heightMapPath         = "textures/test_textures/mars_height.jpg";
+        p.normalMapPath         = "textures/test_textures/mars_normal.jpg";
+        p.normalMapIntensity = 0.5F;
+        p.heightMapIntensity = 0.2F;
+
         return p;
     }
 
@@ -166,19 +158,18 @@ public class CelestialBodyRegistry {
         p.radius = 110;
         p.rotationSpeed = 0.00732;
         p.orbitSpeed = 0.000169;
-
-
         p.hasAtmosphere = false;
-        p.atmosphereColor  = new int[]{255, 210, 180, 60};
-        p.atmosphereRadius = 121;
-
         p.isStar = true;
-        p.seed = 6839201L;
-        p.usesGeneratedTexture     = false;
-        p.surfaceTexturePath       = "textures/test_textures/8k_jupiter.jpg";
-        p.heightMapPath            = "textures/test_textures/jupiter_height.jpg";
-        p.normalMapPath            = "textures/test_textures/jupitertest.jpg";
-        p.hasDarkAlbedoMap         = false;
+        p.atmosphereColor = null;
+        p.atmosphereRadius = 115;
+        p.hasDarkAlbedoMap = false;
+        p.usesGeneratedTexture = false;
+        p.surfaceTexturePath    = "textures/test_textures/8k_jupiter.jpg";
+        p.heightMapPath         = "textures/test_textures/jupiter_height.jpg";
+        p.normalMapPath         = "textures/test_textures/jupitertest.jpg";
+        p.normalMapIntensity = 0.5F;
+        p.heightMapIntensity = 0.5F;
+
         return p;
     }
 
@@ -189,22 +180,21 @@ public class CelestialBodyRegistry {
         p.radius = 110;
         p.rotationSpeed = 0.00667;
         p.orbitSpeed = 0.0000679;
-
-
-        p.hasAtmosphere = true;
-        p.atmosphereColor  = new int[]{240, 230, 200, 50};
-        p.atmosphereRadius = 121;
-
+        p.hasAtmosphere = false;
         p.isStar = true;
-        p.seed = 7946218L;
-        p.usesGeneratedTexture     = false;
-        p.surfaceTexturePath       = "textures/test_textures/8k_saturn.jpg";
-        p.heightMapPath            = "textures/test_textures/saturn_height_map.jpg";
-        p.normalMapPath            = "textures/test_textures/saturn_normal_map.jpg";
-        p.ringsTexturePath         = "textures/test_textures/saturn_ring.jpg";
-        p.ringsInnerRadius         = 100;
-        p.ringsOuterRadius         = 100;
-        p.hasDarkAlbedoMap         = false;
+        p.atmosphereColor = null;
+        p.atmosphereRadius = 115;
+        p.hasDarkAlbedoMap = false;
+        p.usesGeneratedTexture = false;
+        p.surfaceTexturePath    = "textures/test_textures/8k_saturn.jpg";
+        p.heightMapPath         = "textures/test_textures/saturn_height_map.jpg";
+        p.normalMapPath         = "textures/test_textures/saturn_normal_map.jpg";
+        p.ringsTexturePath      = "textures/test_textures/saturn_ring.jpg";
+        p.ringsInnerRadius      = 100;
+        p.ringsOuterRadius      = 100;
+        p.normalMapIntensity = 0.5F;
+        p.heightMapIntensity = 0.5F;
+
         return p;
     }
 
@@ -215,19 +205,18 @@ public class CelestialBodyRegistry {
         p.radius = 120;
         p.rotationSpeed = 0.00417;
         p.orbitSpeed = 0.0000238;
-
-
-        p.hasAtmosphere = true;
-        p.atmosphereColor  = new int[]{180, 255, 255, 50};
-        p.atmosphereRadius = 132;
-
+        p.hasAtmosphere = false;
         p.isStar = true;
-        p.seed = 8350294L;
-        p.usesGeneratedTexture     = false;
-        p.surfaceTexturePath       = "textures/test_textures/2k_uranus.jpg";
-        p.heightMapPath            = "textures/test_textures/earth_height.png";
-        p.normalMapPath            = "textures/test_textures/earth_normal.png";
-        p.hasDarkAlbedoMap         = false;
+        p.atmosphereColor = null;
+        p.atmosphereRadius = 0;
+        p.hasDarkAlbedoMap = false;
+        p.usesGeneratedTexture = false;
+        p.surfaceTexturePath    = "textures/test_textures/2k_uranus.jpg";
+        p.heightMapPath         = "textures/test_textures/earth_height.png";
+        p.normalMapPath         = "textures/test_textures/earth_normal.png";
+        p.normalMapIntensity = 0.5F;
+        p.heightMapIntensity = 0.5F;
+
         return p;
     }
 
@@ -238,62 +227,64 @@ public class CelestialBodyRegistry {
         p.radius = 130;
         p.rotationSpeed = 0.00448;
         p.orbitSpeed = 0.0000121;
-
-
         p.hasAtmosphere = true;
-        p.atmosphereColor  = new int[]{100, 150, 255, 50};
-        p.atmosphereRadius = 143;
-
         p.isStar = true;
-        p.seed = 9467123L;
-        p.usesGeneratedTexture     = false;
-        p.surfaceTexturePath       = "textures/test_textures/2k_neptune.jpg";
-        p.heightMapPath            = "textures/test_textures/neptune_height.jpg";
-        p.normalMapPath            = "textures/test_textures/neptune_normal.jpg";
-        p.hasDarkAlbedoMap         = false;
+        p.atmosphereColor = new int[]{20, 30, 255, 70};
+        p.atmosphereRadius = 135;
+        p.hasDarkAlbedoMap = false;
+        p.usesGeneratedTexture = false;
+        p.surfaceTexturePath    = "textures/test_textures/2k_neptune.jpg";
+        p.heightMapPath         = "textures/test_textures/neptune_height.jpg";
+        p.normalMapPath         = "textures/test_textures/neptune_normal.jpg";
+        p.normalMapIntensity = 0.5F;
+        p.heightMapIntensity = 0.5F;
+
         return p;
     }
 
-
     private static void register(CelestialBodyData planet) {
         String key = planet.name.toLowerCase();
-        String modId = NewHorizonsMain.MOD_ID;
 
         if (planet.usesGeneratedTexture) {
-            // 1) Build & run the generator synchronously
+            String genDir = "assets/" + NewHorizonsMain.MOD_ID + "/textures/generated/" + key;
+            File d = new File(genDir);
+            if (!d.exists() && !d.mkdirs()) {
+                System.err.println("Cannot create " + genDir);
+            }
             PlanetTextureGenerator gen = new PlanetTextureGenerator.Builder()
                     .size(2048)
-                    .seed(planet.seed)
+                    .seed(123456L)
                     .octaves(5)
                     .frequency(3f)
                     .build();
-            gen.generateAndRegister(modId, key);
+            gen.generateAndRegister(NewHorizonsMain.MOD_ID, key);
 
-            // 2) Point the planet at the newly-registered runtime textures
-            //    (generator registers under textures/generated/<name>_<type>.png)
-            planet.surfaceTexture = Identifier.of(modId, "textures/generated/" + key + "_albedo.png");
-            planet.heightMap      = Identifier.of(modId, "textures/generated/" + key + "_height.png");
-            planet.normalMap      = Identifier.of(modId, "textures/generated/" + key + "_normal.png");
+            planet.surfaceTexture = NewHorizonsMain.id("textures/generated/" + key + "/" + key + "_albedo.png");
+            planet.heightMap      = NewHorizonsMain.id("textures/generated/" + key + "/" + key + "_height.png");
+            planet.normalMap      = NewHorizonsMain.id("textures/generated/" + key + "/" + key + "_normal.png");
+
+            planet.surfaceTexture = TextureResizer.resizeTexture(
+                    NewHorizonsMain.MOD_ID,
+                    "textures/generated/" + key + "/" + key + "_albedo.png",
+                    4096,2048, key + "_alb_resized", false
+            );
+            planet.heightMap = TextureResizer.resizeTexture(
+                    NewHorizonsMain.MOD_ID,
+                    "textures/generated/" + key + "/" + key + "_height.png",
+                    4096,2048, key + "_hgt_resized", false
+            );
+            planet.normalMap = TextureResizer.resizeTexture(
+                    NewHorizonsMain.MOD_ID,
+                    "textures/generated/" + key + "/" + key + "_normal.png",
+                    4096,2048, key + "_nrm_resized", false
+            );
         } else {
-            // static-file branch: exactly as you had it
-            planet.surfaceTexture    = planet.surfaceTexturePath    != null
-                    ? NewHorizonsMain.id(planet.surfaceTexturePath)
-                    : null;
-            planet.cloudsTexture     = planet.cloudsTexturePath     != null
-                    ? NewHorizonsMain.id(planet.cloudsTexturePath)
-                    : null;
-            planet.atmosphereTexture = planet.atmosphereTexturePath != null
-                    ? NewHorizonsMain.id(planet.atmosphereTexturePath)
-                    : null;
-            planet.darkAlbedoMap     = planet.darkAlbedoMapPath     != null
-                    ? NewHorizonsMain.id(planet.darkAlbedoMapPath)
-                    : null;
-            planet.heightMap         = planet.heightMapPath         != null
-                    ? NewHorizonsMain.id(planet.heightMapPath)
-                    : null;
-            planet.normalMap         = planet.normalMapPath         != null
-                    ? NewHorizonsMain.id(planet.normalMapPath)
-                    : null;
+            planet.surfaceTexture    = planet.surfaceTexturePath    != null ? NewHorizonsMain.id(planet.surfaceTexturePath)    : null;
+            planet.cloudsTexture     = planet.cloudsTexturePath     != null ? NewHorizonsMain.id(planet.cloudsTexturePath)     : null;
+            planet.atmosphereTexture = planet.atmosphereTexturePath != null ? NewHorizonsMain.id(planet.atmosphereTexturePath) : null;
+            planet.darkAlbedoMap     = planet.darkAlbedoMapPath     != null ? NewHorizonsMain.id(planet.darkAlbedoMapPath)     : null;
+            planet.heightMap         = planet.heightMapPath         != null ? NewHorizonsMain.id(planet.heightMapPath)         : null;
+            planet.normalMap         = planet.normalMapPath         != null ? NewHorizonsMain.id(planet.normalMapPath)         : null;
         }
 
         // handle rings if present
@@ -301,13 +292,9 @@ public class CelestialBodyRegistry {
             planet.ringsTexture = NewHorizonsMain.id(planet.ringsTexturePath);
         }
 
-        // Finally, register into our central map
         REGISTERED_PLANETS.put(NewHorizonsMain.id(key), planet);
-        System.out.println("✅ Registered planet "
-                + planet.name
-                + (planet.usesGeneratedTexture ? " (dynamic textures)" : ""));
+        System.out.println("✅ Registered planet " + planet.name);
     }
-
 
     public static CelestialBodyData getPlanet(Identifier id) {
         return REGISTERED_PLANETS.get(id);
@@ -363,6 +350,8 @@ public class CelestialBodyRegistry {
         String darkAlbedoMapPath, normalMapPath, heightMapPath;
         String ringsTexturePath;
         public boolean usesGeneratedTexture;
-        public long seed;
+
+        public float heightMapIntensity;
+        public float normalMapIntensity;
     }
 }
