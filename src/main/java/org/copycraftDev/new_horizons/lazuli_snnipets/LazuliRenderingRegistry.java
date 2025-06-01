@@ -3,12 +3,14 @@ package org.copycraftDev.new_horizons.lazuli_snnipets;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gl.PostEffectProcessor;
 import net.minecraft.client.render.Camera;
 import net.minecraft.client.render.FogShape;
 import net.minecraft.client.render.GameRenderer;
 
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Identifier;
+import org.copycraftDev.new_horizons.client.rendering.ModShaders;
 import org.joml.Matrix4f;
 import org.joml.Matrix4d;
 
@@ -68,7 +70,13 @@ public class LazuliRenderingRegistry {
             RenderSystem.setShaderFogColor(0f, 0f, 0f);
             RenderSystem.setShader(GameRenderer::getPositionColorProgram);
             RenderSystem.enableDepthTest();
+
+            PostEffectProcessor BLUR = LazuliShaderRegistry.getPostProcessor(ModShaders.BLUR_PROCESSOR);
+            BLUR.render(context.tickCounter().getTickDelta(true));
         });
+
+
+
     }
 
     /** Register a custom render callback (your planets, rings, etc.). */

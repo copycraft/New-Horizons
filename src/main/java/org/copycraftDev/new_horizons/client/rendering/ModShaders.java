@@ -25,7 +25,7 @@ public class ModShaders {
     public static String TEST_BLACK_HOLE = "rendertype_test_black_hole";
 
 
-    public static final String BLUR_PROCESSOR = "shaders/post/blur.json";
+    public static final String BLUR_PROCESSOR = "shaders/post/post_test.json";
 
     public static void registerShaders() throws IOException {
         LazuliShaderRegistry.registerShader(RENDER_TYPE_PLANET, VertexFormats.POSITION_TEXTURE_COLOR_NORMAL);

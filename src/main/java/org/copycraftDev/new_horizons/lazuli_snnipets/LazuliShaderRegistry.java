@@ -61,10 +61,13 @@ public class LazuliShaderRegistry {
 
 
                 POST_PROCESSOR_MAP.put(name, processor);
-                System.out.println("[NewHorizons] Post-processing shader '" + name + "' registered in callback.");
+                System.out.println("[NewHorizons] Post-processing shader '" + name + "' registered in callback." + " <============================================================================================");
 
             } catch (IOException e) {
-                System.err.println("[NewHorizons] Failed to load post-processing shader: " + name);
+                System.err.println("[NewHorizons] Failed to load post-processing shader: " + name + " <============================================================================================");
+                System.err.println("================================================[stack trace]================================================");
+                e.printStackTrace();
+                System.err.println("================================================[  closing  ]================================================");
             }
         });
 
