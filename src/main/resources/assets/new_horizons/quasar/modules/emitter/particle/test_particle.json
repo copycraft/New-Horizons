@@ -3,7 +3,7 @@
   "random_size": false,
   "random_lifetime": true,
   "initial_direction": [
-    0.25,
+    1.0,
     0.0,
     1.0
   ],

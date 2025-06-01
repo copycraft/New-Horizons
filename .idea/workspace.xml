@@ -6,10 +6,13 @@
   <component name="ChangeListManager">
     <list default="true" id="98d4082c-d487-4920-b26a-61a5027f7d6f" name="Changes" comment="chat did i cook?">
       <change beforePath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/file-system.probe" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/file-system.probe" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/loom-cache/launch.cfg" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/loom-cache/launch.cfg" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/loom-cache/remapClasspath.txt" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/loom-cache/remapClasspath.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/gradle.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/gradle.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/assets/minecraft/shaders/program/meow_post_processing_meow.fsh" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/assets/minecraft/shaders/program/meow_post_processing_meow.fsh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/assets/minecraft/shaders/program/post_test.json" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/assets/minecraft/shaders/program/post_test.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/assets/new_horizons/shaders/post/post_test.json" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/assets/new_horizons/shaders/post/post_test.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/assets/new_horizons/quasar/modules/emitter/particle/test_particle.json" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/assets/new_horizons/quasar/modules/emitter/particle/test_particle.json" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -113,7 +116,7 @@
     "ignore.virus.scanning.warn.message": "true",
     "kotlin-language-version-configured": "true",
     "last_opened_file_path": "D:/Coisas frequentes/GitHub/New-Horizons/src/main/resources/assets/minecraft/shaders/program",
-    "project.structure.last.edited": "Project",
+    "project.structure.last.edited": "Modules",
     "project.structure.proportion": "0.15",
     "project.structure.side.proportion": "0.0",
     "settings.editor.selected.configurable": "reference.settingsdialog.project.gradle"
