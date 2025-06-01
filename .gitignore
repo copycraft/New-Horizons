@@ -90,10 +90,28 @@ gradle-app.setting
 run/
 runs/
 
-/.gradle/
-/.idea/
-/.github/
-.idea/workspace.xml
-.gradle/buildOutputCleanup/outputFiles.bin
-.gradle/buildOutputCleanup/cache.properties
-.gradle/buildOutputCleanup/buildOutputCleanup.lock
+# Gradle
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+.gradle/
+**/build/
+
+# IDEs
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+
+# Fabric/Java specific
+out/
+run/
+logs/
+*.log
+*.class
+
+# OS junk
+.DS_Store
+Thumbs.db
+
