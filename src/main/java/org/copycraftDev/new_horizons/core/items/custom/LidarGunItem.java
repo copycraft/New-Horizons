@@ -2,7 +2,6 @@ package org.copycraftDev.new_horizons.core.items.custom;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.player.PlayerEntity;
@@ -13,6 +12,7 @@ import net.minecraft.util.TypedActionResult;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import org.copycraftDev.new_horizons.Lidar.FreezeControl;
+import org.copycraftDev.new_horizons.Lidar.LidarGunScrollHandler;
 import org.copycraftDev.new_horizons.Lidar.LidarSystem;
 
 public class LidarGunItem extends Item {
@@ -28,11 +28,18 @@ public class LidarGunItem extends Item {
             ClientPlayerEntity clientPlayer = (ClientPlayerEntity) player;
             Vec3d eye = clientPlayer.getCameraPosVec(1.0f);
 
-            if (clientPlayer.isSneaking()) {
+            int selectedModeIndex = LidarGunScrollHandler.selectedIndex;
+            String selectedMode = LidarGunScrollHandler.OPTIONS[selectedModeIndex];
+
+
+            if ("Standard".equals(selectedMode)) {
+                startScan(clientPlayer, eye, (ClientWorld) world, LidarGunScrollHandler.radius, (int) (LidarGunScrollHandler.radius*1.5), 50);
+            } else if ("Deepsearch".equals(selectedMode)) {
                 startFullScan(clientPlayer, eye);
-            } else {
-               startScan((ClientPlayerEntity) player, eye, (ClientWorld) world, 5f, 5, 5l);
+            } else if ("Grenade".equals(selectedMode)) {
+                startgrenadescan((ClientWorld) world, player, 50000, 30.0);
             }
+
         }
         return TypedActionResult.success(player.getStackInHand(hand), false);
     }
@@ -44,7 +51,7 @@ public class LidarGunItem extends Item {
         final float fovPitchRange = 40f;
         final int resolutionX = 64;
         final int resolutionY = 40;
-        final long totalDurationMs = 10000L;
+        final long totalDurationMs = 8000L;
         final long delayPerStep = totalDurationMs / (resolutionX * resolutionY);
 
         float yawStep = (fovYawRange) / (resolutionX - 1);
@@ -74,44 +81,66 @@ public class LidarGunItem extends Item {
         }).start();
     }
 
+    public static void startgrenadescan(ClientWorld world, PlayerEntity player, int resolution, double maxDistance) {
+        Vec3d origin = player.getPos();
+        int totalRays = resolution;
+
+        for (int i = 0; i < totalRays; i++) {
+            double theta = Math.acos(1 - 2 * (i + 0.5) / totalRays);
+            double phi = Math.PI * (1 + Math.sqrt(5)) * i;
+
+            double x = Math.sin(theta) * Math.cos(phi);
+            double y = Math.sin(theta) * Math.sin(phi);
+            double z = Math.cos(theta);
+
+            Vec3d direction = new Vec3d(x, y, z);
+            LidarSystem.raycastAndScan(world, player, origin, direction, 4, maxDistance, true, 1f, 1f, 1f);
+        }
+    }
+
+
     private void startScan(ClientPlayerEntity player,
-                                   Vec3d eye,
-                                   ClientWorld world,
-                                   float radiusDeg,
-                                   int numSteps,
-                                   long delayMillis) {
+                           Vec3d eye,
+                           ClientWorld world,
+                           float radiusDeg,
+                           int totalScans,
+                           long delayMillis) {
 
         FreezeControl.toggleFreeze();
 
         new Thread(() -> {
             try {
-
                 Vec3d baseDir = player.getRotationVecClient();
 
+                java.util.Random rand = new java.util.Random();
 
-                for (int i = 0; i < numSteps; i++) {
+                for (int i = 0; i < totalScans; i++) {
+                    // Random angle between 0 and 2*PI
+                    double angleRad = rand.nextDouble() * 2 * Math.PI;
 
-                    double angleRad = (2.0 * Math.PI * i) / numSteps;
+                    // Random radius with uniform distribution over the area
+                    // sqrt is used for uniform density in circle area
+                    float radius = (float) (radiusDeg * Math.sqrt(rand.nextDouble()));
 
-
-                    float yawOffset = (float) (Math.cos(angleRad) * radiusDeg);
-                    float pitchOffset = (float) (Math.sin(angleRad) * radiusDeg);
-
+                    float yawOffset = (float) (Math.cos(angleRad) * radius);
+                    float pitchOffset = (float) (Math.sin(angleRad) * radius);
 
                     Vec3d scanDir = applyDirectionOffset(baseDir, yawOffset, pitchOffset);
 
-
-                    LidarSystem.raycastAndScan(world, player, eye, scanDir, 32, 50.0, true,  200,  1.0f ,  0.9f );
-
+                    LidarSystem.raycastAndScan(world, player, eye, scanDir, 32, 50.0, true, 200, 1.0f, 0.9f);
 
                     Thread.sleep(delayMillis);
                 }
+
             } catch (InterruptedException ignored) {
-            }finally{
+            } finally {
                 FreezeControl.toggleFreeze();
             }
         }).start();
     }
+
+
+
 
     public static Vec3d applyDirectionOffset(Vec3d baseDirection, float yawOffsetDeg, float pitchOffsetDeg) {
         double baseYaw = Math.atan2(baseDirection.z, baseDirection.x);

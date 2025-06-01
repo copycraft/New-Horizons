@@ -18,6 +18,7 @@ import net.minecraft.client.render.entity.EntityRendererFactory;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Vec3d;
+import org.copycraftDev.new_horizons.Lidar.LidarGunScrollHandler;
 import org.copycraftDev.new_horizons.client.particle.ModParticlesClient;
 import org.copycraftDev.new_horizons.client.rendering.CelestialBodyRenderer;
 import org.copycraftDev.new_horizons.core.bigbang.BigBangClientManager;
@@ -70,6 +71,9 @@ public class NewHorizonsClient implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
+        LidarGunScrollHandler handler = new LidarGunScrollHandler();
+        handler.onInitializeClient();
+
         registerKeyBindings();
 
         Veil.init();

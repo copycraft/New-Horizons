@@ -31,6 +31,8 @@ public class ModBlocks {
     public static final Block REDWOOD_PLANKS = register("redwood_planks", new WoodBlock());
     public static final Block REDWOOD_LOG_STRIPPED = register("redwood_logs_stripped", new WoodBlock());
 
+    public static final Block LIDAR_SCANNER = register("lidar_scanner_block", new LidarScannerBlock());
+
     private static Block register(String path, Block block) {
         Identifier id = Identifier.of(NewHorizonsMain.MOD_ID, path);
         // register the Block
@@ -58,6 +60,7 @@ public class ModBlocks {
             entries.add(REDWOOD_PLANKS.asItem());
             entries.add(REDWOOD_LOG_STRIPPED.asItem());
             entries.add(ASSEMBLER_BLOCK.asItem());
+            entries.add(LIDAR_SCANNER.asItem());
         });
     }
 }

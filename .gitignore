@@ -4,6 +4,9 @@
 *.ipr
 *.iws
 
+../New-Horizons/.gradle/
+
+
 # IntelliJ output
 out/
 .idea_modules/
@@ -89,29 +92,6 @@ gradle-app.setting
 # Common working directories to ignore
 run/
 runs/
-
-# Gradle
-.gradle/
-build/
-!gradle/wrapper/gradle-wrapper.jar
-.gradle/
-**/build/
-
-# IDEs
-.idea/
-*.iml
-*.ipr
-*.iws
-.vscode/
-
-# Fabric/Java specific
-out/
-run/
-logs/
-*.log
-*.class
-
-# OS junk
-.DS_Store
-Thumbs.db
-
+gradle/
+idea/
+github/

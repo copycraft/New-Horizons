@@ -13,6 +13,9 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.fabricmc.fabric.api.event.player.UseEntityCallback;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityType;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.ItemPlacementContext;
@@ -43,6 +46,7 @@ import org.copycraftDev.new_horizons.physics.PhysicsMain;
 import org.copycraftDev.new_horizons.physics.PhysicsRenderer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.copycraftDev.new_horizons.Lidar.LidarSystem;
 
 public class NewHorizonsMain implements ModInitializer {
 
@@ -60,6 +64,21 @@ public class NewHorizonsMain implements ModInitializer {
 
     @Override
     public void onInitialize() {
+
+
+
+        LidarSystem.ENTITY_COLOR_OVERRIDES.put(
+                EntityType.ZOMBIE,
+                new LidarSystem.ColorInfo(0.0f, 1.0f, 1.0f, 1f)              // 50% chance to reveal
+        );
+        LidarSystem.BLOCK_COLOR_OVERRIDES.put(
+                Blocks.IRON_ORE,
+                new LidarSystem.ColorInfo(.0f, 0.0f, 0.0f, 1f)
+        );
+
+
+
+
         // Intercept placements on blocks adjacent to your collider
         UseBlockCallback.EVENT.register(this::onUseBlock);
 
