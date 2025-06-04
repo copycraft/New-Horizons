@@ -24,7 +24,9 @@ public class ModItemGroup {
             .entries((context, entries) -> {
                 // add as many items as you like here:
                 entries.add(ModItems.FLASHLIGHT_ITEM);
-
+                entries.add(ModItems.CAMERA_ITEM);
+                entries.add(ModItems.LIDAR_GUN_ITEM);
+                entries.add(ModItems.SPRAYPAINT);
                 // entries.add(ModItems.OTHER_ITEM);
             })
             .build();

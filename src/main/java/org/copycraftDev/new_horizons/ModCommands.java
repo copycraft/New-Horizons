@@ -14,6 +14,7 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 import net.minecraft.world.GameMode;
 import org.copycraftDev.new_horizons.client.NewHorizonsClient;
+import org.copycraftDev.new_horizons.client.ShaderController;
 import org.copycraftDev.new_horizons.client.planets.CelestialBodyRegistry;
 import org.copycraftDev.new_horizons.client.rendering.CelestialBodyRenderer;
 import org.copycraftDev.new_horizons.client.rendering.CelestialBodySkyRenderer;
@@ -38,7 +39,13 @@ public class ModCommands {
                             // reload planet data
                             .then(CommandManager.literal("reloadPlanets")
                                     .executes(ctx -> {
-                                       CelestialBodyRegistry.reloadPlanets();
+                                        CelestialBodyRegistry.reloadPlanets();
+                                        return 1;
+                                    })
+                            )
+                            .then(CommandManager.literal("toggle_postprocessing")
+                                    .executes(ctx -> {
+                                        ShaderController.toggle();
                                         return 1;
                                     })
                             )

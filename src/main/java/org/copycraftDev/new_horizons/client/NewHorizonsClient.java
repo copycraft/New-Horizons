@@ -6,6 +6,7 @@ import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.particle.v1.ParticleFactoryRegistry;
+import net.fabricmc.fabric.api.client.rendering.v1.BuiltinItemRendererRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.minecraft.client.MinecraftClient;
@@ -19,11 +20,14 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Vec3d;
 import org.copycraftDev.new_horizons.Lidar.LidarGunScrollHandler;
+import org.copycraftDev.new_horizons.Lidar.SpraypaintScrollHandler;
 import org.copycraftDev.new_horizons.client.particle.ModParticlesClient;
 import org.copycraftDev.new_horizons.client.rendering.CelestialBodyRenderer;
+import org.copycraftDev.new_horizons.client.rendering.ModShaders;
 import org.copycraftDev.new_horizons.core.bigbang.BigBangClientManager;
 import org.copycraftDev.new_horizons.core.entity.BlockColliderEntity;
 import org.copycraftDev.new_horizons.core.entity.ModEntities;
+import org.copycraftDev.new_horizons.core.items.ModItems;
 import org.copycraftDev.new_horizons.core.particle.ModParticles;
 import org.copycraftDev.new_horizons.client.render.entity.SeatEntityRenderer;
 import org.copycraftDev.new_horizons.lazuli_snnipets.LazuliGeometryBuilder;
@@ -71,6 +75,13 @@ public class NewHorizonsClient implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
+        ShaderController.loadShader(ModShaders.VOID);
+
+        BuiltinItemRendererRegistry.INSTANCE.register(ModItems.SPRAYPAINT, new SprayPaintRenderer());
+
+        SpraypaintScrollHandler handler2 = new SpraypaintScrollHandler();
+        handler2.onInitializeClient();
+
         LidarGunScrollHandler handler = new LidarGunScrollHandler();
         handler.onInitializeClient();
 

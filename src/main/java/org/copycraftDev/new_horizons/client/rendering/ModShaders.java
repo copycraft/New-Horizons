@@ -26,6 +26,8 @@ public class ModShaders {
 
 
     public static final String BLUR_PROCESSOR = "shaders/post/post_test.json";
+    public static final String VHS = "shaders/post/post_vhs.json";
+    public static final String VOID = "shaders/post/post_void.json";
 
     public static void registerShaders() throws IOException {
         LazuliShaderRegistry.registerShader(RENDER_TYPE_PLANET, VertexFormats.POSITION_TEXTURE_COLOR_NORMAL);
@@ -38,7 +40,9 @@ public class ModShaders {
         LazuliShaderRegistry.registerShader(TEST_BLACK_HOLE, VertexFormats.POSITION_TEXTURE_COLOR_NORMAL);
 
 
+        LazuliShaderRegistry.registerPostProcessingShader(VOID);
         LazuliShaderRegistry.registerPostProcessingShader(BLUR_PROCESSOR);
+        LazuliShaderRegistry.registerPostProcessingShader(VHS);
 
 
 

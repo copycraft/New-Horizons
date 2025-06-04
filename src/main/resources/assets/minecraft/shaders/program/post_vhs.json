@@ -5,9 +5,10 @@
     "dstrgb": "zero"
   },
   "vertex": "full_screen",
-  "fragment": "meow_post_processing_meow",
+  "fragment": "vhs",
   "attributes": [ "Position" ],
   "samplers": [
+
     { "name": "DiffuseSampler" }
   ],
   "uniforms": [
