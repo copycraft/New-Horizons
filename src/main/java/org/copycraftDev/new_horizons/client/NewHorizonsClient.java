@@ -20,10 +20,11 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Vec3d;
 import org.copycraftDev.new_horizons.Lidar.LidarGunScrollHandler;
-import org.copycraftDev.new_horizons.Lidar.SpraypaintScrollHandler;
+//import org.copycraftDev.new_horizons.Lidar.SpraypaintScrollHandler;
 import org.copycraftDev.new_horizons.client.particle.ModParticlesClient;
 import org.copycraftDev.new_horizons.client.rendering.CelestialBodyRenderer;
 import org.copycraftDev.new_horizons.client.rendering.ModShaders;
+import org.copycraftDev.new_horizons.client.rendering.SniperHudRenderer;
 import org.copycraftDev.new_horizons.core.bigbang.BigBangClientManager;
 import org.copycraftDev.new_horizons.core.entity.BlockColliderEntity;
 import org.copycraftDev.new_horizons.core.entity.ModEntities;
@@ -36,6 +37,7 @@ import org.copycraftDev.new_horizons.lazuli_snnipets.LazuliRenderingRegistry;
 import org.copycraftDev.new_horizons.physics.PhysicsMain;
 import org.copycraftDev.new_horizons.physics.PhysicsRenderer;
 import org.lwjgl.glfw.GLFW;
+import oshi.jna.platform.mac.SystemB;
 
 import java.util.Collection;
 
@@ -73,21 +75,23 @@ public class NewHorizonsClient implements ClientModInitializer {
         return controlling;
     }
 
-    @Override
+    //@Override
     public void onInitializeClient() {
-        ShaderController.loadShader(ModShaders.VOID);
+        //ShaderController.loadShader(ModShaders.VOID);
 
-        BuiltinItemRendererRegistry.INSTANCE.register(ModItems.SPRAYPAINT, new SprayPaintRenderer());
+        //BuiltinItemRendererRegistry.INSTANCE.register(ModItems.SPRAYPAINT, new SprayPaintRenderer());
 
-        SpraypaintScrollHandler handler2 = new SpraypaintScrollHandler();
-        handler2.onInitializeClient();
+        //SpraypaintScrollHandler handler2 = new SpraypaintScrollHandler();
+        //handler2.onInitializeClient();
 
         LidarGunScrollHandler handler = new LidarGunScrollHandler();
         handler.onInitializeClient();
+        SniperHudRenderer.register();
 
         registerKeyBindings();
 
         Veil.init();
+
         PhysicsRenderer.register();
         PhysicsRenderer.register();
 

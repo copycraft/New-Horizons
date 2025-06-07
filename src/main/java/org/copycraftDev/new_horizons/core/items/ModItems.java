@@ -8,6 +8,7 @@ import net.minecraft.item.Item;
 import org.copycraftDev.new_horizons.core.items.custom.CameraItem;
 import org.copycraftDev.new_horizons.core.items.custom.FlashlightItem;
 import org.copycraftDev.new_horizons.core.items.custom.LidarGunItem;
+import org.copycraftDev.new_horizons.core.items.custom.SniperItem;
 
 import static org.copycraftDev.new_horizons.NewHorizonsMain.MOD_ID;
 
@@ -20,6 +21,7 @@ public class ModItems {
     public static final Item LIDAR_GUN_ITEM = REGISTER.registerItem("lidargun", new LidarGunItem(new Item.Settings()));
     public static final Item CAMERA_ITEM = REGISTER.registerItem("camera", new CameraItem(new Item.Settings()));
     public static final Item SPRAYPAINT = REGISTER.registerItem("spraypaint", new CameraItem(new Item.Settings()));
+    public static final Item SNIPER = REGISTER.registerItem("sniper", new SniperItem(new Item.Settings()));
 
     public static void initialize() {
 

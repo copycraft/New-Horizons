@@ -78,7 +78,7 @@ public class LazuliShaderRegistry {
 
             Window window = MinecraftClient.getInstance().getWindow();
 
-            if (resY != window.getFramebufferHeight() || resX != window.getFramebufferWidth()) {
+            if (true) {
                 windowResized(window.getFramebufferHeight(), window.getFramebufferWidth());
             }
             resX = window.getFramebufferWidth();

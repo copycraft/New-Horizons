@@ -3,9 +3,9 @@ package org.copycraftDev.new_horizons.client;
 import org.copycraftDev.new_horizons.client.rendering.ModShaders;
 
 public class ShaderController {
-    public static String shader;
+    public static String shader = ModShaders.BLUR_PROCESSOR;
     private static String currentShaderId = ModShaders.BLUR_PROCESSOR;
-    private static boolean enabled = true;
+    private static boolean enabled = false;
 
     private static float time = 0f;
 

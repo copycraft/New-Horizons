@@ -22,7 +22,8 @@
     "client.GameRendererMixin",
     "client.InstantDimensionClientMixin",
     "client.InstantDimensionNetworkMixin",
-    "client.PlayerFreezeMixin"
+    "client.PlayerFreezeMixin",
+    "lazuliZoomMixin"
   ],
   "injectors": {
     "defaultRequire": 1

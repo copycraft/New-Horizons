@@ -4,14 +4,18 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import foundry.veil.api.client.render.shader.program.ShaderProgram;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.RunArgs;
 import net.minecraft.client.gl.PostEffectProcessor;
 import net.minecraft.client.render.Camera;
 import net.minecraft.client.render.FogShape;
 import net.minecraft.client.render.GameRenderer;
 
+import net.minecraft.item.Items;
 import net.minecraft.util.Identifier;
 import org.copycraftDev.new_horizons.client.ShaderController;
 import org.copycraftDev.new_horizons.client.rendering.ModShaders;
+import org.copycraftDev.new_horizons.client.rendering.SniperHudRenderer;
+import org.copycraftDev.new_horizons.core.items.ModItems;
 import org.joml.Matrix4f;
 import org.joml.Matrix4d;
 
@@ -71,6 +75,23 @@ public class LazuliRenderingRegistry {
             RenderSystem.setShaderFogColor(0f, 0f, 0f);
             RenderSystem.setShader(GameRenderer::getPositionColorProgram);
             RenderSystem.enableDepthTest();
+
+
+            //Sniper aim code
+            if (MinecraftClient.getInstance().player.isHolding(ModItems.SNIPER) && MinecraftClient.getInstance().player.isSneaking()) {
+                LazuliZoom.setZooming(true);
+                LazuliZoom.setZoom((float) 0.1);
+                PostEffectProcessor postShader = LazuliShaderRegistry.getPostProcessor(ModShaders.BLUR_PROCESSOR);
+                SniperHudRenderer.renderHud = true;
+                // Set uniforms BEFORE rendering
+                postShader.setUniforms("time", time.get());
+
+                // Then render
+                postShader.render(tickDelta);
+            } else {
+                SniperHudRenderer.renderHud = false;
+                LazuliZoom.setZooming(false);
+            }
 
 
             if (ShaderController.isEnabled()) {
