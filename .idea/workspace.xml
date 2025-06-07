@@ -5,16 +5,14 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="98d4082c-d487-4920-b26a-61a5027f7d6f" name="Changes" comment="chat did i cook?">
+      <change beforePath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/file-system.probe" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/file-system.probe" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/loom-cache/launch.cfg" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/loom-cache/launch.cfg" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/loom-cache/remapClasspath.txt" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/loom-cache/remapClasspath.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/gradle.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/gradle.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/copycraftDev/new_horizons/client/NewHorizonsClient.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/copycraftDev/new_horizons/client/NewHorizonsClient.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/copycraftDev/new_horizons/client/ShaderController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/copycraftDev/new_horizons/client/ShaderController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/copycraftDev/new_horizons/lazuli_snnipets/LazuliRenderingRegistry.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/copycraftDev/new_horizons/lazuli_snnipets/LazuliRenderingRegistry.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/assets/minecraft/shaders/program/meow_post_processing_meow.fsh" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/assets/minecraft/shaders/program/meow_post_processing_meow.fsh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/assets/minecraft/shaders/program/post_test.json" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/assets/minecraft/shaders/program/post_test.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/assets/new_horizons/shaders/post/post_test.json" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/assets/new_horizons/shaders/post/post_test.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/new_horizons.mixins.json" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/new_horizons.mixins.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/assets/new_horizons/quasar/modules/emitter/particle/test_particle.json" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/assets/new_horizons/quasar/modules/emitter/particle/test_particle.json" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -104,26 +102,26 @@
   <component name="ProjectViewState">
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Application.Minecraft Client.executor": "Run",
-    "Gradle.New-Horizons [:net.fabricmc.devlaunchinjector.Main.main()].executor": "Run",
-    "Gradle.New-Horizons [runClient].executor": "Run",
-    "Gradle.new-horizons [build].executor": "Run",
-    "Gradle.new-horizons [clean].executor": "Run",
-    "Gradle.new-horizons.executor": "Run",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "main",
-    "ignore.virus.scanning.warn.message": "true",
-    "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "D:/Coisas frequentes/GitHub/souls-bound-mod",
-    "project.structure.last.edited": "Project",
-    "project.structure.proportion": "0.15",
-    "project.structure.side.proportion": "0.2",
-    "settings.editor.selected.configurable": "reference.settingsdialog.project.gradle"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Application.Minecraft Client.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.New-Horizons [:net.fabricmc.devlaunchinjector.Main.main()].executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.New-Horizons [runClient].executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.new-horizons [build].executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.new-horizons [clean].executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.new-horizons.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;D:/Coisas frequentes/GitHub/New-Horizons/src/main/resources/assets/minecraft/shaders/program&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;Modules&quot;,
+    &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
+    &quot;project.structure.side.proportion&quot;: &quot;0.0&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;reference.settingsdialog.project.gradle&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="D:\Coisas frequentes\GitHub\New-Horizons\src\main\resources\assets\minecraft\shaders\program" />
