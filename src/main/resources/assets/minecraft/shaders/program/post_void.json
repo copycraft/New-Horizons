@@ -1,0 +1,50 @@
+{
+  "blend": {
+    "func": "add",
+    "srcrgb": "one",
+    "dstrgb": "zero"
+  },
+  "vertex": "full_screen",
+  "fragment": "void",
+  "attributes": [ "Position" ],
+  "samplers": [
+    { "name": "u_endPortalTex" },
+    { "name": "DiffuseSampler" }
+  ],
+  "uniforms": [
+    {
+      "name": "ProjMat",
+      "type": "matrix4x4",
+      "count": 16,
+      "values": [
+        1.0, 0.0, 0.0, 0.0,
+        0.0, 1.0, 0.0, 0.0,
+        0.0, 0.0, 1.0, 0.0,
+        0.0, 0.0, 0.0, 1.0
+      ]
+    },
+    {
+      "name": "InSize",
+      "type": "float",
+      "count": 2,
+      "values": [ 1920.0, 1080.0 ]
+    },
+    {
+      "name": "OutSize",
+      "type": "float",
+      "count": 2,
+      "values": [ 1920.0, 1080.0 ]
+    },
+    {
+      "name": "u_resolution",
+      "type": "float",
+      "count": 2,
+      "values": [ 1920.0, 1080.0 ]
+    },
+    {
+      "name": "u_time",
+      "type": "float",
+      "values": [ 0.0 ]
+    }
+  ]
+}

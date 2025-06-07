@@ -1,0 +1,7 @@
+{
+  "parent": "item/generated",
+  "textures": {
+    "layer0": "new_horizons:item/spraypain1",
+    "layer1": "new_horizons:item/spraypain2"
+  }
+}

@@ -1,0 +1,1102 @@
+Index: src/main/java/org/copycraftDev/new_horizons/mixin/TitleScreenMixin.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package org.copycraftDev.new_horizons.mixin;\r\n\r\nimport net.fabricmc.api.EnvType;\r\nimport net.fabricmc.api.Environment;\r\nimport net.minecraft.client.MinecraftClient;\r\nimport net.minecraft.client.gui.DrawContext;\r\nimport net.minecraft.client.gui.screen.TitleScreen;\r\nimport net.minecraft.client.render.Camera;\r\nimport net.minecraft.text.Text;\r\nimport net.minecraft.util.Identifier;\r\nimport org.copycraftDev.new_horizons.client.rendering.CelestialBodyRendererPanorama;\r\nimport org.copycraftDev.new_horizons.extrastuff.TextureResizer;\r\nimport org.joml.Vector3f;\r\nimport org.lwjgl.glfw.GLFW;\r\nimport org.spongepowered.asm.mixin.Final;\r\nimport org.spongepowered.asm.mixin.Mixin;\r\nimport org.spongepowered.asm.mixin.Shadow;\r\nimport org.spongepowered.asm.mixin.Unique;\r\nimport org.spongepowered.asm.mixin.injection.At;\r\nimport org.spongepowered.asm.mixin.injection.Inject;\r\nimport org.spongepowered.asm.mixin.injection.callback.CallbackInfo;\r\nimport org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;\r\n\r\nimport javax.annotation.Nullable;\r\n\r\n@Environment(EnvType.CLIENT)\r\n@Mixin(TitleScreen.class)\r\npublic abstract class TitleScreenMixin extends net.minecraft.client.gui.screen.Screen {\r\n    @Unique private boolean solarView = false, showSidebar = false;\r\n    @Unique private boolean draggingZ = false, draggingS = false, dragOrbit = false, dragPan = false;\r\n    @Unique private float targetZoom = 0.115f, smoothZoom = 0.115f;\r\n    @Unique private float targetSpeed = 1, smoothSpeed = 1;\r\n    @Unique private float panX, panY, lastX, lastY;\r\n    @Unique private float rotX = 0, rotY = 90, rotZ = 45;\r\n    @Unique private String selected = \"sun\", hovered = null;\r\n    @Unique private final int icon = 20;\r\n    @Shadow private float backgroundAlpha;\r\n    @Shadow @Final private static org.slf4j.Logger LOGGER;\r\n    @Shadow @Nullable private net.minecraft.client.gui.screen.SplashTextRenderer splashText;\r\n\r\n    @Shadow protected abstract void init();\r\n\r\n    private static Identifier splashRes = null;\r\n\r\n    protected TitleScreenMixin(Text t) { super(t); }\r\n\r\n    @Inject(method = \"init\", at = @At(\"HEAD\"))\r\n    public void onInit(CallbackInfo ci) {\r\n        selected = \"sun\";\r\n    }\r\n\r\n    @Inject(method = \"tick\", at = @At(\"HEAD\"))\r\n    public void onTick(CallbackInfo ci) {\r\n        if (!solarView) return;\r\n        if (!(selected == null)){\r\n        Camera cam = MinecraftClient.getInstance().gameRenderer.getCamera();\r\n        Vector3f tgt = CelestialBodyRendererPanorama.getPlanetLocation(selected).toVector3f();\r\n        long w = MinecraftClient.getInstance().getWindow().getHandle();\r\n        boolean left = GLFW.glfwGetMouseButton(w, GLFW.GLFW_MOUSE_BUTTON_LEFT) == GLFW.GLFW_PRESS;\r\n        boolean right = GLFW.glfwGetMouseButton(w, GLFW.GLFW_MOUSE_BUTTON_RIGHT) == GLFW.GLFW_PRESS;\r\n\r\n        // Hook zoom into camera distance: distance inversely proportional to smoothZoom\r\n        float r = 100f / smoothZoom;\r\n        float ax = (float) Math.toRadians(rotX), ay = (float) Math.toRadians(rotY);\r\n        float cx = tgt.x + r * (float) Math.cos(ax) * (float) Math.cos(ay);\r\n        float cy = tgt.y + r * (float) Math.sin(ax);\r\n        float cz = tgt.z + r * (float) Math.cos(ax) * (float) Math.sin(ay);\r\n        try {\r\n            var acc = (CameraAccessor) cam;\r\n            acc.invokeSetPos(cx, cy, cz);\r\n            acc.invokeSetRotation(rotY, rotX);\r\n        } catch (Exception e) {\r\n            LOGGER.warn(\"cam fail\", e);\r\n        }\r\n    }}\r\n\r\n    @Inject(method = \"renderBackground(Lnet/minecraft/client/gui/DrawContext;IIF)V\", at = @At(\"HEAD\"))\r\n    public void renderSolar(DrawContext ctx, int mx, int my, float d, CallbackInfo ci) {\r\n        int w = ctx.getScaledWindowWidth(), h = ctx.getScaledWindowHeight();\r\n        if (solarView) {\r\n            clearChildren();\r\n            splashText = null;\r\n        } else {\r\n            MinecraftClient client = MinecraftClient.getInstance();\r\n            init(client, w, h);\r\n\r\n            int sw = 265, sh = 66;\r\n            if (splashRes == null) {\r\n                Identifier resized = null;\r\n\r\n                // Try up to 2 times\r\n                for (int attempt = 1; attempt <= 2; attempt++) {\r\n                    try {\r\n                        resized = TextureResizer.resizeTexture(\r\n                                \"minecraft\",\r\n                                \"textures/gui/title/titlesplash.png\",\r\n                                sw, sh,\r\n                                \"ts_res\",\r\n                                false\r\n                        );\r\n                        if (resized != null) {\r\n                            break;\r\n                        }\r\n                    } catch (Exception e) {\r\n                        LOGGER.warn(\"Attempt #{} to resize splash texture failed\", attempt, e);\r\n                    }\r\n                }\r\n\r\n                if (resized != null) {\r\n                    splashRes = resized;\r\n                } else {\r\n                    LOGGER.warn(\"All resize attempts failed—using vanilla splash texture\");\r\n                    splashRes = Identifier.of(\"minecraft/textures/gui/title/titlesplash.png\");\r\n                }\r\n            }\r\n\r\n            // only draw if we have a non-null Identifier\r\n            if (splashRes != null) {\r\n                ctx.drawTexture(\r\n                        splashRes,\r\n                        w / 2 - sw / 2, 0,\r\n                        0, 0,\r\n                        sw, sh, sw, sh\r\n                );\r\n            }\r\n        }\r\n\r\n        smoothZoom  += (targetZoom  - smoothZoom ) * 0.15f;\r\n        smoothSpeed += (targetSpeed - smoothSpeed) * 0.15f;\r\n        CelestialBodyRendererPanorama.setRotationX(rotX);\r\n        CelestialBodyRendererPanorama.setRotationY(rotY);\r\n        CelestialBodyRendererPanorama.setRotationZ(rotZ);\r\n        CelestialBodyRendererPanorama.setScale(smoothZoom);\r\n        CelestialBodyRendererPanorama.setOffsetX(panX);\r\n        CelestialBodyRendererPanorama.setOffsetY(panY);\r\n        CelestialBodyRendererPanorama.setSimulationSpeed(targetSpeed);\r\n        CelestialBodyRendererPanorama.setPlanetZ(0);\r\n        CelestialBodyRendererPanorama.render(ctx, w, h, backgroundAlpha, d, solarView ? selected : null);\r\n\r\n\r\n    hovered = null;\r\n        for (var e : CelestialBodyRendererPanorama.getScreenPositions().entrySet()) {\r\n            float dx = mx - e.getValue().x, dy = my - e.getValue().y;\r\n            if (dx * dx + dy * dy < 100) { hovered = e.getKey(); break; }\r\n        }\r\n        if (hovered != null) {\r\n            var sp = CelestialBodyRendererPanorama.getScreenPositions().get(hovered);\r\n            ctx.fill((int) sp.x - 6, (int) sp.y - 6, (int) sp.x + 6, (int) sp.y + 6, 0x80FFFFFF);\r\n            int tx = mx + 8, ty = my + 8, tw = textRenderer.getWidth(hovered);\r\n            ctx.fill(tx - 2, ty - 2, tx + tw + 2, ty + 10, 0xAA000000);\r\n            ctx.drawText(textRenderer, Text.of(hovered), tx, ty, 0xFFFFFF, false);\r\n        }\r\n\r\n        if (solarView) {\r\n            ctx.drawText(textRenderer, Text.of(\"☰\"), w - icon, 5, 0xFFFFFF, false);\r\n            if (showSidebar) {\r\n                ctx.fill(w - 100, 0, w, h, 0xAA000000);\r\n                int y = 10;\r\n                for (String n : CelestialBodyRendererPanorama.getScreenPositions().keySet()) {\r\n                    ctx.drawText(textRenderer, Text.of(n), w - 95, y, 0xFFFFFF, false); y += 12;\r\n                }\r\n            }\r\n        }\r\n        int sy = h / 2 - 100, sh = 200;\r\n        ctx.fill(w / 2 - 30, h - 30, w / 2 + 30, h - 10, 0xAA000000);\r\n        ctx.drawText(textRenderer, Text.of(solarView ? \"Back\" : \"Start\"), w / 2 - 25, h - 26, 0xFFFFFF, false);\r\n        if (solarView) {\r\n            ctx.fill(w - 30, sy, w - 22, sy + sh, 0xAA333333);\r\n            ctx.fill(20, sy, 28, sy + sh, 0xAA333333);\r\n            int zy = sy + (int) ((1f - ((targetZoom - 0.01f) / 9.99f)) * (sh - 10));\r\n            int sy2 = sy + (int) ((1f - ((targetSpeed - 0.01f) / 4.99f)) * (sh - 10));\r\n            ctx.fill(w - 32, zy, w - 20, zy + 10, 0xFFAAAAAA);\r\n            ctx.fill(18, sy2, 30, sy2 + 10, 0xFF55FF55);\r\n        }\r\n    }\r\n\r\n    @Inject(method = \"renderBackground(Lnet/minecraft/client/gui/DrawContext;IIF)V\", at = @At(\"TAIL\"))\r\n    private void drag(DrawContext ctx, int mx, int my, float d, CallbackInfo ci) {\r\n        if (!solarView) return;\r\n        int w = ctx.getScaledWindowWidth(), h = ctx.getScaledWindowHeight();\r\n        int sy = h / 2 - 100, sh = 200;\r\n        boolean left = GLFW.glfwGetMouseButton(MinecraftClient.getInstance().getWindow().getHandle(), GLFW.GLFW_MOUSE_BUTTON_LEFT) == GLFW.GLFW_PRESS;\r\n        boolean right = GLFW.glfwGetMouseButton(MinecraftClient.getInstance().getWindow().getHandle(), GLFW.GLFW_MOUSE_BUTTON_RIGHT) == GLFW.GLFW_PRESS;\r\n\r\n        if (left && !draggingZ && mx >= w - 30 && mx <= w - 22 && my >= sy && my <= sy + sh) draggingZ = true;\r\n        if (left && !draggingS && mx >= 20 && mx <= 28 && my >= sy && my <= sy + sh) draggingS = true;\r\n        if (left && !dragOrbit && !draggingZ && !draggingS) dragOrbit = true;\r\n        if (right && !dragPan) dragPan = true;\r\n\r\n        if (draggingZ) { int c = Math.min(Math.max(my, sy), sy + sh - 10); float t = 1f - (c - sy) / (sh - 10f); targetZoom = 0.01f + t * 9.99f; }\r\n        if (draggingS) { int c = Math.min(Math.max(my, sy), sy + sh - 10); float t = 1f - (c - sy) / (sh - 10f); targetSpeed = 0.01f + t * 4.99f; }\r\n\r\n        float dx = mx - lastX, dy = my - lastY;\r\n        if (dragOrbit) { rotY = (rotY + dx) % 360; rotX = Math.max(-90, Math.min(90, rotX + dy)); }\r\n        if (dragPan) { panX += dx; panY += dy; }\r\n\r\n        lastX = mx; lastY = my;\r\n        if (!left) { draggingZ = draggingS = dragOrbit = false; }\r\n        if (!right) { dragPan = false; }\r\n    }\r\n\r\n    @Inject(method = \"mouseClicked\", at = @At(\"HEAD\"), cancellable = true)\r\n    private void click(double mx, double my, int btn, CallbackInfoReturnable<Boolean> cir) {\r\n        int w = width, h = height;\r\n        if (solarView) {\r\n            if (mx >= w - icon - 5 && mx <= w - 5 && my >= 5 && my <= 5 + icon) { showSidebar = !showSidebar; cir.setReturnValue(true); return; }\r\n            if (showSidebar && mx >= w - 100) {\r\n                int y = 10;\r\n                for (String n : CelestialBodyRendererPanorama.getScreenPositions().keySet()) {\r\n                    if (my >= y && my < y + 12) { selected = n; showSidebar = false; cir.setReturnValue(true); return; }\r\n                    y += 12;\r\n                }\r\n            }\r\n            if (hovered != null && btn == GLFW.GLFW_MOUSE_BUTTON_LEFT) { selected = hovered; cir.setReturnValue(true); return; }\r\n        }\r\n        if (mx >= w / 2 - 30 && mx <= w / 2 + 30 && my >= h - 30 && my <= h - 10) { solarView = !solarView; cir.setReturnValue(true); }\r\n    }\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/org/copycraftDev/new_horizons/mixin/TitleScreenMixin.java b/src/main/java/org/copycraftDev/new_horizons/mixin/TitleScreenMixin.java
+--- a/src/main/java/org/copycraftDev/new_horizons/mixin/TitleScreenMixin.java	(revision 22076c671ae7b305cc0c2430b5f17d78bdbdab6b)
++++ b/src/main/java/org/copycraftDev/new_horizons/mixin/TitleScreenMixin.java	(date 1749066082000)
+@@ -52,43 +52,108 @@
+     @Inject(method = "tick", at = @At("HEAD"))
+     public void onTick(CallbackInfo ci) {
+         if (!solarView) return;
+-        if (!(selected == null)){
+-        Camera cam = MinecraftClient.getInstance().gameRenderer.getCamera();
+-        Vector3f tgt = CelestialBodyRendererPanorama.getPlanetLocation(selected).toVector3f();
+-        long w = MinecraftClient.getInstance().getWindow().getHandle();
+-        boolean left = GLFW.glfwGetMouseButton(w, GLFW.GLFW_MOUSE_BUTTON_LEFT) == GLFW.GLFW_PRESS;
+-        boolean right = GLFW.glfwGetMouseButton(w, GLFW.GLFW_MOUSE_BUTTON_RIGHT) == GLFW.GLFW_PRESS;
++        if (selected != null) {
++            Camera cam = MinecraftClient.getInstance().gameRenderer.getCamera();
++            Vector3f tgt = CelestialBodyRendererPanorama.getPlanetLocation(selected).toVector3f();
++            long w = MinecraftClient.getInstance().getWindow().getHandle();
++            boolean left = GLFW.glfwGetMouseButton(w, GLFW.GLFW_MOUSE_BUTTON_LEFT) == GLFW.GLFW_PRESS;
++            boolean right = GLFW.glfwGetMouseButton(w, GLFW.GLFW_MOUSE_BUTTON_RIGHT) == GLFW.GLFW_PRESS;
+ 
+-        // Hook zoom into camera distance: distance inversely proportional to smoothZoom
+-        float r = 100f / smoothZoom;
+-        float ax = (float) Math.toRadians(rotX), ay = (float) Math.toRadians(rotY);
+-        float cx = tgt.x + r * (float) Math.cos(ax) * (float) Math.cos(ay);
+-        float cy = tgt.y + r * (float) Math.sin(ax);
+-        float cz = tgt.z + r * (float) Math.cos(ax) * (float) Math.sin(ay);
+-        try {
+-            var acc = (CameraAccessor) cam;
+-            acc.invokeSetPos(cx, cy, cz);
+-            acc.invokeSetRotation(rotY, rotX);
+-        } catch (Exception e) {
+-            LOGGER.warn("cam fail", e);
++            float r = 100f / smoothZoom;
++            float ax = (float) Math.toRadians(rotX), ay = (float) Math.toRadians(rotY);
++            float cx = tgt.x + r * (float) Math.cos(ax) * (float) Math.cos(ay);
++            float cy = tgt.y + r * (float) Math.sin(ax);
++            float cz = tgt.z + r * (float) Math.cos(ax) * (float) Math.sin(ay);
++            try {
++                var acc = (CameraAccessor) cam;
++                acc.invokeSetPos(cx, cy, cz);
++                acc.invokeSetRotation(rotY, rotX);
++            } catch (Exception e) {
++                LOGGER.warn("cam fail", e);
++            }
+         }
+-    }}
++    }
+ 
+     @Inject(method = "renderBackground(Lnet/minecraft/client/gui/DrawContext;IIF)V", at = @At("HEAD"))
+     public void renderSolar(DrawContext ctx, int mx, int my, float d, CallbackInfo ci) {
+         int w = ctx.getScaledWindowWidth(), h = ctx.getScaledWindowHeight();
++
+         if (solarView) {
++            // Push to undo any 500× scale from PanoramaScaleMixin
++            ctx.getMatrices().push();
++
++            // Clear vanilla buttons/text for solar view
+             clearChildren();
+             splashText = null;
++
++            // Update smoothing values and pass them to the renderer
++            smoothZoom  += (targetZoom  - smoothZoom ) * 0.15f;
++            smoothSpeed += (targetSpeed - smoothSpeed) * 0.15f;
++            CelestialBodyRendererPanorama.setRotationX(rotX);
++            CelestialBodyRendererPanorama.setRotationY(rotY);
++            CelestialBodyRendererPanorama.setRotationZ(rotZ);
++            CelestialBodyRendererPanorama.setScale(smoothZoom);
++            CelestialBodyRendererPanorama.setOffsetX(panX);
++            CelestialBodyRendererPanorama.setOffsetY(panY);
++            CelestialBodyRendererPanorama.setSimulationSpeed(targetSpeed);
++            CelestialBodyRendererPanorama.setPlanetZ(0);
++            CelestialBodyRendererPanorama.render(ctx, w, h, backgroundAlpha, d, selected);
++
++            // Highlight hovered planet, if any
++            hovered = null;
++            for (var e : CelestialBodyRendererPanorama.getScreenPositions().entrySet()) {
++                float dx = mx - e.getValue().x, dy = my - e.getValue().y;
++                if (dx * dx + dy * dy < 100) {
++                    hovered = e.getKey();
++                    break;
++                }
++            }
++            if (hovered != null) {
++                var sp = CelestialBodyRendererPanorama.getScreenPositions().get(hovered);
++                ctx.fill((int) sp.x - 6, (int) sp.y - 6, (int) sp.x + 6, (int) sp.y + 6, 0x80FFFFFF);
++                int tx = mx + 8, ty = my + 8, tw = textRenderer.getWidth(hovered);
++                ctx.fill(tx - 2, ty - 2, tx + tw + 2, ty + 10, 0xAA000000);
++                ctx.drawText(textRenderer, Text.of(hovered), tx, ty, 0xFFFFFF, false);
++            }
++
++            // Draw the hamburger menu and sidebar
++            ctx.drawText(textRenderer, Text.of("☰"), w - icon, 5, 0xFFFFFF, false);
++            if (showSidebar) {
++                ctx.fill(w - 100, 0, w, h, 0xAA000000);
++                int y = 10;
++                for (String n : CelestialBodyRendererPanorama.getScreenPositions().keySet()) {
++                    ctx.drawText(textRenderer, Text.of(n), w - 95, y, 0xFFFFFF, false);
++                    y += 12;
++                }
++            }
++
++            // “Back” button—centered
++            Text backTxt = Text.of("Back");
++            int backWidth = textRenderer.getWidth(backTxt);
++            int backX = w / 2 - backWidth / 2;
++            int backY = h - 26;
++            ctx.fill(w / 2 - (backWidth/2) - 5, h - 30, w / 2 + (backWidth/2) + 5, h - 10, 0xAA000000);
++            ctx.drawText(textRenderer, backTxt, backX, backY, 0xFFFFFF, false);
++
++            // Zoom/speed sliders: use smoothZoom and smoothSpeed for knob positions
++            int sySolar = h / 2 - 100, shSolar = 200;
++            ctx.fill(w - 30, sySolar, w - 22, sySolar + shSolar, 0xAA333333);
++            ctx.fill(20, sySolar, 28, sySolar + shSolar, 0xAA333333);
++            int zySolar = sySolar + (int) ((1f - ((smoothZoom - 0.01f) / 9.99f)) * (shSolar - 10));
++            int sySolarKnob = sySolar + (int) ((1f - ((smoothSpeed - 0.01f) / 4.99f)) * (shSolar - 10));
++            ctx.fill(w - 32, zySolar, w - 20, zySolar + 10, 0xFFAAAAAA);
++            ctx.fill(18, sySolarKnob, 30, sySolarKnob + 10, 0xFF55FF55);
++
++            // Pop to restore whatever was on the matrix stack before
++            ctx.getMatrices().pop();
+         } else {
++            // Vanilla title‐screen rendering
+             MinecraftClient client = MinecraftClient.getInstance();
+             init(client, w, h);
+ 
+             int sw = 265, sh = 66;
+             if (splashRes == null) {
+                 Identifier resized = null;
+-
+-                // Try up to 2 times
+                 for (int attempt = 1; attempt <= 2; attempt++) {
+                     try {
+                         resized = TextureResizer.resizeTexture(
+@@ -105,7 +170,6 @@
+                         LOGGER.warn("Attempt #{} to resize splash texture failed", attempt, e);
+                     }
+                 }
+-
+                 if (resized != null) {
+                     splashRes = resized;
+                 } else {
+@@ -113,8 +177,6 @@
+                     splashRes = Identifier.of("minecraft/textures/gui/title/titlesplash.png");
+                 }
+             }
+-
+-            // only draw if we have a non-null Identifier
+             if (splashRes != null) {
+                 ctx.drawTexture(
+                         splashRes,
+@@ -123,54 +185,47 @@
+                         sw, sh, sw, sh
+                 );
+             }
+-        }
+ 
+-        smoothZoom  += (targetZoom  - smoothZoom ) * 0.15f;
+-        smoothSpeed += (targetSpeed - smoothSpeed) * 0.15f;
+-        CelestialBodyRendererPanorama.setRotationX(rotX);
+-        CelestialBodyRendererPanorama.setRotationY(rotY);
+-        CelestialBodyRendererPanorama.setRotationZ(rotZ);
+-        CelestialBodyRendererPanorama.setScale(smoothZoom);
+-        CelestialBodyRendererPanorama.setOffsetX(panX);
+-        CelestialBodyRendererPanorama.setOffsetY(panY);
+-        CelestialBodyRendererPanorama.setSimulationSpeed(targetSpeed);
+-        CelestialBodyRendererPanorama.setPlanetZ(0);
+-        CelestialBodyRendererPanorama.render(ctx, w, h, backgroundAlpha, d, solarView ? selected : null);
++            // Update panoramic renderer (focusPlanet = null), even if not visible
++            smoothZoom  += (targetZoom  - smoothZoom ) * 0.15f;
++            smoothSpeed += (targetSpeed - smoothSpeed) * 0.15f;
++            CelestialBodyRendererPanorama.setRotationX(rotX);
++            CelestialBodyRendererPanorama.setRotationY(rotY);
++            CelestialBodyRendererPanorama.setRotationZ(rotZ);
++            CelestialBodyRendererPanorama.setScale(smoothZoom);
++            CelestialBodyRendererPanorama.setOffsetX(panX);
++            CelestialBodyRendererPanorama.setOffsetY(panY);
++            CelestialBodyRendererPanorama.setSimulationSpeed(targetSpeed);
++            CelestialBodyRendererPanorama.setPlanetZ(0);
++            CelestialBodyRendererPanorama.render(ctx, w, h, backgroundAlpha, d, null);
+ 
+-
+-    hovered = null;
+-        for (var e : CelestialBodyRendererPanorama.getScreenPositions().entrySet()) {
+-            float dx = mx - e.getValue().x, dy = my - e.getValue().y;
+-            if (dx * dx + dy * dy < 100) { hovered = e.getKey(); break; }
+-        }
+-        if (hovered != null) {
+-            var sp = CelestialBodyRendererPanorama.getScreenPositions().get(hovered);
+-            ctx.fill((int) sp.x - 6, (int) sp.y - 6, (int) sp.x + 6, (int) sp.y + 6, 0x80FFFFFF);
+-            int tx = mx + 8, ty = my + 8, tw = textRenderer.getWidth(hovered);
+-            ctx.fill(tx - 2, ty - 2, tx + tw + 2, ty + 10, 0xAA000000);
+-            ctx.drawText(textRenderer, Text.of(hovered), tx, ty, 0xFFFFFF, false);
+-        }
++            // Highlight hovered (if any)
++            hovered = null;
++            for (var e : CelestialBodyRendererPanorama.getScreenPositions().entrySet()) {
++                float dx = mx - e.getValue().x, dy = my - e.getValue().y;
++                if (dx * dx + dy * dy < 100) {
++                    hovered = e.getKey();
++                    break;
++                }
++            }
++            if (hovered != null) {
++                var sp = CelestialBodyRendererPanorama.getScreenPositions().get(hovered);
++                ctx.fill((int) sp.x - 6, (int) sp.y - 6, (int) sp.x + 6, (int) sp.y + 6, 0x80FFFFFF);
++                int tx = mx + 8, ty = my + 8, tw = textRenderer.getWidth(hovered);
++                ctx.fill(tx - 2, ty - 2, tx + tw + 2, ty + 10, 0xAA000000);
++                ctx.drawText(textRenderer, Text.of(hovered), tx, ty, 0xFFFFFF, false);
++            }
+ 
+-        if (solarView) {
+-            ctx.drawText(textRenderer, Text.of("☰"), w - icon, 5, 0xFFFFFF, false);
+-            if (showSidebar) {
+-                ctx.fill(w - 100, 0, w, h, 0xAA000000);
+-                int y = 10;
+-                for (String n : CelestialBodyRendererPanorama.getScreenPositions().keySet()) {
+-                    ctx.drawText(textRenderer, Text.of(n), w - 95, y, 0xFFFFFF, false); y += 12;
+-                }
+-            }
+-        }
+-        int sy = h / 2 - 100, sh = 200;
+-        ctx.fill(w / 2 - 30, h - 30, w / 2 + 30, h - 10, 0xAA000000);
+-        ctx.drawText(textRenderer, Text.of(solarView ? "Back" : "Start"), w / 2 - 25, h - 26, 0xFFFFFF, false);
+-        if (solarView) {
+-            ctx.fill(w - 30, sy, w - 22, sy + sh, 0xAA333333);
+-            ctx.fill(20, sy, 28, sy + sh, 0xAA333333);
+-            int zy = sy + (int) ((1f - ((targetZoom - 0.01f) / 9.99f)) * (sh - 10));
+-            int sy2 = sy + (int) ((1f - ((targetSpeed - 0.01f) / 4.99f)) * (sh - 10));
+-            ctx.fill(w - 32, zy, w - 20, zy + 10, 0xFFAAAAAA);
+-            ctx.fill(18, sy2, 30, sy2 + 10, 0xFF55FF55);
++            // “Start” button—centered
++            Text startTxt = Text.of("Start");
++            int startWidth = textRenderer.getWidth(startTxt);
++            int startX = w / 2 - startWidth / 2;
++            int startY = h - 26;
++            ctx.fill(w / 2 - (startWidth/2) - 5, h - 30, w / 2 + (startWidth/2) + 5, h - 10, 0xAA000000);
++            ctx.drawText(textRenderer, startTxt, startX, startY, 0xFFFFFF, false);
++
++            // Do NOT draw sliders when not in solarView
++            // (so sliders are hidden until the “Start” button is clicked)
+         }
+     }
+ 
+@@ -187,14 +242,29 @@
+         if (left && !dragOrbit && !draggingZ && !draggingS) dragOrbit = true;
+         if (right && !dragPan) dragPan = true;
+ 
+-        if (draggingZ) { int c = Math.min(Math.max(my, sy), sy + sh - 10); float t = 1f - (c - sy) / (sh - 10f); targetZoom = 0.01f + t * 9.99f; }
+-        if (draggingS) { int c = Math.min(Math.max(my, sy), sy + sh - 10); float t = 1f - (c - sy) / (sh - 10f); targetSpeed = 0.01f + t * 4.99f; }
++        if (draggingZ) {
++            int c = Math.min(Math.max(my, sy), sy + sh - 10);
++            float t = 1f - (c - sy) / (sh - 10f);
++            targetZoom = 0.01f + t * 9.99f;
++        }
++        if (draggingS) {
++            int c = Math.min(Math.max(my, sy), sy + sh - 10);
++            float t = 1f - (c - sy) / (sh - 10f);
++            targetSpeed = 0.01f + t * 4.99f;
++        }
+ 
+         float dx = mx - lastX, dy = my - lastY;
+-        if (dragOrbit) { rotY = (rotY + dx) % 360; rotX = Math.max(-90, Math.min(90, rotX + dy)); }
+-        if (dragPan) { panX += dx; panY += dy; }
++        if (dragOrbit) {
++            rotY = (rotY + dx) % 360;
++            rotX = Math.max(-90, Math.min(90, rotX + dy));
++        }
++        if (dragPan) {
++            panX += dx;
++            panY += dy;
++        }
+ 
+-        lastX = mx; lastY = my;
++        lastX = mx;
++        lastY = my;
+         if (!left) { draggingZ = draggingS = dragOrbit = false; }
+         if (!right) { dragPan = false; }
+     }
+@@ -202,17 +272,53 @@
+     @Inject(method = "mouseClicked", at = @At("HEAD"), cancellable = true)
+     private void click(double mx, double my, int btn, CallbackInfoReturnable<Boolean> cir) {
+         int w = width, h = height;
++
++        // Sidebar-toggle and planet‐selection logic (unchanged)
+         if (solarView) {
+-            if (mx >= w - icon - 5 && mx <= w - 5 && my >= 5 && my <= 5 + icon) { showSidebar = !showSidebar; cir.setReturnValue(true); return; }
++            if (mx >= w - icon - 5 && mx <= w - 5 && my >= 5 && my <= 5 + icon) {
++                showSidebar = !showSidebar;
++                cir.setReturnValue(true);
++                return;
++            }
+             if (showSidebar && mx >= w - 100) {
+                 int y = 10;
+                 for (String n : CelestialBodyRendererPanorama.getScreenPositions().keySet()) {
+-                    if (my >= y && my < y + 12) { selected = n; showSidebar = false; cir.setReturnValue(true); return; }
++                    if (my >= y && my < y + 12) {
++                        selected = n;
++                        showSidebar = false;
++                        cir.setReturnValue(true);
++                        return;
++                    }
+                     y += 12;
+                 }
+             }
+-            if (hovered != null && btn == GLFW.GLFW_MOUSE_BUTTON_LEFT) { selected = hovered; cir.setReturnValue(true); return; }
++            if (hovered != null && btn == GLFW.GLFW_MOUSE_BUTTON_LEFT) {
++                selected = hovered;
++                cir.setReturnValue(true);
++                return;
++            }
+         }
+-        if (mx >= w / 2 - 30 && mx <= w / 2 + 30 && my >= h - 30 && my <= h - 10) { solarView = !solarView; cir.setReturnValue(true); }
++
++        // Toggle solarView when “Start” or “Back” button clicked
++        // —but before turning on solarView, reset any pan/zoom/rotation offsets so the system is centered
++        if (mx >= (w / 2 - textRenderer.getWidth(Text.of(solarView ? "Back" : "Start")) / 2 - 5)
++                && mx <= (w / 2 + textRenderer.getWidth(Text.of(solarView ? "Back" : "Start")) / 2 + 5)
++                && my >= h - 30 && my <= h - 10) {
++            // If we’re about to enter Solar View, clear offsets and restore defaults:
++            if (!solarView) {
++                // Reset pan/rotation/zoom to default “start‐up” values:
++                panX = 0;
++                panY = 0;
++                rotX = 0;
++                rotY = 90;
++                rotZ = 45;
++                targetZoom = 0.115f;
++                smoothZoom = 0.115f;
++                targetSpeed = 1;
++                smoothSpeed = 1;
++            }
++            solarView = !solarView;
++            cir.setReturnValue(true);
++        }
+     }
+ }
+Index: src/main/java/org/copycraftDev/new_horizons/client/planets/CelestialBodyRegistry.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package org.copycraftDev.new_horizons.client.planets;\r\n\r\nimport net.minecraft.util.Identifier;\r\nimport net.minecraft.util.math.Vec3d;\r\nimport org.copycraftDev.new_horizons.NewHorizonsMain;\r\nimport org.copycraftDev.new_horizons.extrastuff.PlanetTextureGenerator;\r\nimport org.copycraftDev.new_horizons.extrastuff.TextureResizer;\r\n\r\nimport java.io.File;\r\nimport java.util.HashMap;\r\nimport java.util.Map;\r\n\r\npublic class CelestialBodyRegistry {\r\n    private static final Map<Identifier, CelestialBodyData> REGISTERED_PLANETS = new HashMap<>();\r\n\r\n    static {\r\n        registerDefaults();\r\n    }\r\n\r\n\r\n    public static void reloadPlanets() {\r\n        REGISTERED_PLANETS.clear();\r\n        registerDefaults();\r\n        System.out.println(\"\uD83D\uDD04 Reloaded all planets\");\r\n    }\r\n\r\n\r\n    private static void registerDefaults() {\r\n        register(createSun());\r\n        register(createMercury());\r\n        register(createVenus());\r\n        register(createEarth());\r\n        register(createMars());\r\n        register(createJupiter());\r\n        register(createSaturn());\r\n        register(createUranus());\r\n        register(createNeptune());\r\n    }\r\n\r\n    private static CelestialBodyData createSun() {\r\n        CelestialBodyData p = new CelestialBodyData();\r\n        p.name = \"Sun\";\r\n        p.center = new Vec3d(0, 100, 0);\r\n        p.radius = 140;\r\n        p.rotationSpeed = 0.001;\r\n        p.orbitSpeed = 0.0;\r\n        p.hasAtmosphere = false;\r\n        p.atmosphereColor = null;\r\n        p.isStar = true;\r\n        p.atmosphereRadius = 150;\r\n        p.hasDarkAlbedoMap = false;\r\n        p.usesGeneratedTexture = false;\r\n        p.surfaceTexturePath = \"textures/test_textures/8k_sun.jpg\";\r\n        p.heightMapPath       = \"textures/test_textures/sun_height_map.png\";\r\n        p.normalMapPath       = \"textures/test_textures/sun_normal_map.png\";\r\n        p.normalMapIntensity = 0.5F;\r\n        p.heightMapIntensity = 0.5F;\r\n\r\n        return p;\r\n    }\r\n\r\n    private static CelestialBodyData createMercury() {\r\n        CelestialBodyData p = new CelestialBodyData();\r\n        p.name = \"Mercury\";\r\n        p.center = new Vec3d(0, 100, -390);\r\n        p.radius = 50;\r\n        p.rotationSpeed = 0.0000512;\r\n        p.orbitSpeed = 0.00833;\r\n        p.hasAtmosphere = false;\r\n        p.isStar = false;\r\n        p.atmosphereColor = null;\r\n        p.atmosphereRadius = 0;\r\n        p.hasDarkAlbedoMap = false;\r\n        p.usesGeneratedTexture = false;\r\n        p.surfaceTexturePath    = \"textures/test_textures/8k_mercury.jpg\";\r\n        p.heightMapPath         = \"textures/test_textures/mercury_height_map.jpg\";\r\n        p.normalMapPath         = \"textures/test_textures/mercury_normal_map.jpg\";\r\n        p.normalMapIntensity = 1.5F;\r\n        p.heightMapIntensity = 1F;\r\n\r\n        return p;\r\n    }\r\n\r\n    private static CelestialBodyData createVenus() {\r\n        CelestialBodyData p = new CelestialBodyData();\r\n        p.name = \"Venus\";\r\n        p.center = new Vec3d(10, 100, -720);\r\n        p.radius = 80;\r\n        p.rotationSpeed = 0.000123;\r\n        p.orbitSpeed = 0.00323;\r\n        p.isStar = false;\r\n        p.hasAtmosphere = true;\r\n        p.atmosphereColor = new int[]{255, 180, 80, 80};\r\n        p.atmosphereRadius = 90;\r\n        p.atmosphereTexturePath = \"textures/test_textures/8k_earth_clouds.jpg\";\r\n        p.hasDarkAlbedoMap = false;\r\n        p.usesGeneratedTexture = false;\r\n        p.surfaceTexturePath    = \"textures/test_textures/8k_venus_surface.jpg\";\r\n        p.heightMapPath         = \"textures/test_textures/venus_height_map.jpg\";\r\n        p.normalMapPath         = \"textures/test_textures/venus_normal_map.jpg\";\r\n        p.darkAlbedoMapPath     = \"textures/test_textures/8k_venus_surface.jpg\";\r\n        p.normalMapIntensity = 0.7F;\r\n        p.heightMapIntensity = 2F;\r\n\r\n        return p;\r\n    }\r\n\r\n    private static CelestialBodyData createEarth() {\r\n        CelestialBodyData p = new CelestialBodyData();\r\n        p.name = \"Earth\";\r\n        p.center = new Vec3d(20, 100, -1000);\r\n        p.radius = 100;\r\n        p.rotationSpeed = 0.003;\r\n        p.orbitSpeed = 0.002;\r\n        p.hasAtmosphere = true;\r\n        p.isStar = false;\r\n        p.atmosphereColor = new int[]{20, 30, 255, 70};\r\n        p.atmosphereRadius = 110;\r\n        p.hasDarkAlbedoMap = true;\r\n        p.usesGeneratedTexture = false;\r\n        p.surfaceTexturePath    = \"textures/test_textures/earth_texture.png\";\r\n        p.atmosphereTexturePath = \"textures/test_textures/8k_earth_clouds.jpg\";\r\n        p.darkAlbedoMapPath     = \"textures/test_textures/earth_night.png\";\r\n        p.heightMapPath         = \"textures/test_textures/earth_height.png\";\r\n        p.normalMapPath         = \"textures/test_textures/earth_normal.png\";\r\n        p.normalMapIntensity = 0.3F;\r\n        p.heightMapIntensity = 0.5F;\r\n\r\n        return p;\r\n    }\r\n\r\n    private static CelestialBodyData createMars() {\r\n        CelestialBodyData p = new CelestialBodyData();\r\n        p.name = \"Mars\";\r\n        p.center = new Vec3d(30, 100, -1520);\r\n        p.radius = 80;\r\n        p.rotationSpeed = 0.00291;\r\n        p.orbitSpeed = 0.00106;\r\n        p.hasAtmosphere = false;\r\n        p.isStar = false;\r\n        p.atmosphereColor = new int[]{255, 30, 0, 70};\r\n        p.atmosphereRadius = 90;\r\n        p.hasDarkAlbedoMap = false;\r\n        p.usesGeneratedTexture = false;\r\n        p.surfaceTexturePath    = \"textures/test_textures/8k_mars.jpg\";\r\n        p.heightMapPath         = \"textures/test_textures/mars_height.jpg\";\r\n        p.normalMapPath         = \"textures/test_textures/mars_normal.jpg\";\r\n        p.normalMapIntensity = 0.5F;\r\n        p.heightMapIntensity = 0.2F;\r\n\r\n        return p;\r\n    }\r\n\r\n    private static CelestialBodyData createJupiter() {\r\n        CelestialBodyData p = new CelestialBodyData();\r\n        p.name = \"Jupiter\";\r\n        p.center = new Vec3d(40, 100, -5200);\r\n        p.radius = 110;\r\n        p.rotationSpeed = 0.00732;\r\n        p.orbitSpeed = 0.000169;\r\n        p.hasAtmosphere = false;\r\n        p.isStar = true;\r\n        p.atmosphereColor = null;\r\n        p.atmosphereRadius = 115;\r\n        p.hasDarkAlbedoMap = false;\r\n        p.usesGeneratedTexture = false;\r\n        p.surfaceTexturePath    = \"textures/test_textures/8k_jupiter.jpg\";\r\n        p.heightMapPath         = \"textures/test_textures/jupiter_height.jpg\";\r\n        p.normalMapPath         = \"textures/test_textures/jupitertest.jpg\";\r\n        p.normalMapIntensity = 0.5F;\r\n        p.heightMapIntensity = 0.5F;\r\n\r\n        return p;\r\n    }\r\n\r\n    private static CelestialBodyData createSaturn() {\r\n        CelestialBodyData p = new CelestialBodyData();\r\n        p.name = \"Saturn\";\r\n        p.center = new Vec3d(50, 100, -9540);\r\n        p.radius = 110;\r\n        p.rotationSpeed = 0.00667;\r\n        p.orbitSpeed = 0.0000679;\r\n        p.hasAtmosphere = false;\r\n        p.isStar = true;\r\n        p.atmosphereColor = null;\r\n        p.atmosphereRadius = 115;\r\n        p.hasDarkAlbedoMap = false;\r\n        p.usesGeneratedTexture = false;\r\n        p.surfaceTexturePath    = \"textures/test_textures/8k_saturn.jpg\";\r\n        p.heightMapPath         = \"textures/test_textures/saturn_height_map.jpg\";\r\n        p.normalMapPath         = \"textures/test_textures/saturn_normal_map.jpg\";\r\n        p.ringsTexturePath      = \"textures/test_textures/saturn_ring.jpg\";\r\n        p.ringsInnerRadius      = 100;\r\n        p.ringsOuterRadius      = 100;\r\n        p.normalMapIntensity = 0.5F;\r\n        p.heightMapIntensity = 0.5F;\r\n\r\n        return p;\r\n    }\r\n\r\n    private static CelestialBodyData createUranus() {\r\n        CelestialBodyData p = new CelestialBodyData();\r\n        p.name = \"Uranus\";\r\n        p.center = new Vec3d(50, 100, -19200);\r\n        p.radius = 120;\r\n        p.rotationSpeed = 0.00417;\r\n        p.orbitSpeed = 0.0000238;\r\n        p.hasAtmosphere = false;\r\n        p.isStar = true;\r\n        p.atmosphereColor = null;\r\n        p.atmosphereRadius = 0;\r\n        p.hasDarkAlbedoMap = false;\r\n        p.usesGeneratedTexture = false;\r\n        p.surfaceTexturePath    = \"textures/test_textures/2k_uranus.jpg\";\r\n        p.heightMapPath         = \"textures/test_textures/earth_height.png\";\r\n        p.normalMapPath         = \"textures/test_textures/earth_normal.png\";\r\n        p.normalMapIntensity = 0.5F;\r\n        p.heightMapIntensity = 0.5F;\r\n\r\n        return p;\r\n    }\r\n\r\n    private static CelestialBodyData createNeptune() {\r\n        CelestialBodyData p = new CelestialBodyData();\r\n        p.name = \"Neptune\";\r\n        p.center = new Vec3d(60, 100, -30006);\r\n        p.radius = 130;\r\n        p.rotationSpeed = 0.00448;\r\n        p.orbitSpeed = 0.0000121;\r\n        p.hasAtmosphere = true;\r\n        p.isStar = true;\r\n        p.atmosphereColor = new int[]{20, 30, 255, 70};\r\n        p.atmosphereRadius = 135;\r\n        p.hasDarkAlbedoMap = false;\r\n        p.usesGeneratedTexture = false;\r\n        p.surfaceTexturePath    = \"textures/test_textures/2k_neptune.jpg\";\r\n        p.heightMapPath         = \"textures/test_textures/neptune_height.jpg\";\r\n        p.normalMapPath         = \"textures/test_textures/neptune_normal.jpg\";\r\n        p.normalMapIntensity = 0.5F;\r\n        p.heightMapIntensity = 0.5F;\r\n\r\n        return p;\r\n    }\r\n\r\n    private static void register(CelestialBodyData planet) {\r\n        String key = planet.name.toLowerCase();\r\n\r\n        if (planet.usesGeneratedTexture) {\r\n            String genDir = \"assets/\" + NewHorizonsMain.MOD_ID + \"/textures/generated/\" + key;\r\n            File d = new File(genDir);\r\n            if (!d.exists() && !d.mkdirs()) {\r\n                System.err.println(\"Cannot create \" + genDir);\r\n            }\r\n            PlanetTextureGenerator gen = new PlanetTextureGenerator.Builder()\r\n                    .size(2048)\r\n                    .seed(123456L)\r\n                    .octaves(5)\r\n                    .frequency(3f)\r\n                    .build();\r\n            gen.generateAndRegister(NewHorizonsMain.MOD_ID, key);\r\n\r\n            planet.surfaceTexture = NewHorizonsMain.id(\"textures/generated/\" + key + \"/\" + key + \"_albedo.png\");\r\n            planet.heightMap      = NewHorizonsMain.id(\"textures/generated/\" + key + \"/\" + key + \"_height.png\");\r\n            planet.normalMap      = NewHorizonsMain.id(\"textures/generated/\" + key + \"/\" + key + \"_normal.png\");\r\n\r\n            planet.surfaceTexture = TextureResizer.resizeTexture(\r\n                    NewHorizonsMain.MOD_ID,\r\n                    \"textures/generated/\" + key + \"/\" + key + \"_albedo.png\",\r\n                    4096,2048, key + \"_alb_resized\", false\r\n            );\r\n            planet.heightMap = TextureResizer.resizeTexture(\r\n                    NewHorizonsMain.MOD_ID,\r\n                    \"textures/generated/\" + key + \"/\" + key + \"_height.png\",\r\n                    4096,2048, key + \"_hgt_resized\", false\r\n            );\r\n            planet.normalMap = TextureResizer.resizeTexture(\r\n                    NewHorizonsMain.MOD_ID,\r\n                    \"textures/generated/\" + key + \"/\" + key + \"_normal.png\",\r\n                    4096,2048, key + \"_nrm_resized\", false\r\n            );\r\n        } else {\r\n            planet.surfaceTexture    = planet.surfaceTexturePath    != null ? NewHorizonsMain.id(planet.surfaceTexturePath)    : null;\r\n            planet.cloudsTexture     = planet.cloudsTexturePath     != null ? NewHorizonsMain.id(planet.cloudsTexturePath)     : null;\r\n            planet.atmosphereTexture = planet.atmosphereTexturePath != null ? NewHorizonsMain.id(planet.atmosphereTexturePath) : null;\r\n            planet.darkAlbedoMap     = planet.darkAlbedoMapPath     != null ? NewHorizonsMain.id(planet.darkAlbedoMapPath)     : null;\r\n            planet.heightMap         = planet.heightMapPath         != null ? NewHorizonsMain.id(planet.heightMapPath)         : null;\r\n            planet.normalMap         = planet.normalMapPath         != null ? NewHorizonsMain.id(planet.normalMapPath)         : null;\r\n        }\r\n\r\n        // handle rings if present\r\n        if (planet.ringsTexturePath != null) {\r\n            planet.ringsTexture = NewHorizonsMain.id(planet.ringsTexturePath);\r\n        }\r\n\r\n        REGISTERED_PLANETS.put(NewHorizonsMain.id(key), planet);\r\n        System.out.println(\"✅ Registered planet \" + planet.name);\r\n    }\r\n\r\n    public static CelestialBodyData getPlanet(Identifier id) {\r\n        return REGISTERED_PLANETS.get(id);\r\n    }\r\n\r\n    public static Map<Identifier,CelestialBodyData> getAllPlanets() {\r\n        return REGISTERED_PLANETS;\r\n    }\r\n\r\n    public static double getOrbitAngle(CelestialBodyData data, double worldTime, double partialTick) {\r\n        return (worldTime + partialTick) * data.orbitSpeed;\r\n    }\r\n\r\n    public static float getRotationAngle(CelestialBodyData data, double worldTime, double partialTick) {\r\n        double angle = (worldTime + partialTick) * data.rotationSpeed;\r\n        return (float)(angle % 360.0);\r\n    }\r\n\r\n    public static Vec3d getPlanetLocation(CelestialBodyData data, double worldTime, double partialTick) {\r\n        double θ = getOrbitAngle(data, worldTime, partialTick);\r\n        double r = data.center.length();\r\n        double x = data.center.x + r * Math.cos(θ);\r\n        double z = data.center.z + r * Math.sin(θ);\r\n        double y = data.center.y;\r\n        return new Vec3d(x, y, z);\r\n    }\r\n\r\n    public static class CelestialBodyData {\r\n        public String name;\r\n        public Vec3d center;\r\n        public double radius;\r\n        public double rotationSpeed;\r\n\r\n        public transient Identifier surfaceTexture;\r\n        public transient Identifier cloudsTexture;\r\n        public transient Identifier atmosphereTexture;\r\n        public transient Identifier darkAlbedoMap;\r\n        public transient Identifier heightMap;\r\n        public transient Identifier normalMap;\r\n\r\n\r\n        public transient Identifier ringsTexture;\r\n        public float ringsInnerRadius;\r\n        public float ringsOuterRadius;\r\n\r\n        public double orbitSpeed;\r\n        public boolean hasAtmosphere;\r\n        public boolean isStar;\r\n        public int[] atmosphereColor;\r\n        public double atmosphereRadius;\r\n        public boolean hasDarkAlbedoMap;\r\n        String surfaceTexturePath, cloudsTexturePath, atmosphereTexturePath;\r\n        String darkAlbedoMapPath, normalMapPath, heightMapPath;\r\n        String ringsTexturePath;\r\n        public boolean usesGeneratedTexture;\r\n\r\n        public float heightMapIntensity;\r\n        public float normalMapIntensity;\r\n    }\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/org/copycraftDev/new_horizons/client/planets/CelestialBodyRegistry.java b/src/main/java/org/copycraftDev/new_horizons/client/planets/CelestialBodyRegistry.java
+--- a/src/main/java/org/copycraftDev/new_horizons/client/planets/CelestialBodyRegistry.java	(revision 22076c671ae7b305cc0c2430b5f17d78bdbdab6b)
++++ b/src/main/java/org/copycraftDev/new_horizons/client/planets/CelestialBodyRegistry.java	(date 1748763186000)
+@@ -44,18 +44,27 @@
+         p.radius = 140;
+         p.rotationSpeed = 0.001;
+         p.orbitSpeed = 0.0;
+-        p.hasAtmosphere = false;
+-        p.atmosphereColor = null;
++
++
++        p.hasAtmosphere = true;
++        p.atmosphereColor  = new int[]{255, 200, 100, 30};
++        p.atmosphereRadius = 154;
++
+         p.isStar = true;
+-        p.atmosphereRadius = 150;
+-        p.hasDarkAlbedoMap = false;
+-        p.usesGeneratedTexture = false;
+-        p.surfaceTexturePath = "textures/test_textures/8k_sun.jpg";
+-        p.heightMapPath       = "textures/test_textures/sun_height_map.png";
+-        p.normalMapPath       = "textures/test_textures/sun_normal_map.png";
+-        p.normalMapIntensity = 0.5F;
+-        p.heightMapIntensity = 0.5F;
++
++
++        p.seed = 1894723L;
++
++
++        p.usesGeneratedTexture     = false;
++        p.surfaceTexturePath       = "textures/test_textures/8k_sun.jpg";
++        p.heightMapPath            = "textures/test_textures/sun_height_map.png";
++        p.normalMapPath            = "textures/test_textures/sun_normal_map.png";
+ 
++        p.hasDarkAlbedoMap         = false;
++
++        p.heightMapIntensity       = 1.0f;
++        p.normalMapIntensity       = 1.0f;
+         return p;
+     }
+ 
+@@ -66,18 +75,22 @@
+         p.radius = 50;
+         p.rotationSpeed = 0.0000512;
+         p.orbitSpeed = 0.00833;
+-        p.hasAtmosphere = false;
++
++
++        p.hasAtmosphere = true;
++        p.atmosphereColor  = new int[]{200, 200, 200, 10};
++        p.atmosphereRadius = 55;
++
+         p.isStar = false;
+-        p.atmosphereColor = null;
+-        p.atmosphereRadius = 0;
+-        p.hasDarkAlbedoMap = false;
+-        p.usesGeneratedTexture = false;
+-        p.surfaceTexturePath    = "textures/test_textures/8k_mercury.jpg";
+-        p.heightMapPath         = "textures/test_textures/mercury_height_map.jpg";
+-        p.normalMapPath         = "textures/test_textures/mercury_normal_map.jpg";
+-        p.normalMapIntensity = 1.5F;
+-        p.heightMapIntensity = 1F;
++        p.seed = 2938475L;
++        p.usesGeneratedTexture     = false;
++        p.surfaceTexturePath       = "textures/test_textures/8k_mercury.jpg";
++        p.heightMapPath            = "textures/test_textures/mercury_height_map.jpg";
++        p.normalMapPath            = "textures/test_textures/mercury_normal_map.jpg";
++        p.hasDarkAlbedoMap         = false;
+ 
++        p.heightMapIntensity       = 1.0f;
++        p.normalMapIntensity       = 1.0f;
+         return p;
+     }
+ 
+@@ -86,22 +99,24 @@
+         p.name = "Venus";
+         p.center = new Vec3d(10, 100, -720);
+         p.radius = 80;
+-        p.rotationSpeed = 0.000123;
++        p.rotationSpeed = 0.0000123;
+         p.orbitSpeed = 0.00323;
+-        p.isStar = false;
++
++
+         p.hasAtmosphere = true;
+-        p.atmosphereColor = new int[]{255, 180, 80, 80};
+-        p.atmosphereRadius = 90;
+-        p.atmosphereTexturePath = "textures/test_textures/8k_earth_clouds.jpg";
+-        p.hasDarkAlbedoMap = false;
+-        p.usesGeneratedTexture = false;
+-        p.surfaceTexturePath    = "textures/test_textures/8k_venus_surface.jpg";
+-        p.heightMapPath         = "textures/test_textures/venus_height_map.jpg";
+-        p.normalMapPath         = "textures/test_textures/venus_normal_map.jpg";
+-        p.darkAlbedoMapPath     = "textures/test_textures/8k_venus_surface.jpg";
+-        p.normalMapIntensity = 0.7F;
+-        p.heightMapIntensity = 2F;
++        p.atmosphereColor  = new int[]{255, 243, 181, 80};
++        p.atmosphereRadius = 88;
++
++        p.isStar = false;
++        p.seed = 3847561L;
++        p.usesGeneratedTexture     = false;
++        p.surfaceTexturePath       = "textures/test_textures/8k_venus_surface.jpg";
++        p.heightMapPath            = "textures/test_textures/venus_height_map.jpg";
++        p.normalMapPath            = "textures/test_textures/venus_normal_map.jpg";
++        p.hasDarkAlbedoMap         = false;
+ 
++        p.heightMapIntensity       = 1.0f;
++        p.normalMapIntensity       = 1.0f;
+         return p;
+     }
+ 
+@@ -112,20 +127,24 @@
+         p.radius = 100;
+         p.rotationSpeed = 0.003;
+         p.orbitSpeed = 0.002;
++
++
+         p.hasAtmosphere = true;
++        p.atmosphereColor  = new int[]{20, 30, 255, 50};
++        p.atmosphereRadius = 110;
++
+         p.isStar = false;
+-        p.atmosphereColor = new int[]{20, 30, 255, 70};
+-        p.atmosphereRadius = 110;
+-        p.hasDarkAlbedoMap = true;
+-        p.usesGeneratedTexture = false;
+-        p.surfaceTexturePath    = "textures/test_textures/earth_texture.png";
+-        p.atmosphereTexturePath = "textures/test_textures/8k_earth_clouds.jpg";
+-        p.darkAlbedoMapPath     = "textures/test_textures/earth_night.png";
+-        p.heightMapPath         = "textures/test_textures/earth_height.png";
+-        p.normalMapPath         = "textures/test_textures/earth_normal.png";
+-        p.normalMapIntensity = 0.3F;
+-        p.heightMapIntensity = 0.5F;
++        p.seed = 4758291L;
++        p.usesGeneratedTexture     = false;
++        p.surfaceTexturePath       = "textures/test_textures/earth_texture.png";
++        p.atmosphereTexturePath    = "textures/test_textures/8k_earth_clouds.jpg";
++        p.darkAlbedoMapPath        = "textures/test_textures/earth_night.png";
++        p.heightMapPath            = "textures/test_textures/earth_height.png";
++        p.normalMapPath            = "textures/test_textures/earth_normal.png";
++        p.hasDarkAlbedoMap         = true;
+ 
++        p.heightMapIntensity       = 1.0f;
++        p.normalMapIntensity       = 1.0f;
+         return p;
+     }
+ 
+@@ -136,18 +155,22 @@
+         p.radius = 80;
+         p.rotationSpeed = 0.00291;
+         p.orbitSpeed = 0.00106;
+-        p.hasAtmosphere = false;
++
++
++        p.hasAtmosphere = true;
++        p.atmosphereColor  = new int[]{255, 200, 160, 50};
++        p.atmosphereRadius = 88;
++
+         p.isStar = false;
+-        p.atmosphereColor = new int[]{255, 30, 0, 70};
+-        p.atmosphereRadius = 90;
+-        p.hasDarkAlbedoMap = false;
+-        p.usesGeneratedTexture = false;
+-        p.surfaceTexturePath    = "textures/test_textures/8k_mars.jpg";
+-        p.heightMapPath         = "textures/test_textures/mars_height.jpg";
+-        p.normalMapPath         = "textures/test_textures/mars_normal.jpg";
+-        p.normalMapIntensity = 0.5F;
+-        p.heightMapIntensity = 0.2F;
++        p.seed = 5928374L;
++        p.usesGeneratedTexture     = false;
++        p.surfaceTexturePath       = "textures/test_textures/8k_mars.jpg";
++        p.heightMapPath            = "textures/test_textures/mars_height.jpg";
++        p.normalMapPath            = "textures/test_textures/mars_normal.jpg";
++        p.hasDarkAlbedoMap         = false;
+ 
++        p.heightMapIntensity       = 1.0f;
++        p.normalMapIntensity       = 1.0f;
+         return p;
+     }
+ 
+@@ -158,18 +181,22 @@
+         p.radius = 110;
+         p.rotationSpeed = 0.00732;
+         p.orbitSpeed = 0.000169;
++
++
+         p.hasAtmosphere = false;
++        p.atmosphereColor  = new int[]{255, 210, 180, 60};
++        p.atmosphereRadius = 121;
++
+         p.isStar = true;
+-        p.atmosphereColor = null;
+-        p.atmosphereRadius = 115;
+-        p.hasDarkAlbedoMap = false;
+-        p.usesGeneratedTexture = false;
+-        p.surfaceTexturePath    = "textures/test_textures/8k_jupiter.jpg";
+-        p.heightMapPath         = "textures/test_textures/jupiter_height.jpg";
+-        p.normalMapPath         = "textures/test_textures/jupitertest.jpg";
+-        p.normalMapIntensity = 0.5F;
+-        p.heightMapIntensity = 0.5F;
++        p.seed = 6839201L;
++        p.usesGeneratedTexture     = false;
++        p.surfaceTexturePath       = "textures/test_textures/8k_jupiter.jpg";
++        p.heightMapPath            = "textures/test_textures/jupiter_height.jpg";
++        p.normalMapPath            = "textures/test_textures/jupitertest.jpg";
++        p.hasDarkAlbedoMap         = false;
+ 
++        p.heightMapIntensity       = 1.0f;
++        p.normalMapIntensity       = 1.0f;
+         return p;
+     }
+ 
+@@ -180,21 +207,25 @@
+         p.radius = 110;
+         p.rotationSpeed = 0.00667;
+         p.orbitSpeed = 0.0000679;
+-        p.hasAtmosphere = false;
++
++
++        p.hasAtmosphere = true;
++        p.atmosphereColor  = new int[]{240, 230, 200, 50};
++        p.atmosphereRadius = 121;
++
+         p.isStar = true;
+-        p.atmosphereColor = null;
+-        p.atmosphereRadius = 115;
+-        p.hasDarkAlbedoMap = false;
+-        p.usesGeneratedTexture = false;
+-        p.surfaceTexturePath    = "textures/test_textures/8k_saturn.jpg";
+-        p.heightMapPath         = "textures/test_textures/saturn_height_map.jpg";
+-        p.normalMapPath         = "textures/test_textures/saturn_normal_map.jpg";
+-        p.ringsTexturePath      = "textures/test_textures/saturn_ring.jpg";
+-        p.ringsInnerRadius      = 100;
+-        p.ringsOuterRadius      = 100;
+-        p.normalMapIntensity = 0.5F;
+-        p.heightMapIntensity = 0.5F;
++        p.seed = 7946218L;
++        p.usesGeneratedTexture     = false;
++        p.surfaceTexturePath       = "textures/test_textures/8k_saturn.jpg";
++        p.heightMapPath            = "textures/test_textures/saturn_height_map.jpg";
++        p.normalMapPath            = "textures/test_textures/saturn_normal_map.jpg";
++        p.ringsTexturePath         = "textures/test_textures/saturn_ring.jpg";
++        p.ringsInnerRadius         = 100;
++        p.ringsOuterRadius         = 100;
++        p.hasDarkAlbedoMap         = false;
+ 
++        p.heightMapIntensity       = 1.0f;
++        p.normalMapIntensity       = 1.0f;
+         return p;
+     }
+ 
+@@ -205,18 +236,22 @@
+         p.radius = 120;
+         p.rotationSpeed = 0.00417;
+         p.orbitSpeed = 0.0000238;
+-        p.hasAtmosphere = false;
++
++
++        p.hasAtmosphere = true;
++        p.atmosphereColor  = new int[]{180, 255, 255, 50};
++        p.atmosphereRadius = 132;
++
+         p.isStar = true;
+-        p.atmosphereColor = null;
+-        p.atmosphereRadius = 0;
+-        p.hasDarkAlbedoMap = false;
+-        p.usesGeneratedTexture = false;
+-        p.surfaceTexturePath    = "textures/test_textures/2k_uranus.jpg";
+-        p.heightMapPath         = "textures/test_textures/earth_height.png";
+-        p.normalMapPath         = "textures/test_textures/earth_normal.png";
+-        p.normalMapIntensity = 0.5F;
+-        p.heightMapIntensity = 0.5F;
++        p.seed = 8350294L;
++        p.usesGeneratedTexture     = false;
++        p.surfaceTexturePath       = "textures/test_textures/2k_uranus.jpg";
++        p.heightMapPath            = "textures/test_textures/earth_height.png";
++        p.normalMapPath            = "textures/test_textures/earth_normal.png";
++        p.hasDarkAlbedoMap         = false;
+ 
++        p.heightMapIntensity       = 1.0f;
++        p.normalMapIntensity       = 1.0f;
+         return p;
+     }
+ 
+@@ -227,64 +262,65 @@
+         p.radius = 130;
+         p.rotationSpeed = 0.00448;
+         p.orbitSpeed = 0.0000121;
++
++
+         p.hasAtmosphere = true;
++        p.atmosphereColor  = new int[]{100, 150, 255, 50};
++        p.atmosphereRadius = 143;
++
+         p.isStar = true;
+-        p.atmosphereColor = new int[]{20, 30, 255, 70};
+-        p.atmosphereRadius = 135;
+-        p.hasDarkAlbedoMap = false;
+-        p.usesGeneratedTexture = false;
+-        p.surfaceTexturePath    = "textures/test_textures/2k_neptune.jpg";
+-        p.heightMapPath         = "textures/test_textures/neptune_height.jpg";
+-        p.normalMapPath         = "textures/test_textures/neptune_normal.jpg";
+-        p.normalMapIntensity = 0.5F;
+-        p.heightMapIntensity = 0.5F;
++        p.seed = 9467123L;
++        p.usesGeneratedTexture     = false;
++        p.surfaceTexturePath       = "textures/test_textures/2k_neptune.jpg";
++        p.heightMapPath            = "textures/test_textures/neptune_height.jpg";
++        p.normalMapPath            = "textures/test_textures/neptune_normal.jpg";
++        p.hasDarkAlbedoMap         = false;
+ 
++        p.heightMapIntensity       = 1.0f;
++        p.normalMapIntensity       = 1.0f;
+         return p;
+     }
+ 
++
+     private static void register(CelestialBodyData planet) {
+         String key = planet.name.toLowerCase();
++        String modId = NewHorizonsMain.MOD_ID;
+ 
+         if (planet.usesGeneratedTexture) {
+-            String genDir = "assets/" + NewHorizonsMain.MOD_ID + "/textures/generated/" + key;
+-            File d = new File(genDir);
+-            if (!d.exists() && !d.mkdirs()) {
+-                System.err.println("Cannot create " + genDir);
+-            }
++            // 1) Build & run the generator synchronously
+             PlanetTextureGenerator gen = new PlanetTextureGenerator.Builder()
+                     .size(2048)
+-                    .seed(123456L)
++                    .seed(planet.seed)
+                     .octaves(5)
+                     .frequency(3f)
+                     .build();
+-            gen.generateAndRegister(NewHorizonsMain.MOD_ID, key);
++            gen.generateAndRegister(modId, key);
+ 
+-            planet.surfaceTexture = NewHorizonsMain.id("textures/generated/" + key + "/" + key + "_albedo.png");
+-            planet.heightMap      = NewHorizonsMain.id("textures/generated/" + key + "/" + key + "_height.png");
+-            planet.normalMap      = NewHorizonsMain.id("textures/generated/" + key + "/" + key + "_normal.png");
+-
+-            planet.surfaceTexture = TextureResizer.resizeTexture(
+-                    NewHorizonsMain.MOD_ID,
+-                    "textures/generated/" + key + "/" + key + "_albedo.png",
+-                    4096,2048, key + "_alb_resized", false
+-            );
+-            planet.heightMap = TextureResizer.resizeTexture(
+-                    NewHorizonsMain.MOD_ID,
+-                    "textures/generated/" + key + "/" + key + "_height.png",
+-                    4096,2048, key + "_hgt_resized", false
+-            );
+-            planet.normalMap = TextureResizer.resizeTexture(
+-                    NewHorizonsMain.MOD_ID,
+-                    "textures/generated/" + key + "/" + key + "_normal.png",
+-                    4096,2048, key + "_nrm_resized", false
+-            );
++            // 2) Point the planet at the newly-registered runtime textures
++            //    (generator registers under textures/generated/<name>_<type>.png)
++            planet.surfaceTexture = Identifier.of(modId, "textures/generated/" + key + "_albedo.png");
++            planet.heightMap      = Identifier.of(modId, "textures/generated/" + key + "_height.png");
++            planet.normalMap      = Identifier.of(modId, "textures/generated/" + key + "_normal.png");
+         } else {
+-            planet.surfaceTexture    = planet.surfaceTexturePath    != null ? NewHorizonsMain.id(planet.surfaceTexturePath)    : null;
+-            planet.cloudsTexture     = planet.cloudsTexturePath     != null ? NewHorizonsMain.id(planet.cloudsTexturePath)     : null;
+-            planet.atmosphereTexture = planet.atmosphereTexturePath != null ? NewHorizonsMain.id(planet.atmosphereTexturePath) : null;
+-            planet.darkAlbedoMap     = planet.darkAlbedoMapPath     != null ? NewHorizonsMain.id(planet.darkAlbedoMapPath)     : null;
+-            planet.heightMap         = planet.heightMapPath         != null ? NewHorizonsMain.id(planet.heightMapPath)         : null;
+-            planet.normalMap         = planet.normalMapPath         != null ? NewHorizonsMain.id(planet.normalMapPath)         : null;
++            // static-file branch: exactly as you had it
++            planet.surfaceTexture    = planet.surfaceTexturePath    != null
++                    ? NewHorizonsMain.id(planet.surfaceTexturePath)
++                    : null;
++            planet.cloudsTexture     = planet.cloudsTexturePath     != null
++                    ? NewHorizonsMain.id(planet.cloudsTexturePath)
++                    : null;
++            planet.atmosphereTexture = planet.atmosphereTexturePath != null
++                    ? NewHorizonsMain.id(planet.atmosphereTexturePath)
++                    : null;
++            planet.darkAlbedoMap     = planet.darkAlbedoMapPath     != null
++                    ? NewHorizonsMain.id(planet.darkAlbedoMapPath)
++                    : null;
++            planet.heightMap         = planet.heightMapPath         != null
++                    ? NewHorizonsMain.id(planet.heightMapPath)
++                    : null;
++            planet.normalMap         = planet.normalMapPath         != null
++                    ? NewHorizonsMain.id(planet.normalMapPath)
++                    : null;
+         }
+ 
+         // handle rings if present
+@@ -292,9 +328,13 @@
+             planet.ringsTexture = NewHorizonsMain.id(planet.ringsTexturePath);
+         }
+ 
++        // Finally, register into our central map
+         REGISTERED_PLANETS.put(NewHorizonsMain.id(key), planet);
+-        System.out.println("✅ Registered planet " + planet.name);
++        System.out.println("✅ Registered planet "
++                + planet.name
++                + (planet.usesGeneratedTexture ? " (dynamic textures)" : ""));
+     }
++
+ 
+     public static CelestialBodyData getPlanet(Identifier id) {
+         return REGISTERED_PLANETS.get(id);
+@@ -350,8 +390,9 @@
+         String darkAlbedoMapPath, normalMapPath, heightMapPath;
+         String ringsTexturePath;
+         public boolean usesGeneratedTexture;
++        public long seed;
+ 
+-        public float heightMapIntensity;
+         public float normalMapIntensity;
++        public float heightMapIntensity;
+     }
+ }
+Index: src/main/resources/new_horizons.mixins.json
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>{\r\n  \"required\": true,\r\n  \"minVersion\": \"0.8\",\r\n  \"package\": \"org.copycraftDev.new_horizons.mixin\",\r\n  \"compatibilityLevel\": \"JAVA_21\",\r\n  \"mixins\": [\r\n    \"AbstractBlockCollisionMixin\",\r\n    \"AbstractBlockMixin\",\r\n    \"client.SpaceSkyboxMixin\"\r\n  ],\r\n  \"client\": [\r\n    \"CameraAccessor\",\r\n    \"CameraRotationMixin\",\r\n    \"ClientPlayNetworkHandlerMixin\",\r\n    \"NoCloudsMixin\",\r\n    \"NoVoidDamageInSpaceLivingEntityMixin\",\r\n    \"LazuliPostProcessingRegistryMixin\",\r\n    \"TitleScreenMixin\",\r\n    \"client.CameraMixin\",\r\n    \"client.FreezeInventoryMixin\",\r\n    \"client.FrustumMixin\",\r\n    \"client.GameRendererMixin\",\r\n    \"client.InstantDimensionClientMixin\",\r\n    \"client.InstantDimensionNetworkMixin\",\r\n    \"client.PlayerFreezeMixin\"\r\n  ],\r\n  \"injectors\": {\r\n    \"defaultRequire\": 1\r\n  }\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/resources/new_horizons.mixins.json b/src/main/resources/new_horizons.mixins.json
+--- a/src/main/resources/new_horizons.mixins.json	(revision 22076c671ae7b305cc0c2430b5f17d78bdbdab6b)
++++ b/src/main/resources/new_horizons.mixins.json	(date 1748776156000)
+@@ -6,22 +6,25 @@
+   "mixins": [
+     "AbstractBlockCollisionMixin",
+     "AbstractBlockMixin",
++    "client.PlayerScreenHandlerMixin",
+     "client.SpaceSkyboxMixin"
+   ],
+   "client": [
+     "CameraAccessor",
+     "CameraRotationMixin",
+     "ClientPlayNetworkHandlerMixin",
++    "LazuliPostProcessingRegistryMixin",
+     "NoCloudsMixin",
+     "NoVoidDamageInSpaceLivingEntityMixin",
+-    "LazuliPostProcessingRegistryMixin",
+     "TitleScreenMixin",
+     "client.CameraMixin",
+     "client.FreezeInventoryMixin",
+     "client.FrustumMixin",
+     "client.GameRendererMixin",
++    "client.HandledScreenAccessor",
+     "client.InstantDimensionClientMixin",
+     "client.InstantDimensionNetworkMixin",
++    "client.InventoryScreenMixin",
+     "client.PlayerFreezeMixin"
+   ],
+   "injectors": {
+Index: src/main/java/org/copycraftDev/new_horizons/mixin/client/PlayerFreezeMixin.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package org.copycraftDev.new_horizons.mixin.client;\r\n\r\nimport net.minecraft.client.MinecraftClient;\r\nimport net.minecraft.entity.player.PlayerEntity;\r\nimport org.copycraftDev.new_horizons.Lidar.FreezeControl;\r\nimport org.spongepowered.asm.mixin.Mixin;\r\nimport org.spongepowered.asm.mixin.injection.At;\r\nimport org.spongepowered.asm.mixin.injection.Inject;\r\nimport org.spongepowered.asm.mixin.injection.callback.CallbackInfo;\r\n\r\n@Mixin(MinecraftClient.class)\r\npublic class PlayerFreezeMixin {\r\n\r\n\r\n    @Inject(method = \"handleInputEvents\", at = @At(\"HEAD\"), cancellable = true)\r\n    private void freezeInput(CallbackInfo ci) {\r\n        if (FreezeControl.isFrozen) {\r\n            ci.cancel();\r\n        }\r\n    }\r\n\r\n    @Inject(method = \"tick\", at = @At(\"HEAD\"))\r\n    private void freezePlayerMovement(CallbackInfo ci) {\r\n        if (FreezeControl.isFrozen && MinecraftClient.getInstance().player != null) {\r\n            PlayerEntity player = MinecraftClient.getInstance().player;\r\n            player.setVelocity(0, 0, 0);\r\n            player.setPitch(player.getPitch());\r\n            player.setYaw(player.getYaw());\r\n            player.forwardSpeed = 0;\r\n            player.sidewaysSpeed = 0;\r\n            player.upwardSpeed = 0;\r\n            player.headYaw = 0;\r\n        }\r\n    }\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/org/copycraftDev/new_horizons/mixin/client/PlayerFreezeMixin.java b/src/main/java/org/copycraftDev/new_horizons/mixin/client/PlayerFreezeMixin.java
+--- a/src/main/java/org/copycraftDev/new_horizons/mixin/client/PlayerFreezeMixin.java	(revision 22076c671ae7b305cc0c2430b5f17d78bdbdab6b)
++++ b/src/main/java/org/copycraftDev/new_horizons/mixin/client/PlayerFreezeMixin.java	(date 1748804452000)
+@@ -1,6 +1,8 @@
+ package org.copycraftDev.new_horizons.mixin.client;
+ 
+ import net.minecraft.client.MinecraftClient;
++import net.minecraft.client.input.Input;
++import net.minecraft.client.option.KeyBinding;
+ import net.minecraft.entity.player.PlayerEntity;
+ import org.copycraftDev.new_horizons.Lidar.FreezeControl;
+ import org.spongepowered.asm.mixin.Mixin;
+@@ -11,25 +13,41 @@
+ @Mixin(MinecraftClient.class)
+ public class PlayerFreezeMixin {
+ 
+-
+     @Inject(method = "handleInputEvents", at = @At("HEAD"), cancellable = true)
+     private void freezeInput(CallbackInfo ci) {
+         if (FreezeControl.isFrozen) {
++            // Cancel input so player can't move or rotate via keyboard/mouse
+             ci.cancel();
+         }
+     }
+ 
+-    @Inject(method = "tick", at = @At("HEAD"))
++    @Inject(method = "tick", at = @At("TAIL"))
+     private void freezePlayerMovement(CallbackInfo ci) {
+-        if (FreezeControl.isFrozen && MinecraftClient.getInstance().player != null) {
+-            PlayerEntity player = MinecraftClient.getInstance().player;
+-            player.setVelocity(0, 0, 0);
+-            player.setPitch(player.getPitch());
+-            player.setYaw(player.getYaw());
+-            player.forwardSpeed = 0;
+-            player.sidewaysSpeed = 0;
+-            player.upwardSpeed = 0;
+-            player.headYaw = 0;
++        if (FreezeControl.isFrozen) {
++            MinecraftClient client = MinecraftClient.getInstance();
++            PlayerEntity player = client.player;
++            if (player != null) {
++                // Completely stop movement
++                player.setVelocity(0, 0, 0);
++                player.forwardSpeed = 0;
++                player.sidewaysSpeed = 0;
++                player.upwardSpeed = 0;
++                // Prevent any look movement by locking rotation to current values
++                float yaw = player.getYaw();
++                float pitch = player.getPitch();
++                player.setYaw(yaw);
++                player.setPitch(pitch);
++                player.headYaw = yaw;
++
++                // Also freeze input movement vector to zero so client input doesn't interfere
++                KeyBinding input = client.options.forwardKey.isPressed() ? client.options.forwardKey : null;
++                if (input != null) {
++                    client.player.input.movementForward = 0;
++                    client.player.input.movementSideways = 0;
++                    client.player.input.jumping = false;
++                    client.player.input.sneaking = false;
++                }
++            }
+         }
+     }
+ }
+Index: .idea/workspace.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<project version=\"4\">\r\n  <component name=\"AutoImportSettings\">\r\n    <option name=\"autoReloadType\" value=\"SELECTIVE\" />\r\n  </component>\r\n  <component name=\"ChangeListManager\">\r\n    <list default=\"true\" id=\"98d4082c-d487-4920-b26a-61a5027f7d6f\" name=\"Changes\" comment=\"chat did i cook?\">\r\n      <change beforePath=\"$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/.idea/workspace.xml\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/.idea/workspace.xml\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/src/main/resources/assets/minecraft/shaders/program/meow_post_processing_meow.fsh\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/src/main/resources/assets/minecraft/shaders/program/meow_post_processing_meow.fsh\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/src/main/resources/assets/minecraft/shaders/program/post_test.json\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/src/main/resources/assets/minecraft/shaders/program/post_test.json\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/src/main/resources/assets/new_horizons/shaders/post/post_test.json\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/src/main/resources/assets/new_horizons/shaders/post/post_test.json\" afterDir=\"false\" />\r\n    </list>\r\n    <option name=\"SHOW_DIALOG\" value=\"false\" />\r\n    <option name=\"HIGHLIGHT_CONFLICTS\" value=\"true\" />\r\n    <option name=\"HIGHLIGHT_NON_ACTIVE_CHANGELIST\" value=\"false\" />\r\n    <option name=\"LAST_RESOLUTION\" value=\"IGNORE\" />\r\n  </component>\r\n  <component name=\"ExternalProjectsData\">\r\n    <projectState path=\"$PROJECT_DIR$\">\r\n      <ProjectState />\r\n    </projectState>\r\n  </component>\r\n  <component name=\"ExternalProjectsManager\">\r\n    <system id=\"GRADLE\">\r\n      <state>\r\n        <task path=\"$PROJECT_DIR$\">\r\n          <activation />\r\n        </task>\r\n        <projects_view>\r\n          <tree_state>\r\n            <expand>\r\n              <path>\r\n                <item name=\"\" type=\"6a2764b6:ExternalProjectsStructure$RootNode\" />\r\n                <item name=\"New-Horizons\" type=\"f1a62948:ProjectNode\" />\r\n              </path>\r\n              <path>\r\n                <item name=\"\" type=\"6a2764b6:ExternalProjectsStructure$RootNode\" />\r\n                <item name=\"New-Horizons\" type=\"f1a62948:ProjectNode\" />\r\n                <item name=\"Tasks\" type=\"e4a08cd1:TasksNode\" />\r\n              </path>\r\n              <path>\r\n                <item name=\"\" type=\"6a2764b6:ExternalProjectsStructure$RootNode\" />\r\n                <item name=\"New-Horizons\" type=\"f1a62948:ProjectNode\" />\r\n                <item name=\"Tasks\" type=\"e4a08cd1:TasksNode\" />\r\n                <item name=\"build\" type=\"c8890929:TasksNode$1\" />\r\n              </path>\r\n              <path>\r\n                <item name=\"\" type=\"6a2764b6:ExternalProjectsStructure$RootNode\" />\r\n                <item name=\"New-Horizons\" type=\"f1a62948:ProjectNode\" />\r\n                <item name=\"Tasks\" type=\"e4a08cd1:TasksNode\" />\r\n                <item name=\"fabric\" type=\"c8890929:TasksNode$1\" />\r\n              </path>\r\n            </expand>\r\n            <select />\r\n          </tree_state>\r\n        </projects_view>\r\n      </state>\r\n    </system>\r\n  </component>\r\n  <component name=\"FileTemplateManagerImpl\">\r\n    <option name=\"RECENT_TEMPLATES\">\r\n      <list>\r\n        <option value=\"Class\" />\r\n      </list>\r\n    </option>\r\n  </component>\r\n  <component name=\"Git.Settings\">\r\n    <option name=\"RECENT_BRANCH_BY_REPOSITORY\">\r\n      <map>\r\n        <entry key=\"$PROJECT_DIR$\" value=\"977b78050d5c9bd07ac672f2f3c8c930c23720e4\" />\r\n      </map>\r\n    </option>\r\n    <option name=\"RECENT_GIT_ROOT_PATH\" value=\"$PROJECT_DIR$\" />\r\n    <option name=\"RESET_MODE\" value=\"HARD\" />\r\n  </component>\r\n  <component name=\"GitHubPullRequestSearchHistory\">{\r\n  &quot;lastFilter&quot;: {\r\n    &quot;state&quot;: &quot;OPEN&quot;,\r\n    &quot;assignee&quot;: &quot;Neomoon6153official&quot;\r\n  }\r\n}</component>\r\n  <component name=\"GithubPullRequestsUISettings\">{\r\n  &quot;selectedUrlAndAccountId&quot;: {\r\n    &quot;url&quot;: &quot;https://github.com/copycraft/New-Horizons.git&quot;,\r\n    &quot;accountId&quot;: &quot;d335c36b-9b77-4cd3-bf7f-b0d968f3e960&quot;\r\n  }\r\n}</component>\r\n  <component name=\"ProblemsViewState\">\r\n    <option name=\"selectedTabId\" value=\"CurrentFile\" />\r\n  </component>\r\n  <component name=\"ProjectColorInfo\">{\r\n  &quot;associatedIndex&quot;: 2\r\n}</component>\r\n  <component name=\"ProjectId\" id=\"2vxRKYpj5XnMTHcZzKud840itSN\" />\r\n  <component name=\"ProjectLevelVcsManager\" settingsEditedManually=\"true\">\r\n    <ConfirmationsSetting value=\"1\" id=\"Add\" />\r\n  </component>\r\n  <component name=\"ProjectViewState\">\r\n    <option name=\"showLibraryContents\" value=\"true\" />\r\n  </component>\r\n  <component name=\"PropertiesComponent\"><![CDATA[{\r\n  \"keyToString\": {\r\n    \"Application.Minecraft Client.executor\": \"Run\",\r\n    \"Gradle.New-Horizons [:net.fabricmc.devlaunchinjector.Main.main()].executor\": \"Run\",\r\n    \"Gradle.New-Horizons [runClient].executor\": \"Run\",\r\n    \"Gradle.new-horizons [build].executor\": \"Run\",\r\n    \"Gradle.new-horizons [clean].executor\": \"Run\",\r\n    \"Gradle.new-horizons.executor\": \"Run\",\r\n    \"RunOnceActivity.ShowReadmeOnStart\": \"true\",\r\n    \"RunOnceActivity.git.unshallow\": \"true\",\r\n    \"git-widget-placeholder\": \"main\",\r\n    \"ignore.virus.scanning.warn.message\": \"true\",\r\n    \"kotlin-language-version-configured\": \"true\",\r\n    \"last_opened_file_path\": \"D:/Coisas frequentes/GitHub/New-Horizons/src/main/resources/assets/minecraft/shaders/program\",\r\n    \"project.structure.last.edited\": \"Project\",\r\n    \"project.structure.proportion\": \"0.15\",\r\n    \"project.structure.side.proportion\": \"0.0\",\r\n    \"settings.editor.selected.configurable\": \"reference.settingsdialog.project.gradle\"\r\n  }\r\n}]]></component>\r\n  <component name=\"RecentsManager\">\r\n    <key name=\"CopyFile.RECENT_KEYS\">\r\n      <recent name=\"D:\\Coisas frequentes\\GitHub\\New-Horizons\\src\\main\\resources\\assets\\minecraft\\shaders\\program\" />\r\n      <recent name=\"D:\\codemc\\New-Horizons\" />\r\n      <recent name=\"D:\\codemc\\New-Horizons\\src\\main\\java\\org\\copycraftDev\\new_horizons\\extrastuff\\noise\" />\r\n      <recent name=\"D:\\codemc\\New-Horizons\\src\\main\\resources\\assets\\minecraft\\textures\\gui\\sprites\\widget\" />\r\n      <recent name=\"D:\\codemc\\New-Horizons\\src\\main\\resources\\assets\\new_horizons\\sounds\" />\r\n    </key>\r\n    <key name=\"MoveFile.RECENT_KEYS\">\r\n      <recent name=\"D:\\Coisas frequentes\\GitHub\\New-Horizons\\src\\main\\resources\\assets\\new_horizons\\shaders\\post\" />\r\n      <recent name=\"D:\\Coisas frequentes\\GitHub\\New-Horizons\\src\\main\\resources\\assets\\minecraft\\shaders\\program\" />\r\n      <recent name=\"D:\\Coisas frequentes\\GitHub\\New-Horizons\\src\\main\\resources\\assets\\new_horizons\\shaders\\core\" />\r\n      <recent name=\"D:\\codemc\\New-Horizons\\src\\main\\resources\\assets\\new_horizons\\sounds\" />\r\n    </key>\r\n    <key name=\"ExtractSuperBase.RECENT_KEYS\">\r\n      <recent name=\"org.copycraftDev.new_horizons.blackhole\" />\r\n    </key>\r\n  </component>\r\n  <component name=\"RunManager\" selected=\"Gradle.New-Horizons [runClient]\">\r\n    <configuration name=\"New-Horizons [runClient]\" type=\"GradleRunConfiguration\" factoryName=\"Gradle\" temporary=\"true\">\r\n      <ExternalSystemSettings>\r\n        <option name=\"executionName\" />\r\n        <option name=\"externalProjectPath\" value=\"$PROJECT_DIR$\" />\r\n        <option name=\"externalSystemIdString\" value=\"GRADLE\" />\r\n        <option name=\"scriptParameters\" />\r\n        <option name=\"taskDescriptions\">\r\n          <list />\r\n        </option>\r\n        <option name=\"taskNames\">\r\n          <list>\r\n            <option value=\"runClient\" />\r\n          </list>\r\n        </option>\r\n        <option name=\"vmOptions\" />\r\n      </ExternalSystemSettings>\r\n      <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>\r\n      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>\r\n      <DebugAllEnabled>false</DebugAllEnabled>\r\n      <RunAsTest>false</RunAsTest>\r\n      <method v=\"2\" />\r\n    </configuration>\r\n    <configuration name=\"new-horizons [build]\" type=\"GradleRunConfiguration\" factoryName=\"Gradle\" temporary=\"true\">\r\n      <ExternalSystemSettings>\r\n        <option name=\"executionName\" />\r\n        <option name=\"externalProjectPath\" value=\"$PROJECT_DIR$\" />\r\n        <option name=\"externalSystemIdString\" value=\"GRADLE\" />\r\n        <option name=\"scriptParameters\" />\r\n        <option name=\"taskDescriptions\">\r\n          <list />\r\n        </option>\r\n        <option name=\"taskNames\">\r\n          <list>\r\n            <option value=\"build\" />\r\n          </list>\r\n        </option>\r\n        <option name=\"vmOptions\" />\r\n      </ExternalSystemSettings>\r\n      <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>\r\n      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>\r\n      <DebugAllEnabled>false</DebugAllEnabled>\r\n      <RunAsTest>false</RunAsTest>\r\n      <method v=\"2\" />\r\n    </configuration>\r\n    <configuration name=\"new-horizons [clean]\" type=\"GradleRunConfiguration\" factoryName=\"Gradle\" temporary=\"true\">\r\n      <ExternalSystemSettings>\r\n        <option name=\"executionName\" />\r\n        <option name=\"externalProjectPath\" value=\"$PROJECT_DIR$\" />\r\n        <option name=\"externalSystemIdString\" value=\"GRADLE\" />\r\n        <option name=\"scriptParameters\" />\r\n        <option name=\"taskDescriptions\">\r\n          <list />\r\n        </option>\r\n        <option name=\"taskNames\">\r\n          <list>\r\n            <option value=\"clean\" />\r\n          </list>\r\n        </option>\r\n        <option name=\"vmOptions\" />\r\n      </ExternalSystemSettings>\r\n      <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>\r\n      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>\r\n      <DebugAllEnabled>false</DebugAllEnabled>\r\n      <RunAsTest>false</RunAsTest>\r\n      <method v=\"2\" />\r\n    </configuration>\r\n    <list>\r\n      <item itemvalue=\"Application.Minecraft Client\" />\r\n      <item itemvalue=\"Application.Minecraft Server\" />\r\n      <item itemvalue=\"Gradle.New-Horizons [runClient]\" />\r\n      <item itemvalue=\"Gradle.new-horizons [build]\" />\r\n      <item itemvalue=\"Gradle.new-horizons [clean]\" />\r\n    </list>\r\n    <recent_temporary>\r\n      <list>\r\n        <item itemvalue=\"Gradle.New-Horizons [runClient]\" />\r\n        <item itemvalue=\"Gradle.new-horizons [build]\" />\r\n        <item itemvalue=\"Gradle.new-horizons [clean]\" />\r\n        <item itemvalue=\"Gradle.new-horizons [clean]\" />\r\n        <item itemvalue=\"Gradle.new-horizons [build]\" />\r\n      </list>\r\n    </recent_temporary>\r\n  </component>\r\n  <component name=\"SpellCheckerSettings\" RuntimeDictionaries=\"0\" Folders=\"0\" CustomDictionaries=\"0\" DefaultDictionary=\"application-level\" UseSingleDictionary=\"true\" transferred=\"true\" />\r\n  <component name=\"TaskManager\">\r\n    <task active=\"true\" id=\"Default\" summary=\"Default task\">\r\n      <changelist id=\"98d4082c-d487-4920-b26a-61a5027f7d6f\" name=\"Changes\" comment=\"\" />\r\n      <created>1745084675692</created>\r\n      <option name=\"number\" value=\"Default\" />\r\n      <option name=\"presentableId\" value=\"Default\" />\r\n      <updated>1745084675692</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00001\" summary=\"titles screen revamp, and physics engine base\">\r\n      <option name=\"closed\" value=\"true\" />\r\n      <created>1746267679699</created>\r\n      <option name=\"number\" value=\"00001\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00001\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1746267679699</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00002\" summary=\"titlescreen revamp part 2 XD&#10;physics improvements (not really)\">\r\n      <option name=\"closed\" value=\"true\" />\r\n      <created>1746351762247</created>\r\n      <option name=\"number\" value=\"00002\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00002\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1746351762247</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00003\" summary=\"titlescreen revamp part 2 XD&#10;physics improvements (not really)\">\r\n      <option name=\"closed\" value=\"true\" />\r\n      <created>1746352296662</created>\r\n      <option name=\"number\" value=\"00003\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00003\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1746352296662</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00004\" summary=\"titlescreen revamp part 2 XD&#10;physics improvements (not really)\">\r\n      <option name=\"closed\" value=\"true\" />\r\n      <created>1746352645596</created>\r\n      <option name=\"number\" value=\"00004\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00004\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1746352645596</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00005\" summary=\"merge\">\r\n      <option name=\"closed\" value=\"true\" />\r\n      <created>1746473174356</created>\r\n      <option name=\"number\" value=\"00005\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00005\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1746473174356</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00006\" summary=\"stuff\">\r\n      <option name=\"closed\" value=\"true\" />\r\n      <created>1747409259564</created>\r\n      <option name=\"number\" value=\"00006\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00006\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1747409259564</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00007\" summary=\"stuff\">\r\n      <option name=\"closed\" value=\"true\" />\r\n      <created>1747409306486</created>\r\n      <option name=\"number\" value=\"00007\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00007\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1747409306486</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00008\" summary=\"stuff\">\r\n      <option name=\"closed\" value=\"true\" />\r\n      <created>1747415853655</created>\r\n      <option name=\"number\" value=\"00008\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00008\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1747415853655</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00009\" summary=\"stuff\">\r\n      <option name=\"closed\" value=\"true\" />\r\n      <created>1747416124845</created>\r\n      <option name=\"number\" value=\"00009\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00009\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1747416124845</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00010\" summary=\"stuff\">\r\n      <option name=\"closed\" value=\"true\" />\r\n      <created>1747591594141</created>\r\n      <option name=\"number\" value=\"00010\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00010\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1747591594142</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00011\" summary=\"stuff\">\r\n      <option name=\"closed\" value=\"true\" />\r\n      <created>1747591756897</created>\r\n      <option name=\"number\" value=\"00011\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00011\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1747591756897</updated>\r\n    </task>\r\n    <option name=\"localTasksCounter\" value=\"12\" />\r\n    <servers />\r\n  </component>\r\n  <component name=\"Vcs.Log.Tabs.Properties\">\r\n    <option name=\"TAB_STATES\">\r\n      <map>\r\n        <entry key=\"MAIN\">\r\n          <value>\r\n            <State />\r\n          </value>\r\n        </entry>\r\n      </map>\r\n    </option>\r\n  </component>\r\n  <component name=\"VcsManagerConfiguration\">\r\n    <MESSAGE value=\"titles screen revamp, and physics engine base\" />\r\n    <MESSAGE value=\"titlescreen revamp part 2 XD&#10;physics improvements (not really)\" />\r\n    <MESSAGE value=\"merge\" />\r\n    <MESSAGE value=\"Merge remote-tracking branch 'origin/main'&#10;&#10;# Conflicts:&#10;#&#9;src/main/java/org/copycraftDev/new_horizons/NewHorizonsMain.java&#10;#&#9;src/main/java/org/copycraftDev/new_horizons/mixin/NoVoidDamageInSpaceLivingEntityMixin.java&#10;#&#9;src/main/java/org/copycraftDev/new_horizons/mixin/PanoramaConfig.java&#10;#&#9;src/main/resources/assets/new_horizons/sounds/engine_ambiance.ogg&#10;#&#9;src/main/resources/new_horizons.mixins.json\" />\r\n    <MESSAGE value=\"texture resizer util and main menu improvements\" />\r\n    <MESSAGE value=\"stuff\" />\r\n    <MESSAGE value=\"chat did i cook?\" />\r\n    <option name=\"LAST_COMMIT_MESSAGE\" value=\"chat did i cook?\" />\r\n  </component>\r\n</project>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/workspace.xml b/.idea/workspace.xml
+--- a/.idea/workspace.xml	(revision 22076c671ae7b305cc0c2430b5f17d78bdbdab6b)
++++ b/.idea/workspace.xml	(date 1749066400000)
+@@ -4,12 +4,16 @@
+     <option name="autoReloadType" value="SELECTIVE" />
+   </component>
+   <component name="ChangeListManager">
+-    <list default="true" id="98d4082c-d487-4920-b26a-61a5027f7d6f" name="Changes" comment="chat did i cook?">
++    <list default="true" id="98d4082c-d487-4920-b26a-61a5027f7d6f" name="Changes" comment="shader magic">
++      <change afterPath="$PROJECT_DIR$/src/main/java/org/copycraftDev/new_horizons/hotreload/Acessor.java" afterDir="false" />
+       <change beforePath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/.gradle/loom-cache/launch.cfg" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/loom-cache/launch.cfg" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/.gradle/loom-cache/remapClasspath.txt" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/loom-cache/remapClasspath.txt" afterDir="false" />
+       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/src/main/resources/assets/minecraft/shaders/program/meow_post_processing_meow.fsh" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/assets/minecraft/shaders/program/meow_post_processing_meow.fsh" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/src/main/resources/assets/minecraft/shaders/program/post_test.json" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/assets/minecraft/shaders/program/post_test.json" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/src/main/resources/assets/new_horizons/shaders/post/post_test.json" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/assets/new_horizons/shaders/post/post_test.json" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/src/main/java/org/copycraftDev/new_horizons/client/planets/CelestialBodyRegistry.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/copycraftDev/new_horizons/client/planets/CelestialBodyRegistry.java" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/src/main/java/org/copycraftDev/new_horizons/mixin/TitleScreenMixin.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/copycraftDev/new_horizons/mixin/TitleScreenMixin.java" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/src/main/java/org/copycraftDev/new_horizons/mixin/client/PlayerFreezeMixin.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/copycraftDev/new_horizons/mixin/client/PlayerFreezeMixin.java" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/src/main/resources/new_horizons.mixins.json" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/new_horizons.mixins.json" afterDir="false" />
+     </list>
+     <option name="SHOW_DIALOG" value="false" />
+     <option name="HIGHLIGHT_CONFLICTS" value="true" />
+@@ -73,6 +77,7 @@
+     </option>
+     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+     <option name="RESET_MODE" value="HARD" />
++    <option name="UPDATE_TYPE" value="REBASE" />
+   </component>
+   <component name="GitHubPullRequestSearchHistory">{
+   &quot;lastFilter&quot;: {
+@@ -83,7 +88,7 @@
+   <component name="GithubPullRequestsUISettings">{
+   &quot;selectedUrlAndAccountId&quot;: {
+     &quot;url&quot;: &quot;https://github.com/copycraft/New-Horizons.git&quot;,
+-    &quot;accountId&quot;: &quot;d335c36b-9b77-4cd3-bf7f-b0d968f3e960&quot;
++    &quot;accountId&quot;: &quot;40789803-feaf-4dbf-ba57-837fad9a29ca&quot;
+   }
+ }</component>
+   <component name="ProblemsViewState">
+@@ -99,42 +104,48 @@
+   <component name="ProjectViewState">
+     <option name="showLibraryContents" value="true" />
+   </component>
+-  <component name="PropertiesComponent"><![CDATA[{
+-  "keyToString": {
+-    "Application.Minecraft Client.executor": "Run",
+-    "Gradle.New-Horizons [:net.fabricmc.devlaunchinjector.Main.main()].executor": "Run",
+-    "Gradle.New-Horizons [runClient].executor": "Run",
+-    "Gradle.new-horizons [build].executor": "Run",
+-    "Gradle.new-horizons [clean].executor": "Run",
+-    "Gradle.new-horizons.executor": "Run",
+-    "RunOnceActivity.ShowReadmeOnStart": "true",
+-    "RunOnceActivity.git.unshallow": "true",
+-    "git-widget-placeholder": "main",
+-    "ignore.virus.scanning.warn.message": "true",
+-    "kotlin-language-version-configured": "true",
+-    "last_opened_file_path": "D:/Coisas frequentes/GitHub/New-Horizons/src/main/resources/assets/minecraft/shaders/program",
+-    "project.structure.last.edited": "Project",
+-    "project.structure.proportion": "0.15",
+-    "project.structure.side.proportion": "0.0",
+-    "settings.editor.selected.configurable": "reference.settingsdialog.project.gradle"
++  <component name="PropertiesComponent">{
++  &quot;keyToString&quot;: {
++    &quot;Application.Minecraft Client.executor&quot;: &quot;Run&quot;,
++    &quot;Downloaded.Files.Path.Enabled&quot;: &quot;false&quot;,
++    &quot;Gradle.New-Horizons [:net.fabricmc.devlaunchinjector.Main.main()].executor&quot;: &quot;Run&quot;,
++    &quot;Gradle.New-Horizons [runClient].executor&quot;: &quot;Run&quot;,
++    &quot;Gradle.new-horizons [build].executor&quot;: &quot;Run&quot;,
++    &quot;Gradle.new-horizons [clean].executor&quot;: &quot;Run&quot;,
++    &quot;Gradle.new-horizons.executor&quot;: &quot;Run&quot;,
++    &quot;Repository.Attach.Annotations&quot;: &quot;false&quot;,
++    &quot;Repository.Attach.JavaDocs&quot;: &quot;false&quot;,
++    &quot;Repository.Attach.Sources&quot;: &quot;false&quot;,
++    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
++    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
++    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
++    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
++    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
++    &quot;last_opened_file_path&quot;: &quot;D:/codemc/New-Horizons/src/main/resources/assets/minecraft/shaders/program&quot;,
++    &quot;project.structure.last.edited&quot;: &quot;Project&quot;,
++    &quot;project.structure.proportion&quot;: &quot;0.0&quot;,
++    &quot;project.structure.side.proportion&quot;: &quot;0.0&quot;,
++    &quot;settings.editor.selected.configurable&quot;: &quot;reference.settingsdialog.project.gradle&quot;
+   }
+-}]]></component>
++}</component>
+   <component name="RecentsManager">
+     <key name="CopyFile.RECENT_KEYS">
+-      <recent name="D:\Coisas frequentes\GitHub\New-Horizons\src\main\resources\assets\minecraft\shaders\program" />
+-      <recent name="D:\codemc\New-Horizons" />
+-      <recent name="D:\codemc\New-Horizons\src\main\java\org\copycraftDev\new_horizons\extrastuff\noise" />
+-      <recent name="D:\codemc\New-Horizons\src\main\resources\assets\minecraft\textures\gui\sprites\widget" />
+-      <recent name="D:\codemc\New-Horizons\src\main\resources\assets\new_horizons\sounds" />
++      <recent name="D:\codemc\New-Horizons\src\main\resources\assets\minecraft\shaders\program" />
++      <recent name="D:\codemc\New-Horizons\src\main\resources\assets\veil" />
++      <recent name="D:\codemc\New-Horizons\src\main\resources\assets\new_horizons\shaders\post" />
++      <recent name="D:\codemc\New-Horizons\src\main\resources\assets\new_horizons\textures\item" />
++      <recent name="D:\codemc\New-Horizons\src\main\resources\assets\minecraft\textures\gui\container" />
+     </key>
+     <key name="MoveFile.RECENT_KEYS">
+-      <recent name="D:\Coisas frequentes\GitHub\New-Horizons\src\main\resources\assets\new_horizons\shaders\post" />
+-      <recent name="D:\Coisas frequentes\GitHub\New-Horizons\src\main\resources\assets\minecraft\shaders\program" />
+-      <recent name="D:\Coisas frequentes\GitHub\New-Horizons\src\main\resources\assets\new_horizons\shaders\core" />
++      <recent name="D:\codemc\New-Horizons\src\main\resources\assets\minecraft\textures\shaders" />
++      <recent name="D:\codemc\New-Horizons\src\main\resources\assets\veil\shaders\void" />
+       <recent name="D:\codemc\New-Horizons\src\main\resources\assets\new_horizons\sounds" />
+     </key>
+     <key name="ExtractSuperBase.RECENT_KEYS">
+       <recent name="org.copycraftDev.new_horizons.blackhole" />
++    </key>
++    <key name="CopyClassDialog.RECENTS_KEY">
++      <recent name="org.copycraftDev.new_horizons.Lidar" />
+     </key>
+   </component>
+   <component name="RunManager" selected="Gradle.New-Horizons [runClient]">
+@@ -214,9 +225,9 @@
+     <recent_temporary>
+       <list>
+         <item itemvalue="Gradle.New-Horizons [runClient]" />
++        <item itemvalue="Gradle.new-horizons [clean]" />
+         <item itemvalue="Gradle.new-horizons [build]" />
+         <item itemvalue="Gradle.new-horizons [clean]" />
+-        <item itemvalue="Gradle.new-horizons [clean]" />
+         <item itemvalue="Gradle.new-horizons [build]" />
+       </list>
+     </recent_temporary>
+@@ -318,7 +329,31 @@
+       <option name="project" value="LOCAL" />
+       <updated>1747591756897</updated>
+     </task>
+-    <option name="localTasksCounter" value="12" />
++    <task id="LOCAL-00012" summary="chat did i cook?">
++      <option name="closed" value="true" />
++      <created>1748735672510</created>
++      <option name="number" value="00012" />
++      <option name="presentableId" value="LOCAL-00012" />
++      <option name="project" value="LOCAL" />
++      <updated>1748735672510</updated>
++    </task>
++    <task id="LOCAL-00013" summary="lidar improvements/additions">
++      <option name="closed" value="true" />
++      <created>1748745929332</created>
++      <option name="number" value="00013" />
++      <option name="presentableId" value="LOCAL-00013" />
++      <option name="project" value="LOCAL" />
++      <updated>1748745929332</updated>
++    </task>
++    <task id="LOCAL-00014" summary="shader magic">
++      <option name="closed" value="true" />
++      <created>1749066396525</created>
++      <option name="number" value="00014" />
++      <option name="presentableId" value="LOCAL-00014" />
++      <option name="project" value="LOCAL" />
++      <updated>1749066396526</updated>
++    </task>
++    <option name="localTasksCounter" value="15" />
+     <servers />
+   </component>
+   <component name="Vcs.Log.Tabs.Properties">
+@@ -339,7 +374,10 @@
+     <MESSAGE value="Merge remote-tracking branch 'origin/main'&#10;&#10;# Conflicts:&#10;#&#9;src/main/java/org/copycraftDev/new_horizons/NewHorizonsMain.java&#10;#&#9;src/main/java/org/copycraftDev/new_horizons/mixin/NoVoidDamageInSpaceLivingEntityMixin.java&#10;#&#9;src/main/java/org/copycraftDev/new_horizons/mixin/PanoramaConfig.java&#10;#&#9;src/main/resources/assets/new_horizons/sounds/engine_ambiance.ogg&#10;#&#9;src/main/resources/new_horizons.mixins.json" />
+     <MESSAGE value="texture resizer util and main menu improvements" />
+     <MESSAGE value="stuff" />
++    <MESSAGE value="lidar" />
+     <MESSAGE value="chat did i cook?" />
+-    <option name="LAST_COMMIT_MESSAGE" value="chat did i cook?" />
++    <MESSAGE value="lidar improvements/additions" />
++    <MESSAGE value="shader magic" />
++    <option name="LAST_COMMIT_MESSAGE" value="shader magic" />
+   </component>
+ </project>
+\ No newline at end of file
+Index: .gradle/loom-cache/launch.cfg
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>commonProperties\r\n\tfabric.development=true\r\n\tfabric.remapClasspathFile=D:\\Coisas frequentes\\GitHub\\New-Horizons\\.gradle\\loom-cache\\remapClasspath.txt\r\n\tlog4j.configurationFile=D:\\Coisas frequentes\\GitHub\\New-Horizons\\.gradle\\loom-cache\\log4j.xml\r\n\tlog4j2.formatMsgNoLookups=true\r\n\tfabric.log.disableAnsi=false\r\nclientArgs\r\n\t--assetIndex\r\n\t1.21.1-17\r\n\t--assetsDir\r\n\tC:\\Users\\felip\\.gradle\\caches\\fabric-loom\\assets
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.gradle/loom-cache/launch.cfg b/.gradle/loom-cache/launch.cfg
+--- a/.gradle/loom-cache/launch.cfg	(revision 22076c671ae7b305cc0c2430b5f17d78bdbdab6b)
++++ b/.gradle/loom-cache/launch.cfg	(date 1749066120000)
+@@ -1,11 +1,11 @@
+ commonProperties
+ 	fabric.development=true
+-	fabric.remapClasspathFile=D:\Coisas frequentes\GitHub\New-Horizons\.gradle\loom-cache\remapClasspath.txt
+-	log4j.configurationFile=D:\Coisas frequentes\GitHub\New-Horizons\.gradle\loom-cache\log4j.xml
++	fabric.remapClasspathFile=D:\codemc\New-Horizons\.gradle\loom-cache\remapClasspath.txt
++	log4j.configurationFile=D:\codemc\New-Horizons\.gradle\loom-cache\log4j.xml
+ 	log4j2.formatMsgNoLookups=true
+ 	fabric.log.disableAnsi=false
+ clientArgs
+ 	--assetIndex
+ 	1.21.1-17
+ 	--assetsDir
+-	C:\Users\felip\.gradle\caches\fabric-loom\assets
+\ No newline at end of file
++	C:\Users\Merlin\.gradle\caches\fabric-loom\assets
+\ No newline at end of file
+Index: .gradle/loom-cache/remapClasspath.txt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\com.github.oshi\\oshi-core\\6.4.10\\b1d8ab82d11d92fd639b56d639f8f46f739dd5fa\\oshi-core-6.4.10.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\com.google.code.gson\\gson\\2.10.1\\b3add478d4382b78ea20b1671390a858002feb6c\\gson-2.10.1.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\com.google.guava\\failureaccess\\1.0.1\\1dcf1de382a0bf95a3d8b0849546c88bac1292c9\\failureaccess-1.0.1.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\com.google.guava\\guava\\32.1.2-jre\\5e64ec7e056456bef3a4bc4c6fdaef71e8ab6318\\guava-32.1.2-jre.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\com.ibm.icu\\icu4j\\73.2\\61ad4ef7f9131fcf6d25c34b817f90d6da06c9e9\\icu4j-73.2.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\com.mojang\\authlib\\6.0.54\\de8bc95660e1b2fe8793fd427a7a10dcec5b3ea7\\authlib-6.0.54.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\com.mojang\\blocklist\\1.0.10\\5c685c5ffa94c4cd39496c7184c1d122e515ecef\\blocklist-1.0.10.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\com.mojang\\brigadier\\1.3.10\\d15b53a14cf20fdcaa98f731af5dda654452c010\\brigadier-1.3.10.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\com.mojang\\datafixerupper\\8.0.16\\67d4de6d7f95d89bcf5862995fb854ebaec02a34\\datafixerupper-8.0.16.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\com.mojang\\logging\\1.2.7\\24cb95ffb0e3433fd6e844c04e68009e504ca1c0\\logging-1.2.7.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\com.mojang\\patchy\\2.2.10\\da05971b07cbb379d002cf7eaec6a2048211fefc\\patchy-2.2.10.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\com.mojang\\text2speech\\1.17.9\\3cad216e3a7f0c19b4b394388bc9ffc446f13b14\\text2speech-1.17.9.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\commons-codec\\commons-codec\\1.16.0\\4e3eb3d79888d76b54e28b350915b5dc3919c9de\\commons-codec-1.16.0.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\commons-io\\commons-io\\2.15.1\\f11560da189ab563a5c8e351941415430e9304ea\\commons-io-2.15.1.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\commons-logging\\commons-logging\\1.2\\4bfc12adfe4842bf07b657f0369c4cb522955686\\commons-logging-1.2.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\io.netty\\netty-buffer\\4.1.97.Final\\f8f3d8644afa5e6e1a40a3a6aeb9d9aa970ecb4f\\netty-buffer-4.1.97.Final.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\io.netty\\netty-codec\\4.1.97.Final\\384ba4d75670befbedb45c4d3b497a93639c206d\\netty-codec-4.1.97.Final.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\io.netty\\netty-common\\4.1.97.Final\\7cceacaf11df8dc63f23d0fb58e9d4640fc88404\\netty-common-4.1.97.Final.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\io.netty\\netty-handler\\4.1.97.Final\\abb86c6906bf512bf2b797a41cd7d2e8d3cd7c36\\netty-handler-4.1.97.Final.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\io.netty\\netty-resolver\\4.1.97.Final\\cec8348108dc76c47cf87c669d514be52c922144\\netty-resolver-4.1.97.Final.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\io.netty\\netty-transport-classes-epoll\\4.1.97.Final\\795da37ded759e862457a82d9d92c4d39ce8ecee\\netty-transport-classes-epoll-4.1.97.Final.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\io.netty\\netty-transport-native-unix-common\\4.1.97.Final\\d469d84265ab70095b01b40886cabdd433b6e664\\netty-transport-native-unix-common-4.1.97.Final.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\io.netty\\netty-transport\\4.1.97.Final\\f37380d23c9bb079bc702910833b2fd532c9abd0\\netty-transport-4.1.97.Final.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\it.unimi.dsi\\fastutil\\8.5.12\\c24946d46824bd528054bface3231d2ecb7e95e8\\fastutil-8.5.12.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\net.java.dev.jna\\jna-platform\\5.14.0\\28934d48aed814f11e4c584da55c49fa7032b31b\\jna-platform-5.14.0.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\net.java.dev.jna\\jna\\5.14.0\\67bf3eaea4f0718cb376a181a629e5f88fa1c9dd\\jna-5.14.0.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\net.sf.jopt-simple\\jopt-simple\\5.0.4\\4fdac2fbe92dfad86aa6e9301736f6b4342a3f5c\\jopt-simple-5.0.4.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\org.apache.commons\\commons-compress\\1.26.0\\659feffdd12280201c8aacb8f7be94f9a883c824\\commons-compress-1.26.0.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\org.apache.commons\\commons-lang3\\3.14.0\\1ed471194b02f2c6cb734a0cd6f6f107c673afae\\commons-lang3-3.14.0.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\org.apache.httpcomponents\\httpclient\\4.5.13\\e5f6cae5ca7ecaac1ec2827a9e2d65ae2869cada\\httpclient-4.5.13.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\org.apache.httpcomponents\\httpcore\\4.4.16\\51cf043c87253c9f58b539c9f7e44c8894223850\\httpcore-4.4.16.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\org.apache.logging.log4j\\log4j-api\\2.22.1\\bea6fede6328fabafd7e68363161a7ea6605abd1\\log4j-api-2.22.1.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\org.apache.logging.log4j\\log4j-core\\2.22.1\\7183a25510a02ad00cc6a95d3b3d2a7d3c5a8dc4\\log4j-core-2.22.1.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\org.apache.logging.log4j\\log4j-slf4j2-impl\\2.22.1\\d7e6693c2606cb7e7335047d7bb96dec52db5665\\log4j-slf4j2-impl-2.22.1.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\org.jcraft\\jorbis\\0.0.17\\8872d22b293e8f5d7d56ff92be966e6dc28ebdc6\\jorbis-0.0.17.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\org.joml\\joml\\1.10.5\\22566d58af70ad3d72308bab63b8339906deb649\\joml-1.10.5.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\org.lwjgl\\lwjgl-freetype\\3.3.3\\a0db6c84a8becc8ca05f9dbfa985edc348a824c7\\lwjgl-freetype-3.3.3.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\org.lwjgl\\lwjgl-glfw\\3.3.3\\efa1eb78c5ccd840e9f329717109b5e892d72f8e\\lwjgl-glfw-3.3.3.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\org.lwjgl\\lwjgl-jemalloc\\3.3.3\\b543467b7ff3c6920539a88ee602d34098628be5\\lwjgl-jemalloc-3.3.3.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\org.lwjgl\\lwjgl-openal\\3.3.3\\daada81ceb5fc0c291fbfdd4433cb8d9423577f2\\lwjgl-openal-3.3.3.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\org.lwjgl\\lwjgl-opengl\\3.3.3\\2f6b0147078396a58979125a4c947664e98293a\\lwjgl-opengl-3.3.3.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\org.lwjgl\\lwjgl-stb\\3.3.3\\25dd6161988d7e65f71d5065c99902402ee32746\\lwjgl-stb-3.3.3.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\org.lwjgl\\lwjgl-tinyfd\\3.3.3\\82d755ca94b102e9ca77283b9e2dc46d1b15fbe5\\lwjgl-tinyfd-3.3.3.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\org.lwjgl\\lwjgl\\3.3.3\\29589b5f87ed335a6c7e7ee6a5775f81f97ecb84\\lwjgl-3.3.3.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\org.lz4\\lz4-java\\1.8.0\\4b986a99445e49ea5fbf5d149c4b63f6ed6c6780\\lz4-java-1.8.0.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\org.slf4j\\slf4j-api\\2.0.9\\7cf2726fdcfbc8610f9a71fb3ed639871f315340\\slf4j-api-2.0.9.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\io.netty\\netty-transport-native-epoll\\4.1.97.Final\\54188f271e388e7f313aea995e82f58ce2cdb809\\netty-transport-native-epoll-4.1.97.Final-linux-x86_64.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\io.netty\\netty-transport-native-epoll\\4.1.97.Final\\5514744c588190ffda076b35a9b8c9f24946a960\\netty-transport-native-epoll-4.1.97.Final-linux-aarch_64.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\teamreborn\\energy\\4.1.0\\896812ba2c094aaeda6cab67fb203fba6a0686ab\\energy-4.1.0.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\net.fabricmc.fabric-api\\fabric-transfer-api-v1\\5.1.11+b559734448\\4e3dc4b59963e2c6953e7c9f15ef0f3f7615c5dd\\fabric-transfer-api-v1-5.1.11+b559734448.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\net.fabricmc\\fabric-loader\\0.15.11\\9c2be53d84ec5c4fb58bb5b8d9c8a629047c9ee9\\fabric-loader-0.15.11.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\net.fabricmc.fabric-api\\fabric-api-lookup-api-v1\\1.6.64+b559734448\\968f6dde95adaaaa168e2cc655c62629623510aa\\fabric-api-lookup-api-v1-1.6.64+b559734448.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\net.fabricmc.fabric-api\\fabric-lifecycle-events-v1\\2.3.8+0684cd1248\\94b0efa9c6f0572615bb2336103b9c2d9100e449\\fabric-lifecycle-events-v1-2.3.8+0684cd1248.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\net.fabricmc.fabric-api\\fabric-rendering-fluids-v1\\3.1.6+b559734448\\c3a0dcfb06a8ee5981f4bac890df63b9db60e521\\fabric-rendering-fluids-v1-3.1.6+b559734448.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\net.fabricmc.fabric-api\\fabric-api-base\\0.4.42+6573ed8c48\\b3ef2d0163b2aa02ef81e1ecebc898addb7a08e1\\fabric-api-base-0.4.42+6573ed8c48.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\foundry.veil\\veil-fabric-1.21.1\\1.0.0.206\\358aa8a6d689b51534fadd32b8983a93d8c1316b\\veil-fabric-1.21.1-1.0.0.206.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\net.fabricmc\\fabric-loader\\0.16.10\\dbd932c2a3641d2c41cf9abfe47e140a5753fa86\\fabric-loader-0.16.10.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\net.fabricmc.fabric-api\\fabric-api\\0.115.1+1.21.1\\551227e92766a97a76c949cbcd616ece7d603ec7\\fabric-api-0.115.1+1.21.1.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\curse.maven\\fabricskyboxes-408209\\5424365\\d7c80f23792afc6018da2477d46804114529afca\\fabricskyboxes-408209-5424365.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\maven.modrinth\\lithium\\mc1.21.1-0.15.0-fabric\\b7d77602807f2c7cd7132741244bf8c0b8dec6c1\\lithium-mc1.21.1-0.15.0-fabric.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\maven.modrinth\\liby\\1.21.1-build-2.1\\b652b153e39c156c25190a359c175163f8822456\\liby-1.21.1-build-2.1.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\maven.modrinth\\cardinal-components-api\\6.1.2\\bf272e2aa6e9e8a98e8e7a7ed8cc585fc18c59eb\\cardinal-components-api-6.1.2.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\maven.modrinth\\modmenu\\11.0.3\\6213120772192040a0aeb5c7cfe330c068605b1f\\modmenu-11.0.3.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\curse.maven\\music-notification-817206\\5617079\\8c521838a2bb68b7378a0686a259af00034ef27c\\music-notification-817206-5617079.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\curse.maven\\cloth-config-348521\\5729125\\5d82342a2df53fd6df712bfdd583a811572918a4\\cloth-config-348521-5729125.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\maven.modrinth\\sodium\\mc1.21.1-0.6.9-fabric\\7953f77ac52ca2b1c6a7e483553b2a345f1b2a9c\\sodium-mc1.21.1-0.6.9-fabric.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\maven.modrinth\\iris\\1.8.8+1.21.1-fabric\\4e0df4011503b4b36ba69877ea7247c1a47fea00\\iris-1.8.8+1.21.1-fabric.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\net.fabricmc.fabric-api\\fabric-transfer-api-v1\\5.4.2+c24bd99419\\cc8ee682a816cbad86cd88faf2cb6bef4af23683\\fabric-transfer-api-v1-5.4.2+c24bd99419.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\net.fabricmc.fabric-api\\fabric-api-lookup-api-v1\\1.6.70+b559734419\\d857ab9096c14f60abef7d89afe01be9f679cb4e\\fabric-api-lookup-api-v1-1.6.70+b559734419.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\net.fabricmc.fabric-api\\fabric-blockrenderlayer-v1\\1.1.52+0af3f5a719\\fb809226ba9ce14a825e6c059b398c2f3c144175\\fabric-blockrenderlayer-v1-1.1.52+0af3f5a719.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\net.fabricmc.fabric-api\\fabric-client-tags-api-v1\\1.1.15+6573ed8c19\\2f2c56a24568c1cc8666a8945b72a55dc51c998c\\fabric-client-tags-api-v1-1.1.15+6573ed8c19.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\net.fabricmc.fabric-api\\fabric-command-api-v1\\1.2.49+f71b366f19\\9fbefe7533239233764bb99504c76c0bff1aab2c\\fabric-command-api-v1-1.2.49+f71b366f19.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\net.fabricmc.fabric-api\\fabric-commands-v0\\0.2.66+df3654b319\\5b4dca3404ef6b18c0e0137d3c1061a748122975\\fabric-commands-v0-0.2.66+df3654b319.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\net.fabricmc.fabric-api\\fabric-command-api-v2\\2.2.28+6ced4dd919\\fdd19f1b2700e07c9f308f1a1e9fc73fdeb42d96\\fabric-command-api-v2-2.2.28+6ced4dd919.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\net.fabricmc.fabric-api\\fabric-content-registries-v0\\8.0.18+b559734419\\61e4532e4e816d7e77c6f40d3865a6eedfbac725\\fabric-content-registries-v0-8.0.18+b559734419.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\net.fabricmc.fabric-api\\fabric-data-generation-api-v1\\20.2.26+16c4ae2519\\f8a8dbb830a5d98edf6e261cee901c740d82dbee\\fabric-data-generation-api-v1-20.2.26+16c4ae2519.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\net.fabricmc.fabric-api\\fabric-convention-tags-v1\\2.1.3+7f945d5b19\\90a5f83b17ac9df57f529b200bc94d0f9ac59167\\fabric-convention-tags-v1-2.1.3+7f945d5b19.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\net.fabricmc.fabric-api\\fabric-convention-tags-v2\\2.10.0+9465b64419\\7589e72d288f748b9a12e8656c555b7147b4a8f1\\fabric-convention-tags-v2-2.10.0+9465b64419.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\net.fabricmc.fabric-api\\fabric-data-attachment-api-v1\\1.4.1+9ed317f519\\8f289f3f61bb43c994d6a23c629c8a928ba3f3b5\\fabric-data-attachment-api-v1-1.4.1+9ed317f519.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\net.fabricmc.fabric-api\\fabric-entity-events-v1\\1.7.0+2122d82819\\58eec15cb24876d5330f39723e07966714f83570\\fabric-entity-events-v1-1.7.0+2122d82819.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\net.fabricmc.fabric-api\\fabric-events-interaction-v0\\0.7.13+ba9dae0619\\c332b082498a63d9705b3afd1ba87178d84e40f6\\fabric-events-interaction-v0-0.7.13+ba9dae0619.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\net.fabricmc.fabric-api\\fabric-gametest-api-v1\\2.0.5+6fc22b9919\\d8b2e5b226b3b0d7704dc6169e0aea481fcef75d\\fabric-gametest-api-v1-2.0.5+6fc22b9919.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\net.fabricmc.fabric-api\\fabric-item-api-v1\\11.1.1+d5debaed19\\ad0ec991a9eb5ada81c7e098a3cc84960a386c29\\fabric-item-api-v1-11.1.1+d5debaed19.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\net.fabricmc.fabric-api\\fabric-item-group-api-v1\\4.1.6+6823f7cd19\\4a9fb2d4672b187680bc9718ccbd15d098672871\\fabric-item-group-api-v1-4.1.6+6823f7cd19.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\net.fabricmc.fabric-api\\fabric-lifecycle-events-v1\\2.5.0+01d9a51c19\\a4a1f66ef34119d741bcbf7920cf4be53cdfac17\\fabric-lifecycle-events-v1-2.5.0+01d9a51c19.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\net.fabricmc.fabric-api\\fabric-loot-api-v2\\3.0.15+3f89f5a519\\778e62d68de794f6ef624370e2ad22d7e783f0d8\\fabric-loot-api-v2-3.0.15+3f89f5a519.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\net.fabricmc.fabric-api\\fabric-loot-api-v3\\1.0.3+3f89f5a519\\d2a3dcc5a02d80a7a84661241fa9dc80717bf67f\\fabric-loot-api-v3-1.0.3+3f89f5a519.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\net.fabricmc.fabric-api\\fabric-message-api-v1\\6.0.13+6573ed8c19\\368db80d86a9d819b41cdfe0534c2d5e46b8f96a\\fabric-message-api-v1-6.0.13+6573ed8c19.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\net.fabricmc.fabric-api\\fabric-model-loading-api-v1\\2.0.0+fe474d6b19\\952ed48684f287b8f8ba0017238edd4723a3b107\\fabric-model-loading-api-v1-2.0.0+fe474d6b19.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\net.fabricmc.fabric-api\\fabric-recipe-api-v1\\5.0.14+248df81c19\\6bc2aed4d94ec4af90c71970738035508f26e454\\fabric-recipe-api-v1-5.0.14+248df81c19.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\net.fabricmc.fabric-api\\fabric-screen-handler-api-v1\\1.3.88+b559734419\\a8b12ad347558096358f04b195da43b6b73c1867\\fabric-screen-handler-api-v1-1.3.88+b559734419.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\net.fabricmc.fabric-api\\fabric-registry-sync-v0\\5.2.0+34f5d91419\\5e6ef9df1062d43ec8b30cdf2a9ca935abeabc32\\fabric-registry-sync-v0-5.2.0+34f5d91419.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\net.fabricmc.fabric-api\\fabric-networking-api-v1\\4.3.0+c7469b2119\\8e780b1d1ae5c58f98d19e31d909b0d6121c5916\\fabric-networking-api-v1-4.3.0+c7469b2119.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\net.fabricmc.fabric-api\\fabric-object-builder-api-v1\\15.2.1+40875a9319\\29f9976ddc7b84b7efd47961430a5307a2b1b49c\\fabric-object-builder-api-v1-15.2.1+40875a9319.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\net.fabricmc.fabric-api\\fabric-particles-v1\\4.0.2+6573ed8c19\\f2d4671423227b86464e194547d178a8dc22dbe7\\fabric-particles-v1-4.0.2+6573ed8c19.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\net.fabricmc.fabric-api\\fabric-renderer-indigo\\1.7.0+c705a49c19\\de9a41b98c85016bc419fcfbb7e6b3639dfc2469\\fabric-renderer-indigo-1.7.0+c705a49c19.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\net.fabricmc.fabric-api\\fabric-renderer-api-v1\\3.4.0+c705a49c19\\d0aafe8f296be741b0dd04bc03fed001ad96404e\\fabric-renderer-api-v1-3.4.0+c705a49c19.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\net.fabricmc.fabric-api\\fabric-rendering-fluids-v1\\3.1.6+1daea21519\\5363b0fb84a717a08d02f91ebd092d8f9ef2c65d\\fabric-rendering-fluids-v1-3.1.6+1daea21519.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\net.fabricmc.fabric-api\\fabric-renderer-registries-v1\\3.2.68+df3654b319\\741f9d12c429d63bc49ac476798da83b2ccbc12\\fabric-renderer-registries-v1-3.2.68+df3654b319.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\net.fabricmc.fabric-api\\fabric-rendering-v0\\1.1.71+df3654b319\\ea79aec3898ede2d90626aa30e3169b81d87cb6\\fabric-rendering-v0-1.1.71+df3654b319.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\net.fabricmc.fabric-api\\fabric-rendering-v1\\5.0.5+df16efd019\\14b0a7becab4aacc8874c53743fe3d8f989562e3\\fabric-rendering-v1-5.0.5+df16efd019.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\net.fabricmc.fabric-api\\fabric-screen-api-v1\\2.0.25+8b68f1c719\\d754f659ec478040c46216df8329a16213e3a5e5\\fabric-screen-api-v1-2.0.25+8b68f1c719.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\net.fabricmc.fabric-api\\fabric-api-base\\0.4.42+6573ed8c19\\339fd995b1e7b99e10d1007f2c6162f6fe638675\\fabric-api-base-0.4.42+6573ed8c19.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\net.fabricmc.fabric-api\\fabric-biome-api-v1\\13.0.31+d527f9fd19\\752a0425a1a1a27cfd774227020769597d5e6a5d\\fabric-biome-api-v1-13.0.31+d527f9fd19.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\net.fabricmc.fabric-api\\fabric-block-api-v1\\1.0.22+0af3f5a719\\328834eca174a47cc6858a982b5bb614daf7522e\\fabric-block-api-v1-1.0.22+0af3f5a719.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\net.fabricmc.fabric-api\\fabric-rendering-data-attachment-v1\\0.3.48+73761d2e19\\3ea402da1f213a61cdfa2dcb2b1f5da4141a7f29\\fabric-rendering-data-attachment-v1-0.3.48+73761d2e19.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\net.fabricmc.fabric-api\\fabric-block-view-api-v2\\1.0.10+6573ed8c19\\e19ab1f5089e7879789946c3284230db2a2d1118\\fabric-block-view-api-v2-1.0.10+6573ed8c19.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\net.fabricmc.fabric-api\\fabric-crash-report-info-v1\\0.2.29+0af3f5a719\\1daf4dd584584aacc629554cf61f699bbeaefc6c\\fabric-crash-report-info-v1-0.2.29+0af3f5a719.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\net.fabricmc.fabric-api\\fabric-dimensions-v1\\4.0.0+6fc22b9919\\91b559acd30f56bf77cd372db3049e937f000ffb\\fabric-dimensions-v1-4.0.0+6fc22b9919.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\net.fabricmc.fabric-api\\fabric-game-rule-api-v1\\1.0.53+6ced4dd919\\4e2915574efdaf4a884181e26c522bedffe471ea\\fabric-game-rule-api-v1-1.0.53+6ced4dd919.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\net.fabricmc.fabric-api\\fabric-keybindings-v0\\0.2.45+df3654b319\\10085c733e07f3f7795449a770c27f79f616a771\\fabric-keybindings-v0-0.2.45+df3654b319.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\net.fabricmc.fabric-api\\fabric-key-binding-api-v1\\1.0.47+0af3f5a719\\613d095756744f238e059926cf3d583567ce1e30\\fabric-key-binding-api-v1-1.0.47+0af3f5a719.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\net.fabricmc.fabric-api\\fabric-resource-conditions-api-v1\\4.3.0+8dc279b119\\abeb8325771f7867ad176adfe52603d401aeeb0f\\fabric-resource-conditions-api-v1-4.3.0+8dc279b119.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\net.fabricmc.fabric-api\\fabric-resource-loader-v0\\1.3.1+5b5275af19\\1b5bf900a731a11f8d699dfb22aa7998e9dc7cd1\\fabric-resource-loader-v0-1.3.1+5b5275af19.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\net.fabricmc.fabric-api\\fabric-sound-api-v1\\1.0.23+6573ed8c19\\ed2e95c1d313266df0a1e995fb10edeba8303895\\fabric-sound-api-v1-1.0.23+6573ed8c19.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\net.fabricmc.fabric-api\\fabric-transitive-access-wideners-v1\\6.2.0+45b9699719\\d4c0bba1eea29e0286e5efb7cb855ce09f47203b\\fabric-transitive-access-wideners-v1-6.2.0+45b9699719.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\org.jetbrains\\annotations\\24.0.1\\13c5c75c4206580aa4d683bffee658caae6c9f43\\annotations-24.0.1.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\gg.moonflower\\molang-compiler\\3.1.1.19\\c7c0f9a9d0431c3485a0b6d2a4fb87e3de415ff9\\molang-compiler-3.1.1.19.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\io.github.ocelot\\glsl-processor\\0.2.2\\e613c323b2004d5a1bb8d4c0dbf9f7b07d2f79fc\\glsl-processor-0.2.2.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\io.github.spair\\imgui-java-lwjgl3\\1.86.11\\7f6657336844bd5a5321ca4987ff1e5476df5aeb\\imgui-java-lwjgl3-1.86.11.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\io.github.spair\\imgui-java-binding\\1.86.11\\9f6655bb12d271cb8c63e4394aa697ded1eae48\\imgui-java-binding-1.86.11.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\io.github.spair\\imgui-java-natives-linux\\1.86.11\\cf0cf7318612310bab849720f7fc1913389dbcb2\\imgui-java-natives-linux-1.86.11.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\io.github.spair\\imgui-java-natives-windows\\1.86.11\\7ad16055af581b5029f3938b0a91f98db7194249\\imgui-java-natives-windows-1.86.11.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\org.ow2.asm\\asm-tree\\9.6\\c0cdda9d211e965d2a4448aa3fd86110f2f8c2de\\asm-tree-9.6.jar;C:\\Users\\felip\\.gradle\\caches\\modules-2\\files-2.1\\org.ow2.asm\\asm\\9.6\\aa205cf0a06dbd8e04ece91c0b37c3f5d567546a\\asm-9.6.jar;C:\\Users\\felip\\.gradle\\caches\\fabric-loom\\minecraftMaven\\net\\minecraft\\minecraft-merged-intermediary\\1.21.1-net.fabricmc.yarn.1_21_1.1.21.1+build.3-v2\\minecraft-merged-intermediary-1.21.1-net.fabricmc.yarn.1_21_1.1.21.1+build.3-v2.jar
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.gradle/loom-cache/remapClasspath.txt b/.gradle/loom-cache/remapClasspath.txt
+--- a/.gradle/loom-cache/remapClasspath.txt	(revision 22076c671ae7b305cc0c2430b5f17d78bdbdab6b)
++++ b/.gradle/loom-cache/remapClasspath.txt	(date 1748763328000)
+@@ -1,1 +1,1 @@
+-C:\Users\felip\.gradle\caches\modules-2\files-2.1\com.github.oshi\oshi-core\6.4.10\b1d8ab82d11d92fd639b56d639f8f46f739dd5fa\oshi-core-6.4.10.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\com.google.code.gson\gson\2.10.1\b3add478d4382b78ea20b1671390a858002feb6c\gson-2.10.1.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\com.google.guava\failureaccess\1.0.1\1dcf1de382a0bf95a3d8b0849546c88bac1292c9\failureaccess-1.0.1.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\com.google.guava\guava\32.1.2-jre\5e64ec7e056456bef3a4bc4c6fdaef71e8ab6318\guava-32.1.2-jre.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\com.ibm.icu\icu4j\73.2\61ad4ef7f9131fcf6d25c34b817f90d6da06c9e9\icu4j-73.2.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\com.mojang\authlib\6.0.54\de8bc95660e1b2fe8793fd427a7a10dcec5b3ea7\authlib-6.0.54.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\com.mojang\blocklist\1.0.10\5c685c5ffa94c4cd39496c7184c1d122e515ecef\blocklist-1.0.10.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\com.mojang\brigadier\1.3.10\d15b53a14cf20fdcaa98f731af5dda654452c010\brigadier-1.3.10.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\com.mojang\datafixerupper\8.0.16\67d4de6d7f95d89bcf5862995fb854ebaec02a34\datafixerupper-8.0.16.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\com.mojang\logging\1.2.7\24cb95ffb0e3433fd6e844c04e68009e504ca1c0\logging-1.2.7.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\com.mojang\patchy\2.2.10\da05971b07cbb379d002cf7eaec6a2048211fefc\patchy-2.2.10.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\com.mojang\text2speech\1.17.9\3cad216e3a7f0c19b4b394388bc9ffc446f13b14\text2speech-1.17.9.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\commons-codec\commons-codec\1.16.0\4e3eb3d79888d76b54e28b350915b5dc3919c9de\commons-codec-1.16.0.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\commons-io\commons-io\2.15.1\f11560da189ab563a5c8e351941415430e9304ea\commons-io-2.15.1.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\commons-logging\commons-logging\1.2\4bfc12adfe4842bf07b657f0369c4cb522955686\commons-logging-1.2.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\io.netty\netty-buffer\4.1.97.Final\f8f3d8644afa5e6e1a40a3a6aeb9d9aa970ecb4f\netty-buffer-4.1.97.Final.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\io.netty\netty-codec\4.1.97.Final\384ba4d75670befbedb45c4d3b497a93639c206d\netty-codec-4.1.97.Final.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\io.netty\netty-common\4.1.97.Final\7cceacaf11df8dc63f23d0fb58e9d4640fc88404\netty-common-4.1.97.Final.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\io.netty\netty-handler\4.1.97.Final\abb86c6906bf512bf2b797a41cd7d2e8d3cd7c36\netty-handler-4.1.97.Final.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\io.netty\netty-resolver\4.1.97.Final\cec8348108dc76c47cf87c669d514be52c922144\netty-resolver-4.1.97.Final.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\io.netty\netty-transport-classes-epoll\4.1.97.Final\795da37ded759e862457a82d9d92c4d39ce8ecee\netty-transport-classes-epoll-4.1.97.Final.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\io.netty\netty-transport-native-unix-common\4.1.97.Final\d469d84265ab70095b01b40886cabdd433b6e664\netty-transport-native-unix-common-4.1.97.Final.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\io.netty\netty-transport\4.1.97.Final\f37380d23c9bb079bc702910833b2fd532c9abd0\netty-transport-4.1.97.Final.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\it.unimi.dsi\fastutil\8.5.12\c24946d46824bd528054bface3231d2ecb7e95e8\fastutil-8.5.12.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\net.java.dev.jna\jna-platform\5.14.0\28934d48aed814f11e4c584da55c49fa7032b31b\jna-platform-5.14.0.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\net.java.dev.jna\jna\5.14.0\67bf3eaea4f0718cb376a181a629e5f88fa1c9dd\jna-5.14.0.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\net.sf.jopt-simple\jopt-simple\5.0.4\4fdac2fbe92dfad86aa6e9301736f6b4342a3f5c\jopt-simple-5.0.4.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\org.apache.commons\commons-compress\1.26.0\659feffdd12280201c8aacb8f7be94f9a883c824\commons-compress-1.26.0.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\org.apache.commons\commons-lang3\3.14.0\1ed471194b02f2c6cb734a0cd6f6f107c673afae\commons-lang3-3.14.0.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\org.apache.httpcomponents\httpclient\4.5.13\e5f6cae5ca7ecaac1ec2827a9e2d65ae2869cada\httpclient-4.5.13.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\org.apache.httpcomponents\httpcore\4.4.16\51cf043c87253c9f58b539c9f7e44c8894223850\httpcore-4.4.16.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\org.apache.logging.log4j\log4j-api\2.22.1\bea6fede6328fabafd7e68363161a7ea6605abd1\log4j-api-2.22.1.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\org.apache.logging.log4j\log4j-core\2.22.1\7183a25510a02ad00cc6a95d3b3d2a7d3c5a8dc4\log4j-core-2.22.1.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\org.apache.logging.log4j\log4j-slf4j2-impl\2.22.1\d7e6693c2606cb7e7335047d7bb96dec52db5665\log4j-slf4j2-impl-2.22.1.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\org.jcraft\jorbis\0.0.17\8872d22b293e8f5d7d56ff92be966e6dc28ebdc6\jorbis-0.0.17.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\org.joml\joml\1.10.5\22566d58af70ad3d72308bab63b8339906deb649\joml-1.10.5.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\org.lwjgl\lwjgl-freetype\3.3.3\a0db6c84a8becc8ca05f9dbfa985edc348a824c7\lwjgl-freetype-3.3.3.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\org.lwjgl\lwjgl-glfw\3.3.3\efa1eb78c5ccd840e9f329717109b5e892d72f8e\lwjgl-glfw-3.3.3.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\org.lwjgl\lwjgl-jemalloc\3.3.3\b543467b7ff3c6920539a88ee602d34098628be5\lwjgl-jemalloc-3.3.3.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\org.lwjgl\lwjgl-openal\3.3.3\daada81ceb5fc0c291fbfdd4433cb8d9423577f2\lwjgl-openal-3.3.3.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\org.lwjgl\lwjgl-opengl\3.3.3\2f6b0147078396a58979125a4c947664e98293a\lwjgl-opengl-3.3.3.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\org.lwjgl\lwjgl-stb\3.3.3\25dd6161988d7e65f71d5065c99902402ee32746\lwjgl-stb-3.3.3.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\org.lwjgl\lwjgl-tinyfd\3.3.3\82d755ca94b102e9ca77283b9e2dc46d1b15fbe5\lwjgl-tinyfd-3.3.3.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\org.lwjgl\lwjgl\3.3.3\29589b5f87ed335a6c7e7ee6a5775f81f97ecb84\lwjgl-3.3.3.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\org.lz4\lz4-java\1.8.0\4b986a99445e49ea5fbf5d149c4b63f6ed6c6780\lz4-java-1.8.0.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\org.slf4j\slf4j-api\2.0.9\7cf2726fdcfbc8610f9a71fb3ed639871f315340\slf4j-api-2.0.9.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\io.netty\netty-transport-native-epoll\4.1.97.Final\54188f271e388e7f313aea995e82f58ce2cdb809\netty-transport-native-epoll-4.1.97.Final-linux-x86_64.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\io.netty\netty-transport-native-epoll\4.1.97.Final\5514744c588190ffda076b35a9b8c9f24946a960\netty-transport-native-epoll-4.1.97.Final-linux-aarch_64.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\teamreborn\energy\4.1.0\896812ba2c094aaeda6cab67fb203fba6a0686ab\energy-4.1.0.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-transfer-api-v1\5.1.11+b559734448\4e3dc4b59963e2c6953e7c9f15ef0f3f7615c5dd\fabric-transfer-api-v1-5.1.11+b559734448.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\net.fabricmc\fabric-loader\0.15.11\9c2be53d84ec5c4fb58bb5b8d9c8a629047c9ee9\fabric-loader-0.15.11.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-api-lookup-api-v1\1.6.64+b559734448\968f6dde95adaaaa168e2cc655c62629623510aa\fabric-api-lookup-api-v1-1.6.64+b559734448.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-lifecycle-events-v1\2.3.8+0684cd1248\94b0efa9c6f0572615bb2336103b9c2d9100e449\fabric-lifecycle-events-v1-2.3.8+0684cd1248.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-rendering-fluids-v1\3.1.6+b559734448\c3a0dcfb06a8ee5981f4bac890df63b9db60e521\fabric-rendering-fluids-v1-3.1.6+b559734448.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-api-base\0.4.42+6573ed8c48\b3ef2d0163b2aa02ef81e1ecebc898addb7a08e1\fabric-api-base-0.4.42+6573ed8c48.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\foundry.veil\veil-fabric-1.21.1\1.0.0.206\358aa8a6d689b51534fadd32b8983a93d8c1316b\veil-fabric-1.21.1-1.0.0.206.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\net.fabricmc\fabric-loader\0.16.10\dbd932c2a3641d2c41cf9abfe47e140a5753fa86\fabric-loader-0.16.10.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-api\0.115.1+1.21.1\551227e92766a97a76c949cbcd616ece7d603ec7\fabric-api-0.115.1+1.21.1.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\curse.maven\fabricskyboxes-408209\5424365\d7c80f23792afc6018da2477d46804114529afca\fabricskyboxes-408209-5424365.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\maven.modrinth\lithium\mc1.21.1-0.15.0-fabric\b7d77602807f2c7cd7132741244bf8c0b8dec6c1\lithium-mc1.21.1-0.15.0-fabric.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\maven.modrinth\liby\1.21.1-build-2.1\b652b153e39c156c25190a359c175163f8822456\liby-1.21.1-build-2.1.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\maven.modrinth\cardinal-components-api\6.1.2\bf272e2aa6e9e8a98e8e7a7ed8cc585fc18c59eb\cardinal-components-api-6.1.2.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\maven.modrinth\modmenu\11.0.3\6213120772192040a0aeb5c7cfe330c068605b1f\modmenu-11.0.3.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\curse.maven\music-notification-817206\5617079\8c521838a2bb68b7378a0686a259af00034ef27c\music-notification-817206-5617079.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\curse.maven\cloth-config-348521\5729125\5d82342a2df53fd6df712bfdd583a811572918a4\cloth-config-348521-5729125.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\maven.modrinth\sodium\mc1.21.1-0.6.9-fabric\7953f77ac52ca2b1c6a7e483553b2a345f1b2a9c\sodium-mc1.21.1-0.6.9-fabric.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\maven.modrinth\iris\1.8.8+1.21.1-fabric\4e0df4011503b4b36ba69877ea7247c1a47fea00\iris-1.8.8+1.21.1-fabric.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-transfer-api-v1\5.4.2+c24bd99419\cc8ee682a816cbad86cd88faf2cb6bef4af23683\fabric-transfer-api-v1-5.4.2+c24bd99419.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-api-lookup-api-v1\1.6.70+b559734419\d857ab9096c14f60abef7d89afe01be9f679cb4e\fabric-api-lookup-api-v1-1.6.70+b559734419.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-blockrenderlayer-v1\1.1.52+0af3f5a719\fb809226ba9ce14a825e6c059b398c2f3c144175\fabric-blockrenderlayer-v1-1.1.52+0af3f5a719.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-client-tags-api-v1\1.1.15+6573ed8c19\2f2c56a24568c1cc8666a8945b72a55dc51c998c\fabric-client-tags-api-v1-1.1.15+6573ed8c19.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-command-api-v1\1.2.49+f71b366f19\9fbefe7533239233764bb99504c76c0bff1aab2c\fabric-command-api-v1-1.2.49+f71b366f19.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-commands-v0\0.2.66+df3654b319\5b4dca3404ef6b18c0e0137d3c1061a748122975\fabric-commands-v0-0.2.66+df3654b319.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-command-api-v2\2.2.28+6ced4dd919\fdd19f1b2700e07c9f308f1a1e9fc73fdeb42d96\fabric-command-api-v2-2.2.28+6ced4dd919.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-content-registries-v0\8.0.18+b559734419\61e4532e4e816d7e77c6f40d3865a6eedfbac725\fabric-content-registries-v0-8.0.18+b559734419.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-data-generation-api-v1\20.2.26+16c4ae2519\f8a8dbb830a5d98edf6e261cee901c740d82dbee\fabric-data-generation-api-v1-20.2.26+16c4ae2519.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-convention-tags-v1\2.1.3+7f945d5b19\90a5f83b17ac9df57f529b200bc94d0f9ac59167\fabric-convention-tags-v1-2.1.3+7f945d5b19.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-convention-tags-v2\2.10.0+9465b64419\7589e72d288f748b9a12e8656c555b7147b4a8f1\fabric-convention-tags-v2-2.10.0+9465b64419.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-data-attachment-api-v1\1.4.1+9ed317f519\8f289f3f61bb43c994d6a23c629c8a928ba3f3b5\fabric-data-attachment-api-v1-1.4.1+9ed317f519.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-entity-events-v1\1.7.0+2122d82819\58eec15cb24876d5330f39723e07966714f83570\fabric-entity-events-v1-1.7.0+2122d82819.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-events-interaction-v0\0.7.13+ba9dae0619\c332b082498a63d9705b3afd1ba87178d84e40f6\fabric-events-interaction-v0-0.7.13+ba9dae0619.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-gametest-api-v1\2.0.5+6fc22b9919\d8b2e5b226b3b0d7704dc6169e0aea481fcef75d\fabric-gametest-api-v1-2.0.5+6fc22b9919.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-item-api-v1\11.1.1+d5debaed19\ad0ec991a9eb5ada81c7e098a3cc84960a386c29\fabric-item-api-v1-11.1.1+d5debaed19.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-item-group-api-v1\4.1.6+6823f7cd19\4a9fb2d4672b187680bc9718ccbd15d098672871\fabric-item-group-api-v1-4.1.6+6823f7cd19.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-lifecycle-events-v1\2.5.0+01d9a51c19\a4a1f66ef34119d741bcbf7920cf4be53cdfac17\fabric-lifecycle-events-v1-2.5.0+01d9a51c19.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-loot-api-v2\3.0.15+3f89f5a519\778e62d68de794f6ef624370e2ad22d7e783f0d8\fabric-loot-api-v2-3.0.15+3f89f5a519.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-loot-api-v3\1.0.3+3f89f5a519\d2a3dcc5a02d80a7a84661241fa9dc80717bf67f\fabric-loot-api-v3-1.0.3+3f89f5a519.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-message-api-v1\6.0.13+6573ed8c19\368db80d86a9d819b41cdfe0534c2d5e46b8f96a\fabric-message-api-v1-6.0.13+6573ed8c19.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-model-loading-api-v1\2.0.0+fe474d6b19\952ed48684f287b8f8ba0017238edd4723a3b107\fabric-model-loading-api-v1-2.0.0+fe474d6b19.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-recipe-api-v1\5.0.14+248df81c19\6bc2aed4d94ec4af90c71970738035508f26e454\fabric-recipe-api-v1-5.0.14+248df81c19.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-screen-handler-api-v1\1.3.88+b559734419\a8b12ad347558096358f04b195da43b6b73c1867\fabric-screen-handler-api-v1-1.3.88+b559734419.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-registry-sync-v0\5.2.0+34f5d91419\5e6ef9df1062d43ec8b30cdf2a9ca935abeabc32\fabric-registry-sync-v0-5.2.0+34f5d91419.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-networking-api-v1\4.3.0+c7469b2119\8e780b1d1ae5c58f98d19e31d909b0d6121c5916\fabric-networking-api-v1-4.3.0+c7469b2119.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-object-builder-api-v1\15.2.1+40875a9319\29f9976ddc7b84b7efd47961430a5307a2b1b49c\fabric-object-builder-api-v1-15.2.1+40875a9319.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-particles-v1\4.0.2+6573ed8c19\f2d4671423227b86464e194547d178a8dc22dbe7\fabric-particles-v1-4.0.2+6573ed8c19.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-renderer-indigo\1.7.0+c705a49c19\de9a41b98c85016bc419fcfbb7e6b3639dfc2469\fabric-renderer-indigo-1.7.0+c705a49c19.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-renderer-api-v1\3.4.0+c705a49c19\d0aafe8f296be741b0dd04bc03fed001ad96404e\fabric-renderer-api-v1-3.4.0+c705a49c19.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-rendering-fluids-v1\3.1.6+1daea21519\5363b0fb84a717a08d02f91ebd092d8f9ef2c65d\fabric-rendering-fluids-v1-3.1.6+1daea21519.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-renderer-registries-v1\3.2.68+df3654b319\741f9d12c429d63bc49ac476798da83b2ccbc12\fabric-renderer-registries-v1-3.2.68+df3654b319.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-rendering-v0\1.1.71+df3654b319\ea79aec3898ede2d90626aa30e3169b81d87cb6\fabric-rendering-v0-1.1.71+df3654b319.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-rendering-v1\5.0.5+df16efd019\14b0a7becab4aacc8874c53743fe3d8f989562e3\fabric-rendering-v1-5.0.5+df16efd019.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-screen-api-v1\2.0.25+8b68f1c719\d754f659ec478040c46216df8329a16213e3a5e5\fabric-screen-api-v1-2.0.25+8b68f1c719.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-api-base\0.4.42+6573ed8c19\339fd995b1e7b99e10d1007f2c6162f6fe638675\fabric-api-base-0.4.42+6573ed8c19.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-biome-api-v1\13.0.31+d527f9fd19\752a0425a1a1a27cfd774227020769597d5e6a5d\fabric-biome-api-v1-13.0.31+d527f9fd19.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-block-api-v1\1.0.22+0af3f5a719\328834eca174a47cc6858a982b5bb614daf7522e\fabric-block-api-v1-1.0.22+0af3f5a719.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-rendering-data-attachment-v1\0.3.48+73761d2e19\3ea402da1f213a61cdfa2dcb2b1f5da4141a7f29\fabric-rendering-data-attachment-v1-0.3.48+73761d2e19.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-block-view-api-v2\1.0.10+6573ed8c19\e19ab1f5089e7879789946c3284230db2a2d1118\fabric-block-view-api-v2-1.0.10+6573ed8c19.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-crash-report-info-v1\0.2.29+0af3f5a719\1daf4dd584584aacc629554cf61f699bbeaefc6c\fabric-crash-report-info-v1-0.2.29+0af3f5a719.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-dimensions-v1\4.0.0+6fc22b9919\91b559acd30f56bf77cd372db3049e937f000ffb\fabric-dimensions-v1-4.0.0+6fc22b9919.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-game-rule-api-v1\1.0.53+6ced4dd919\4e2915574efdaf4a884181e26c522bedffe471ea\fabric-game-rule-api-v1-1.0.53+6ced4dd919.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-keybindings-v0\0.2.45+df3654b319\10085c733e07f3f7795449a770c27f79f616a771\fabric-keybindings-v0-0.2.45+df3654b319.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-key-binding-api-v1\1.0.47+0af3f5a719\613d095756744f238e059926cf3d583567ce1e30\fabric-key-binding-api-v1-1.0.47+0af3f5a719.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-resource-conditions-api-v1\4.3.0+8dc279b119\abeb8325771f7867ad176adfe52603d401aeeb0f\fabric-resource-conditions-api-v1-4.3.0+8dc279b119.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-resource-loader-v0\1.3.1+5b5275af19\1b5bf900a731a11f8d699dfb22aa7998e9dc7cd1\fabric-resource-loader-v0-1.3.1+5b5275af19.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-sound-api-v1\1.0.23+6573ed8c19\ed2e95c1d313266df0a1e995fb10edeba8303895\fabric-sound-api-v1-1.0.23+6573ed8c19.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-transitive-access-wideners-v1\6.2.0+45b9699719\d4c0bba1eea29e0286e5efb7cb855ce09f47203b\fabric-transitive-access-wideners-v1-6.2.0+45b9699719.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\org.jetbrains\annotations\24.0.1\13c5c75c4206580aa4d683bffee658caae6c9f43\annotations-24.0.1.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\gg.moonflower\molang-compiler\3.1.1.19\c7c0f9a9d0431c3485a0b6d2a4fb87e3de415ff9\molang-compiler-3.1.1.19.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\io.github.ocelot\glsl-processor\0.2.2\e613c323b2004d5a1bb8d4c0dbf9f7b07d2f79fc\glsl-processor-0.2.2.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\io.github.spair\imgui-java-lwjgl3\1.86.11\7f6657336844bd5a5321ca4987ff1e5476df5aeb\imgui-java-lwjgl3-1.86.11.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\io.github.spair\imgui-java-binding\1.86.11\9f6655bb12d271cb8c63e4394aa697ded1eae48\imgui-java-binding-1.86.11.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\io.github.spair\imgui-java-natives-linux\1.86.11\cf0cf7318612310bab849720f7fc1913389dbcb2\imgui-java-natives-linux-1.86.11.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\io.github.spair\imgui-java-natives-windows\1.86.11\7ad16055af581b5029f3938b0a91f98db7194249\imgui-java-natives-windows-1.86.11.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\org.ow2.asm\asm-tree\9.6\c0cdda9d211e965d2a4448aa3fd86110f2f8c2de\asm-tree-9.6.jar;C:\Users\felip\.gradle\caches\modules-2\files-2.1\org.ow2.asm\asm\9.6\aa205cf0a06dbd8e04ece91c0b37c3f5d567546a\asm-9.6.jar;C:\Users\felip\.gradle\caches\fabric-loom\minecraftMaven\net\minecraft\minecraft-merged-intermediary\1.21.1-net.fabricmc.yarn.1_21_1.1.21.1+build.3-v2\minecraft-merged-intermediary-1.21.1-net.fabricmc.yarn.1_21_1.1.21.1+build.3-v2.jar
+\ No newline at end of file
++C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\com.github.oshi\oshi-core\6.4.10\b1d8ab82d11d92fd639b56d639f8f46f739dd5fa\oshi-core-6.4.10.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\com.google.code.gson\gson\2.10.1\b3add478d4382b78ea20b1671390a858002feb6c\gson-2.10.1.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\com.google.guava\failureaccess\1.0.1\1dcf1de382a0bf95a3d8b0849546c88bac1292c9\failureaccess-1.0.1.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\com.google.guava\guava\32.1.2-jre\5e64ec7e056456bef3a4bc4c6fdaef71e8ab6318\guava-32.1.2-jre.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\com.ibm.icu\icu4j\73.2\61ad4ef7f9131fcf6d25c34b817f90d6da06c9e9\icu4j-73.2.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\com.mojang\authlib\6.0.54\de8bc95660e1b2fe8793fd427a7a10dcec5b3ea7\authlib-6.0.54.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\com.mojang\blocklist\1.0.10\5c685c5ffa94c4cd39496c7184c1d122e515ecef\blocklist-1.0.10.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\com.mojang\brigadier\1.3.10\d15b53a14cf20fdcaa98f731af5dda654452c010\brigadier-1.3.10.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\com.mojang\datafixerupper\8.0.16\67d4de6d7f95d89bcf5862995fb854ebaec02a34\datafixerupper-8.0.16.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\com.mojang\logging\1.2.7\24cb95ffb0e3433fd6e844c04e68009e504ca1c0\logging-1.2.7.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\com.mojang\patchy\2.2.10\da05971b07cbb379d002cf7eaec6a2048211fefc\patchy-2.2.10.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\com.mojang\text2speech\1.17.9\3cad216e3a7f0c19b4b394388bc9ffc446f13b14\text2speech-1.17.9.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\commons-codec\commons-codec\1.16.0\4e3eb3d79888d76b54e28b350915b5dc3919c9de\commons-codec-1.16.0.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\commons-io\commons-io\2.15.1\f11560da189ab563a5c8e351941415430e9304ea\commons-io-2.15.1.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\commons-logging\commons-logging\1.2\4bfc12adfe4842bf07b657f0369c4cb522955686\commons-logging-1.2.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\io.netty\netty-buffer\4.1.97.Final\f8f3d8644afa5e6e1a40a3a6aeb9d9aa970ecb4f\netty-buffer-4.1.97.Final.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\io.netty\netty-codec\4.1.97.Final\384ba4d75670befbedb45c4d3b497a93639c206d\netty-codec-4.1.97.Final.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\io.netty\netty-common\4.1.97.Final\7cceacaf11df8dc63f23d0fb58e9d4640fc88404\netty-common-4.1.97.Final.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\io.netty\netty-handler\4.1.97.Final\abb86c6906bf512bf2b797a41cd7d2e8d3cd7c36\netty-handler-4.1.97.Final.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\io.netty\netty-resolver\4.1.97.Final\cec8348108dc76c47cf87c669d514be52c922144\netty-resolver-4.1.97.Final.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\io.netty\netty-transport-classes-epoll\4.1.97.Final\795da37ded759e862457a82d9d92c4d39ce8ecee\netty-transport-classes-epoll-4.1.97.Final.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\io.netty\netty-transport-native-unix-common\4.1.97.Final\d469d84265ab70095b01b40886cabdd433b6e664\netty-transport-native-unix-common-4.1.97.Final.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\io.netty\netty-transport\4.1.97.Final\f37380d23c9bb079bc702910833b2fd532c9abd0\netty-transport-4.1.97.Final.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\it.unimi.dsi\fastutil\8.5.12\c24946d46824bd528054bface3231d2ecb7e95e8\fastutil-8.5.12.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\net.java.dev.jna\jna-platform\5.14.0\28934d48aed814f11e4c584da55c49fa7032b31b\jna-platform-5.14.0.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\net.java.dev.jna\jna\5.14.0\67bf3eaea4f0718cb376a181a629e5f88fa1c9dd\jna-5.14.0.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\net.sf.jopt-simple\jopt-simple\5.0.4\4fdac2fbe92dfad86aa6e9301736f6b4342a3f5c\jopt-simple-5.0.4.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\org.apache.commons\commons-compress\1.26.0\659feffdd12280201c8aacb8f7be94f9a883c824\commons-compress-1.26.0.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\org.apache.commons\commons-lang3\3.14.0\1ed471194b02f2c6cb734a0cd6f6f107c673afae\commons-lang3-3.14.0.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\org.apache.httpcomponents\httpclient\4.5.13\e5f6cae5ca7ecaac1ec2827a9e2d65ae2869cada\httpclient-4.5.13.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\org.apache.httpcomponents\httpcore\4.4.16\51cf043c87253c9f58b539c9f7e44c8894223850\httpcore-4.4.16.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\org.apache.logging.log4j\log4j-api\2.22.1\bea6fede6328fabafd7e68363161a7ea6605abd1\log4j-api-2.22.1.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\org.apache.logging.log4j\log4j-core\2.22.1\7183a25510a02ad00cc6a95d3b3d2a7d3c5a8dc4\log4j-core-2.22.1.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\org.apache.logging.log4j\log4j-slf4j2-impl\2.22.1\d7e6693c2606cb7e7335047d7bb96dec52db5665\log4j-slf4j2-impl-2.22.1.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\org.jcraft\jorbis\0.0.17\8872d22b293e8f5d7d56ff92be966e6dc28ebdc6\jorbis-0.0.17.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\org.joml\joml\1.10.5\22566d58af70ad3d72308bab63b8339906deb649\joml-1.10.5.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\org.lwjgl\lwjgl-freetype\3.3.3\a0db6c84a8becc8ca05f9dbfa985edc348a824c7\lwjgl-freetype-3.3.3.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\org.lwjgl\lwjgl-glfw\3.3.3\efa1eb78c5ccd840e9f329717109b5e892d72f8e\lwjgl-glfw-3.3.3.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\org.lwjgl\lwjgl-jemalloc\3.3.3\b543467b7ff3c6920539a88ee602d34098628be5\lwjgl-jemalloc-3.3.3.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\org.lwjgl\lwjgl-openal\3.3.3\daada81ceb5fc0c291fbfdd4433cb8d9423577f2\lwjgl-openal-3.3.3.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\org.lwjgl\lwjgl-opengl\3.3.3\2f6b0147078396a58979125a4c947664e98293a\lwjgl-opengl-3.3.3.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\org.lwjgl\lwjgl-stb\3.3.3\25dd6161988d7e65f71d5065c99902402ee32746\lwjgl-stb-3.3.3.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\org.lwjgl\lwjgl-tinyfd\3.3.3\82d755ca94b102e9ca77283b9e2dc46d1b15fbe5\lwjgl-tinyfd-3.3.3.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\org.lwjgl\lwjgl\3.3.3\29589b5f87ed335a6c7e7ee6a5775f81f97ecb84\lwjgl-3.3.3.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\org.lz4\lz4-java\1.8.0\4b986a99445e49ea5fbf5d149c4b63f6ed6c6780\lz4-java-1.8.0.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\org.slf4j\slf4j-api\2.0.9\7cf2726fdcfbc8610f9a71fb3ed639871f315340\slf4j-api-2.0.9.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\io.netty\netty-transport-native-epoll\4.1.97.Final\54188f271e388e7f313aea995e82f58ce2cdb809\netty-transport-native-epoll-4.1.97.Final-linux-x86_64.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\io.netty\netty-transport-native-epoll\4.1.97.Final\5514744c588190ffda076b35a9b8c9f24946a960\netty-transport-native-epoll-4.1.97.Final-linux-aarch_64.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\teamreborn\energy\4.1.0\896812ba2c094aaeda6cab67fb203fba6a0686ab\energy-4.1.0.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-transfer-api-v1\5.1.11+b559734448\4e3dc4b59963e2c6953e7c9f15ef0f3f7615c5dd\fabric-transfer-api-v1-5.1.11+b559734448.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\net.fabricmc\fabric-loader\0.15.11\9c2be53d84ec5c4fb58bb5b8d9c8a629047c9ee9\fabric-loader-0.15.11.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-api-lookup-api-v1\1.6.64+b559734448\968f6dde95adaaaa168e2cc655c62629623510aa\fabric-api-lookup-api-v1-1.6.64+b559734448.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-lifecycle-events-v1\2.3.8+0684cd1248\94b0efa9c6f0572615bb2336103b9c2d9100e449\fabric-lifecycle-events-v1-2.3.8+0684cd1248.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-rendering-fluids-v1\3.1.6+b559734448\c3a0dcfb06a8ee5981f4bac890df63b9db60e521\fabric-rendering-fluids-v1-3.1.6+b559734448.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-api-base\0.4.42+6573ed8c48\b3ef2d0163b2aa02ef81e1ecebc898addb7a08e1\fabric-api-base-0.4.42+6573ed8c48.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\foundry.veil\veil-fabric-1.21.1\1.0.0.206\358aa8a6d689b51534fadd32b8983a93d8c1316b\veil-fabric-1.21.1-1.0.0.206.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\net.fabricmc\fabric-loader\0.16.10\dbd932c2a3641d2c41cf9abfe47e140a5753fa86\fabric-loader-0.16.10.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-api\0.115.1+1.21.1\551227e92766a97a76c949cbcd616ece7d603ec7\fabric-api-0.115.1+1.21.1.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\curse.maven\fabricskyboxes-408209\5424365\d7c80f23792afc6018da2477d46804114529afca\fabricskyboxes-408209-5424365.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\maven.modrinth\lithium\mc1.21.1-0.15.0-fabric\b7d77602807f2c7cd7132741244bf8c0b8dec6c1\lithium-mc1.21.1-0.15.0-fabric.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\maven.modrinth\liby\1.21.1-build-2.1\b652b153e39c156c25190a359c175163f8822456\liby-1.21.1-build-2.1.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\maven.modrinth\cardinal-components-api\6.1.2\bf272e2aa6e9e8a98e8e7a7ed8cc585fc18c59eb\cardinal-components-api-6.1.2.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\maven.modrinth\modmenu\11.0.3\6213120772192040a0aeb5c7cfe330c068605b1f\modmenu-11.0.3.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\curse.maven\music-notification-817206\5617079\8c521838a2bb68b7378a0686a259af00034ef27c\music-notification-817206-5617079.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\curse.maven\cloth-config-348521\5729125\5d82342a2df53fd6df712bfdd583a811572918a4\cloth-config-348521-5729125.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\maven.modrinth\sodium\mc1.21.1-0.6.9-fabric\7953f77ac52ca2b1c6a7e483553b2a345f1b2a9c\sodium-mc1.21.1-0.6.9-fabric.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\maven.modrinth\iris\1.8.8+1.21.1-fabric\4e0df4011503b4b36ba69877ea7247c1a47fea00\iris-1.8.8+1.21.1-fabric.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-transfer-api-v1\5.4.2+c24bd99419\fc4f60c53e5e836a8bf3ecb681c7d2dc35ef8008\fabric-transfer-api-v1-5.4.2+c24bd99419.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-api-lookup-api-v1\1.6.70+b559734419\5588c8bb35b21b5e32f4fb664f8f1cc5f5d61342\fabric-api-lookup-api-v1-1.6.70+b559734419.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-blockrenderlayer-v1\1.1.52+0af3f5a719\fff4d3fe3a1d954dbe806d27d7313521c891704c\fabric-blockrenderlayer-v1-1.1.52+0af3f5a719.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-client-tags-api-v1\1.1.15+6573ed8c19\f0cc3ad9a1774cbd67d90f994012872b817bf337\fabric-client-tags-api-v1-1.1.15+6573ed8c19.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-command-api-v1\1.2.49+f71b366f19\e5390c5c326544bff9caa2e3771873320b49b63\fabric-command-api-v1-1.2.49+f71b366f19.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-commands-v0\0.2.66+df3654b319\ca80709643706f58994345ac561b51219a4f2712\fabric-commands-v0-0.2.66+df3654b319.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-command-api-v2\2.2.28+6ced4dd919\b5acfbd5f16caf74d8617e7a51feadc0bba3ee33\fabric-command-api-v2-2.2.28+6ced4dd919.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-content-registries-v0\8.0.18+b559734419\5c8545ac97fd35dffc077eda418b3caeef6e8866\fabric-content-registries-v0-8.0.18+b559734419.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-data-generation-api-v1\20.2.26+16c4ae2519\f8a8dbb830a5d98edf6e261cee901c740d82dbee\fabric-data-generation-api-v1-20.2.26+16c4ae2519.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-convention-tags-v1\2.1.3+7f945d5b19\90a5f83b17ac9df57f529b200bc94d0f9ac59167\fabric-convention-tags-v1-2.1.3+7f945d5b19.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-convention-tags-v2\2.10.0+9465b64419\7589e72d288f748b9a12e8656c555b7147b4a8f1\fabric-convention-tags-v2-2.10.0+9465b64419.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-data-attachment-api-v1\1.4.1+9ed317f519\d97c7132ab59bf01b11f7ea9aca9d686ba9f95d5\fabric-data-attachment-api-v1-1.4.1+9ed317f519.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-entity-events-v1\1.7.0+2122d82819\d7a59f74a6ecc7b4998c54db336fd05b12329109\fabric-entity-events-v1-1.7.0+2122d82819.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-events-interaction-v0\0.7.13+ba9dae0619\efdda3484f393d2c3da5c530a8bc01c9f6c258f\fabric-events-interaction-v0-0.7.13+ba9dae0619.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-gametest-api-v1\2.0.5+6fc22b9919\7456db0b23782fbdbc3d11616f9d544416218632\fabric-gametest-api-v1-2.0.5+6fc22b9919.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-item-api-v1\11.1.1+d5debaed19\3cc6651f64eb636b74a99a67f31c7585630597\fabric-item-api-v1-11.1.1+d5debaed19.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-item-group-api-v1\4.1.6+6823f7cd19\4a9fb2d4672b187680bc9718ccbd15d098672871\fabric-item-group-api-v1-4.1.6+6823f7cd19.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-lifecycle-events-v1\2.5.0+01d9a51c19\fa0ff2af016dc818d94afa5b3bf338ca338f7f7a\fabric-lifecycle-events-v1-2.5.0+01d9a51c19.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-loot-api-v2\3.0.15+3f89f5a519\c43eb4752a28d5855297fa097b21d51df183db5b\fabric-loot-api-v2-3.0.15+3f89f5a519.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-loot-api-v3\1.0.3+3f89f5a519\bbb7d449d0c0a01e6860b49a13bf685b4a407e3c\fabric-loot-api-v3-1.0.3+3f89f5a519.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-message-api-v1\6.0.13+6573ed8c19\b4d6321ceb67b8e6ecfb2f2580a7a01cff58c41d\fabric-message-api-v1-6.0.13+6573ed8c19.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-model-loading-api-v1\2.0.0+fe474d6b19\d7cf314fe4d55c3b83649b3f53e32de53987d76f\fabric-model-loading-api-v1-2.0.0+fe474d6b19.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-recipe-api-v1\5.0.14+248df81c19\c16de6a71a85df2ed5e4f0edf9cba358f62c861a\fabric-recipe-api-v1-5.0.14+248df81c19.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-screen-handler-api-v1\1.3.88+b559734419\7ad6adfeab1b68be235dbf3fbc0ed591b1960edb\fabric-screen-handler-api-v1-1.3.88+b559734419.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-registry-sync-v0\5.2.0+34f5d91419\ed0d70204396ca726927554f4441874d744879ff\fabric-registry-sync-v0-5.2.0+34f5d91419.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-networking-api-v1\4.3.0+c7469b2119\d6345e2b3438d05932367f7441c1fc016ab5b7a\fabric-networking-api-v1-4.3.0+c7469b2119.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-object-builder-api-v1\15.2.1+40875a9319\3cf6f92a97ab7ea29501266bdacc5c404e709999\fabric-object-builder-api-v1-15.2.1+40875a9319.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-particles-v1\4.0.2+6573ed8c19\360bb7d5c33a1294428ee66ac6ecdd6d7ea4f899\fabric-particles-v1-4.0.2+6573ed8c19.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-renderer-indigo\1.7.0+c705a49c19\7b9cf3deffd0458e1222b37153bf9ff0e523ddd5\fabric-renderer-indigo-1.7.0+c705a49c19.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-renderer-api-v1\3.4.0+c705a49c19\82e70a01ed2a87e8859ebd998ea6979db10c7de2\fabric-renderer-api-v1-3.4.0+c705a49c19.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-rendering-fluids-v1\3.1.6+1daea21519\a98d1cb01e3b8b42563c75b95cd60bef5b605161\fabric-rendering-fluids-v1-3.1.6+1daea21519.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-renderer-registries-v1\3.2.68+df3654b319\1ae28a951f38784c2fc77872c5b86fe10bf6dfa9\fabric-renderer-registries-v1-3.2.68+df3654b319.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-rendering-v0\1.1.71+df3654b319\2136ae4bb89f3eeac528425b9e0bfbf3af92f4b5\fabric-rendering-v0-1.1.71+df3654b319.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-rendering-v1\5.0.5+df16efd019\9ec4ec688d14e4a31f18c2dd07b9d9955c1e9633\fabric-rendering-v1-5.0.5+df16efd019.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-screen-api-v1\2.0.25+8b68f1c719\ffe5f810ed17b312b7efa929741d4d5a51bef319\fabric-screen-api-v1-2.0.25+8b68f1c719.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-api-base\0.4.42+6573ed8c19\ea7c4bb2496e7c0b9afec7cff99e1f044bca6ee6\fabric-api-base-0.4.42+6573ed8c19.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-biome-api-v1\13.0.31+d527f9fd19\9e3647b61e67549a19ad8582911c602295c5f2\fabric-biome-api-v1-13.0.31+d527f9fd19.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-block-api-v1\1.0.22+0af3f5a719\b157b4fe1de2f278fefdc50160ed9203f59e3b13\fabric-block-api-v1-1.0.22+0af3f5a719.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-rendering-data-attachment-v1\0.3.48+73761d2e19\3ea402da1f213a61cdfa2dcb2b1f5da4141a7f29\fabric-rendering-data-attachment-v1-0.3.48+73761d2e19.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-block-view-api-v2\1.0.10+6573ed8c19\e19ab1f5089e7879789946c3284230db2a2d1118\fabric-block-view-api-v2-1.0.10+6573ed8c19.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-crash-report-info-v1\0.2.29+0af3f5a719\aa819f383361340b3e247c04aed17da7698637d2\fabric-crash-report-info-v1-0.2.29+0af3f5a719.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-dimensions-v1\4.0.0+6fc22b9919\dcdf0d50db139306143a9c45ca0381083d74d232\fabric-dimensions-v1-4.0.0+6fc22b9919.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-game-rule-api-v1\1.0.53+6ced4dd919\efe98971c1dab4e364f687a558cae8185247d7f\fabric-game-rule-api-v1-1.0.53+6ced4dd919.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-keybindings-v0\0.2.45+df3654b319\818c8ceb3b533fb3dc566eac95234a0104948e72\fabric-keybindings-v0-0.2.45+df3654b319.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-key-binding-api-v1\1.0.47+0af3f5a719\a41588036a8125eb3fea0a372e8b0225287ce031\fabric-key-binding-api-v1-1.0.47+0af3f5a719.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-resource-conditions-api-v1\4.3.0+8dc279b119\7e6597151bf51e25a3914d4293ef38096248803d\fabric-resource-conditions-api-v1-4.3.0+8dc279b119.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-resource-loader-v0\1.3.1+5b5275af19\629ddae2142c308c8bd95611829d5763e96eea9a\fabric-resource-loader-v0-1.3.1+5b5275af19.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-sound-api-v1\1.0.23+6573ed8c19\caf236fd815d5aa25ecc4642ffc48d19f3fefdfa\fabric-sound-api-v1-1.0.23+6573ed8c19.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\net.fabricmc.fabric-api\fabric-transitive-access-wideners-v1\6.2.0+45b9699719\f272f75428e852aec8eb42e78c514cc52b6b1265\fabric-transitive-access-wideners-v1-6.2.0+45b9699719.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\org.jetbrains\annotations\24.0.1\13c5c75c4206580aa4d683bffee658caae6c9f43\annotations-24.0.1.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\gg.moonflower\molang-compiler\3.1.1.19\c7c0f9a9d0431c3485a0b6d2a4fb87e3de415ff9\molang-compiler-3.1.1.19.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\io.github.ocelot\glsl-processor\0.2.2\e613c323b2004d5a1bb8d4c0dbf9f7b07d2f79fc\glsl-processor-0.2.2.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\io.github.spair\imgui-java-lwjgl3\1.86.11\7f6657336844bd5a5321ca4987ff1e5476df5aeb\imgui-java-lwjgl3-1.86.11.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\io.github.spair\imgui-java-binding\1.86.11\9f6655bb12d271cb8c63e4394aa697ded1eae48\imgui-java-binding-1.86.11.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\io.github.spair\imgui-java-natives-linux\1.86.11\cf0cf7318612310bab849720f7fc1913389dbcb2\imgui-java-natives-linux-1.86.11.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\io.github.spair\imgui-java-natives-windows\1.86.11\7ad16055af581b5029f3938b0a91f98db7194249\imgui-java-natives-windows-1.86.11.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\org.ow2.asm\asm-tree\9.6\c0cdda9d211e965d2a4448aa3fd86110f2f8c2de\asm-tree-9.6.jar;C:\Users\Merlin\.gradle\caches\modules-2\files-2.1\org.ow2.asm\asm\9.6\aa205cf0a06dbd8e04ece91c0b37c3f5d567546a\asm-9.6.jar;C:\Users\Merlin\.gradle\caches\fabric-loom\minecraftMaven\net\minecraft\minecraft-merged-intermediary\1.21.1-net.fabricmc.yarn.1_21_1.1.21.1+build.3-v2\minecraft-merged-intermediary-1.21.1-net.fabricmc.yarn.1_21_1.1.21.1+build.3-v2.jar
+\ No newline at end of file
+diff --git a/src/main/java/org/copycraftDev/new_horizons/hotreload/Acessor.java b/src/main/java/org/copycraftDev/new_horizons/hotreload/Acessor.java
+new file mode 100644
