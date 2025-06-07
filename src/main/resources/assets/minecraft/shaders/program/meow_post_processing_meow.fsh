@@ -48,20 +48,20 @@ void main() {
 	pixelated.r = texture(DiffuseSampler, pixCoord + vec2(offset, 0.0)).r;
 	pixelated.g = texture(DiffuseSampler, pixCoord).g;
 	pixelated.b = texture(DiffuseSampler, pixCoord - vec2(offset, 0.0)).b;
-    
+
     pixelated *= color_multiplier;
-    
+
     col = (col + (pixelated * pixel_strenght)) / (1.0 + pixel_strenght);
 
 	vec3 line_color = vec3(0.06, 0.03, 0.03);
 	float v = sin(fTexCoord.y * 60.0 - (time * 0.06));
-	
+
 	v += sin(fTexCoord.y * 90.0 - (time * 0.11)) * 0.2;
-	
+
 	col += (1.0 - abs(v)) * line_color;
-	
+
 	col *= color_multiplier;
-	
+
 	col += 0.02 * hash(vec2(0.02 * time, pixCoord.x + (pixCoord.y * 200.0)));
 
     fragColor = vec4(col, 1.0);

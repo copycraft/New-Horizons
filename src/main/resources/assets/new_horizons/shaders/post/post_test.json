@@ -8,15 +8,17 @@
             "intarget": "minecraft:main",
             "outtarget": "swap",
             "uniforms": [
-
+                {
+                    "name": "chargeValue",
+                    "type": "float",
+                    "values": [1.0]
+                }
             ]
         },
-		{
+        {
             "name": "blit",
             "intarget": "swap",
             "outtarget": "minecraft:main"
         }
     ]
 }
-
-

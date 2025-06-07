@@ -4,15 +4,31 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="98d4082c-d487-4920-b26a-61a5027f7d6f" name="Changes" comment="chat did i cook?">
+    <list default="true" id="98d4082c-d487-4920-b26a-61a5027f7d6f" name="Changes" comment="e">
+      <change beforePath="$PROJECT_DIR$/.gradle/8.14/checksums/checksums.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/8.14/checksums/checksums.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/8.14/checksums/md5-checksums.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/8.14/checksums/md5-checksums.bin" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/8.14/checksums/sha1-checksums.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/8.14/checksums/sha1-checksums.bin" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/8.14/executionHistory/executionHistory.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/8.14/executionHistory/executionHistory.bin" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/8.14/executionHistory/executionHistory.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/8.14/executionHistory/executionHistory.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/8.14/fileHashes/fileHashes.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/8.14/fileHashes/fileHashes.bin" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/8.14/fileHashes/fileHashes.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/8.14/fileHashes/fileHashes.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/8.14/fileHashes/resourceHashesCache.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/8.14/fileHashes/resourceHashesCache.bin" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/file-system.probe" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/file-system.probe" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/loom-cache/launch.cfg" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/loom-cache/launch.cfg" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/loom-cache/remapClasspath.txt" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/loom-cache/remapClasspath.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/gradle.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/gradle.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/runConfigurations/Minecraft_Client.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/runConfigurations/Minecraft_Client.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/runConfigurations/Minecraft_Server.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/runConfigurations/Minecraft_Server.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/assets/new_horizons/quasar/modules/emitter/particle/test_particle.json" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/assets/new_horizons/quasar/modules/emitter/particle/test_particle.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/build.gradle" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/copycraftDev/new_horizons/client/NewHorizonsClient.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/copycraftDev/new_horizons/client/NewHorizonsClient.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/copycraftDev/new_horizons/client/rendering/CelestialBodyRendererPanorama.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/copycraftDev/new_horizons/client/rendering/CelestialBodyRendererPanorama.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/copycraftDev/new_horizons/client/rendering/SniperHudRenderer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/copycraftDev/new_horizons/client/rendering/SniperHudRenderer.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/copycraftDev/new_horizons/core/items/custom/SniperItem.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/copycraftDev/new_horizons/core/items/custom/SniperItem.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/copycraftDev/new_horizons/lazuli_snnipets/LazuliRenderingRegistry.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/copycraftDev/new_horizons/lazuli_snnipets/LazuliRenderingRegistry.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/assets/minecraft/shaders/program/meow_post_processing_meow.fsh" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/assets/minecraft/shaders/program/meow_post_processing_meow.fsh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/assets/minecraft/shaders/program/post_test.json" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/assets/minecraft/shaders/program/post_test.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/assets/new_horizons/shaders/post/post_test.json" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/assets/new_horizons/shaders/post/post_test.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/new_horizons.mixins.json" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/new_horizons.mixins.json" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -76,6 +92,7 @@
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
     <option name="RESET_MODE" value="HARD" />
+    <option name="UPDATE_TYPE" value="REBASE" />
   </component>
   <component name="GitHubPullRequestSearchHistory">{
   &quot;lastFilter&quot;: {
@@ -83,12 +100,12 @@
     &quot;assignee&quot;: &quot;Neomoon6153official&quot;
   }
 }</component>
-  <component name="GithubPullRequestsUISettings">{
-  &quot;selectedUrlAndAccountId&quot;: {
-    &quot;url&quot;: &quot;https://github.com/copycraft/New-Horizons.git&quot;,
-    &quot;accountId&quot;: &quot;d335c36b-9b77-4cd3-bf7f-b0d968f3e960&quot;
+  <component name="GithubPullRequestsUISettings"><![CDATA[{
+  "selectedUrlAndAccountId": {
+    "url": "https://github.com/copycraft/New-Horizons.git",
+    "accountId": "40789803-feaf-4dbf-ba57-837fad9a29ca"
   }
-}</component>
+}]]></component>
   <component name="ProblemsViewState">
     <option name="selectedTabId" value="CurrentFile" />
   </component>
@@ -115,7 +132,7 @@
     &quot;git-widget-placeholder&quot;: &quot;main&quot;,
     &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
     &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;D:/Coisas frequentes/GitHub/New-Horizons/src/main/resources/assets/minecraft/shaders/program&quot;,
+    &quot;last_opened_file_path&quot;: &quot;D:/codemc/New-Horizons/src/main/resources/assets/new_horizons/shaders/post&quot;,
     &quot;project.structure.last.edited&quot;: &quot;Modules&quot;,
     &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
     &quot;project.structure.side.proportion&quot;: &quot;0.0&quot;,
@@ -124,11 +141,11 @@
 }</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="D:\codemc\New-Horizons\src\main\resources\assets\new_horizons\shaders\post" />
+      <recent name="D:\codemc\New-Horizons\src\main\resources\assets\minecraft\shaders\program" />
       <recent name="D:\Coisas frequentes\GitHub\New-Horizons\src\main\resources\assets\minecraft\shaders\program" />
       <recent name="D:\codemc\New-Horizons" />
       <recent name="D:\codemc\New-Horizons\src\main\java\org\copycraftDev\new_horizons\extrastuff\noise" />
-      <recent name="D:\codemc\New-Horizons\src\main\resources\assets\minecraft\textures\gui\sprites\widget" />
-      <recent name="D:\codemc\New-Horizons\src\main\resources\assets\new_horizons\sounds" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="D:\Coisas frequentes\GitHub\New-Horizons\src\main\resources\assets\new_horizons\shaders\post" />
@@ -140,7 +157,7 @@
       <recent name="org.copycraftDev.new_horizons.blackhole" />
     </key>
   </component>
-  <component name="RunManager" selected="Gradle.New-Horizons [runClient]">
+  <component name="RunManager" selected="Application.Minecraft Client">
     <configuration name="New-Horizons [runClient]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
         <option name="executionName" />
@@ -216,9 +233,9 @@
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Gradle.new-horizons [clean]" />
         <item itemvalue="Gradle.New-Horizons [runClient]" />
         <item itemvalue="Gradle.new-horizons [build]" />
-        <item itemvalue="Gradle.new-horizons [clean]" />
         <item itemvalue="Gradle.new-horizons [clean]" />
         <item itemvalue="Gradle.new-horizons [build]" />
       </list>
@@ -321,7 +338,31 @@
       <option name="project" value="LOCAL" />
       <updated>1747591756897</updated>
     </task>
-    <option name="localTasksCounter" value="12" />
+    <task id="LOCAL-00012" summary="e">
+      <option name="closed" value="true" />
+      <created>1749302996943</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1749302996943</updated>
+    </task>
+    <task id="LOCAL-00013" summary="e">
+      <option name="closed" value="true" />
+      <created>1749303026523</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1749303026523</updated>
+    </task>
+    <task id="LOCAL-00014" summary="e">
+      <option name="closed" value="true" />
+      <created>1749303033441</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1749303033441</updated>
+    </task>
+    <option name="localTasksCounter" value="15" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -343,6 +384,7 @@
     <MESSAGE value="texture resizer util and main menu improvements" />
     <MESSAGE value="stuff" />
     <MESSAGE value="chat did i cook?" />
-    <option name="LAST_COMMIT_MESSAGE" value="chat did i cook?" />
+    <MESSAGE value="e" />
+    <option name="LAST_COMMIT_MESSAGE" value="e" />
   </component>
 </project>

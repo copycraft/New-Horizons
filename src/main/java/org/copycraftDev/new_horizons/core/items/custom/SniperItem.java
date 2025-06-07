@@ -1,6 +1,8 @@
 package org.copycraftDev.new_horizons.core.items.custom;
 
+import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.projectile.ArrowEntity;
 import net.minecraft.item.BowItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.entity.player.PlayerEntity;
@@ -35,22 +37,37 @@ public class SniperItem extends BowItem {
         int usedTicks = this.getMaxUseTime(stack) - remainingUseTicks;
 
         if (!world.isClient) {
-            // Example: sound effect based on charge level
-            float power = Math.min(usedTicks / 20.0f, 1.0f);
+            float power = (float) Math.min(SniperHudRenderer.charge, 120.0f);
             world.playSound(null, user.getX(), user.getY(), user.getZ(), SoundEvents.ENTITY_ARROW_SHOOT, SoundCategory.PLAYERS, 1.0f, 1.0f + power * 0.5f);
 
-            // Log or print charge level
-            System.out.println("Shot with charge level: " + power);
+                    if (power > 2f && user instanceof PlayerEntity player) {
+                        ArrowEntity arrow = new ArrowEntity(EntityType.ARROW, world);
 
-            // Placeholder: projectile logic goes here
-        }
-    }
+                        arrow.setPos(player.getX(), player.getEyeY(), player.getZ());
+
+                        arrow.setVelocity(player, player.getPitch(), player.getYaw(), 0.0f, (float) Math.min(power * 0.1, 20.0f), 0.0f);
+
+                        arrow.setCritical(power >= 4f);
+                        arrow.setDamage(2.0 + power * 2.0);
+                        arrow.setNoClip(false);
+
+                        world.spawnEntity(arrow);
+                    }
+                    power = 0.0f;
+                    SniperHudRenderer.charge = 0.0f;
+                }
+            }
+
+
+
 
     @Override
     public void usageTick(World world, LivingEntity user, ItemStack stack, int remainingUseTicks) {
         if (!world.isClient) {
             int usedTicks = this.getMaxUseTime(stack) - remainingUseTicks;
-            SniperHudRenderer.charge = usedTicks;
+            if (usedTicks<121) {
+                SniperHudRenderer.charge = usedTicks;
+            }
         }
     }
 

@@ -148,8 +148,8 @@ public class CelestialBodyRendererPanorama {
 
     private static void applyRotation(MatrixStack ms){
         Quaternionf q=new Quaternionf().set(new AxisAngle4f(1,0,0,(float)Math.toRadians(rotationX))); ms.multiply(q);
-        q.set(new AxisAngle4f(0,1,0,(float)Math.toRadians(rotationY))); ms.multiply(q);
-        q.set(new AxisAngle4f(0,0,1,(float)Math.toRadians(rotationZ))); ms.multiply(q);
+        q.set(new AxisAngle4f((float) 0, (float) (1*(simulationSpeed*0.5)),(float) 0,(float)Math.toRadians(rotationY))); ms.multiply(q);
+        q.set(new AxisAngle4f((float) 0, (float) 0, (float) (1*(simulationSpeed*0.5)),(float)Math.toRadians(rotationZ))); ms.multiply(q);
     }
 
     public static Vec3d getPlanetLocation(String planetName) {

@@ -76,37 +76,40 @@ public class LazuliRenderingRegistry {
             RenderSystem.setShader(GameRenderer::getPositionColorProgram);
             RenderSystem.enableDepthTest();
 
+            // --- DEFERRED FINAL RENDER PASS ---
+            RenderSystem.recordRenderCall(() -> {
+                try {
+                    // Defensive null checks
+                    MinecraftClient mcClient = MinecraftClient.getInstance();
+                    if (mcClient.player == null || mcClient.world == null) return;
 
-            //Sniper aim code
-            if (MinecraftClient.getInstance().player.isHolding(ModItems.SNIPER) && MinecraftClient.getInstance().player.isSneaking()) {
-                LazuliZoom.setZooming(true);
-                LazuliZoom.setZoom((float) 0.1);
-                PostEffectProcessor postShader = LazuliShaderRegistry.getPostProcessor(ModShaders.BLUR_PROCESSOR);
-                SniperHudRenderer.renderHud = true;
-                // Set uniforms BEFORE rendering
-                postShader.setUniforms("time", time.get());
+                    // Sniper aim code
+                    if (mcClient.player.isHolding(ModItems.SNIPER) && mcClient.player.isSneaking()) {
+                        LazuliZoom.setZooming(true);
+                        LazuliZoom.setZoom(0.1f);
+                        PostEffectProcessor postShader = LazuliShaderRegistry.getPostProcessor(ModShaders.BLUR_PROCESSOR);
+                        SniperHudRenderer.renderHud = true;
 
-                // Then render
-                postShader.render(tickDelta);
-            } else {
-                SniperHudRenderer.renderHud = false;
-                LazuliZoom.setZooming(false);
-            }
+                        postShader.setUniforms("time", time.get());
+                        postShader.setUniforms("chargeValue", (float) SniperHudRenderer.charge);
+                        postShader.render(tickDelta);
+                    } else {
+                        SniperHudRenderer.renderHud = false;
+                        LazuliZoom.setZooming(false);
+                    }
 
+                    if (ShaderController.isEnabled()) {
+                        PostEffectProcessor postShader = LazuliShaderRegistry.getPostProcessor(ShaderController.getShaderId());
 
-            if (ShaderController.isEnabled()) {
-                PostEffectProcessor postShader = LazuliShaderRegistry.getPostProcessor(ShaderController.getShaderId());
-
-                // Set uniforms BEFORE rendering
-                postShader.setUniforms("time", time.get());
-
-                // Then render
-                postShader.render(tickDelta);
-            }
+                        postShader.setUniforms("time", time.get());
+                        postShader.render(tickDelta);
+                    }
+                } catch (Throwable t) {
+                    // Log or silently ignore exceptions here if desired to prevent crashes
+                    t.printStackTrace();
+                }
+            });
         });
-
-
-
     }
 
     /** Register a custom render callback (your planets, rings, etc.). */

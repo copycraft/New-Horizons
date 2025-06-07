@@ -12,9 +12,10 @@
     "CameraAccessor",
     "CameraRotationMixin",
     "ClientPlayNetworkHandlerMixin",
+    "LazuliPostProcessingRegistryMixin",
+    "lazuliZoomMixin",
     "NoCloudsMixin",
     "NoVoidDamageInSpaceLivingEntityMixin",
-    "LazuliPostProcessingRegistryMixin",
     "TitleScreenMixin",
     "client.CameraMixin",
     "client.FreezeInventoryMixin",
@@ -22,8 +23,7 @@
     "client.GameRendererMixin",
     "client.InstantDimensionClientMixin",
     "client.InstantDimensionNetworkMixin",
-    "client.PlayerFreezeMixin",
-    "lazuliZoomMixin"
+    "client.PlayerFreezeMixin"
   ],
   "injectors": {
     "defaultRequire": 1

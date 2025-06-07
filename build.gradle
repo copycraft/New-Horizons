@@ -85,6 +85,15 @@ dependencies {
     modImplementation "curse.maven:cloth-config-348521:5729125"
     modImplementation "maven.modrinth:sodium:mc1.21.1-0.6.9-fabric"
     modImplementation "maven.modrinth:iris:1.8.8+1.21.1-fabric"
+    modImplementation "maven.modrinth:vivecraft:1.21.1-1.2.5-fabric"
+    include "org.lwjgl:lwjgl"
+    include "org.lwjgl:lwjgl-glfw"
+    include "org.lwjgl:lwjgl-opengl"
+    implementation "org.lwjgl:lwjgl:3.3.1"
+    implementation "org.lwjgl:lwjgl-glfw:3.3.1"
+    implementation "org.lwjgl:lwjgl-opengl:3.3.1"
+    modImplementation("com.electronwill.night-config:core:3.6.4")
+    modImplementation("com.electronwill.night-config:toml:3.6.4") // if needed
 }
 
 
